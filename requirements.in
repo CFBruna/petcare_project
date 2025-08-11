@@ -1,0 +1,7 @@
+django
+psycopg2-binary
+python-decouple
+dj-database-url
+ruff
+pre-commit
+Pillow

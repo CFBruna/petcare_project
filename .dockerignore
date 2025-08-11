@@ -1,0 +1,23 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Ambiente Virtual
+.venv
+venv
+env
+
+# Python caches
+__pycache__
+*.pyc
+
+# Arquivos de ambiente
+.env
+.env.docker
+
+# Ruff cache
+.ruff_cache
+
+# VSCode
+.vscode/
