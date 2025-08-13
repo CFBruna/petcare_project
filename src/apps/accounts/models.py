@@ -9,6 +9,9 @@ class Customer(models.Model):
         related_name="customer_profile",
         verbose_name="Usuário",
     )
+    cpf = models.CharField(
+        max_length=14, unique=True, null=True, blank=True, verbose_name="CPF"
+    )
     phone = models.CharField(max_length=20, blank=True, verbose_name="Telefone")
     address = models.CharField(max_length=250, blank=True, verbose_name="Endereço")
 
