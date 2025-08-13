@@ -262,6 +262,11 @@ poetry.toml
 # ruff
 .ruff_cache/
 
+# Media files
+/media/
+/brands/
+/products/
+
 # LSP config files
 pyrightconfig.json
 
