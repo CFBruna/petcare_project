@@ -24,7 +24,7 @@ class Breed(models.Model):
         verbose_name_plural = "Raças"
 
     def __str__(self):
-        return f"{self.name} ({self.get_species_display()})"
+        return self.name
 
 
 class Pet(models.Model):
@@ -42,4 +42,4 @@ class Pet(models.Model):
         verbose_name_plural = "Pets"
 
     def __str__(self):
-        return f"{self.name} ({self.breed})"
+        return f"{self.name} - {self.breed}"

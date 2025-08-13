@@ -8,7 +8,9 @@ class Service(models.Model):
     description = models.TextField(blank=True, verbose_name="Descrição")
     price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Preço")
     duration_minutes = models.PositiveIntegerField(
-        default=30, help_text="Duração do serviço em minutos."
+        default=30,
+        help_text="Duração do serviço em minutos.",
+        verbose_name="Duração em minutos",
     )
 
     class Meta:
@@ -28,7 +30,10 @@ class Appointment(models.Model):
 
     pet = models.ForeignKey(Pet, on_delete=models.PROTECT, related_name="appointments")
     service = models.ForeignKey(
-        Service, on_delete=models.PROTECT, related_name="appointments"
+        Service,
+        on_delete=models.PROTECT,
+        related_name="appointments",
+        verbose_name="Serviço",
     )
     schedule_time = models.DateTimeField(verbose_name="Data e Hora do Agendamento")
     status = models.CharField(

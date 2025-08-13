@@ -19,17 +19,24 @@ class HealthRecord(models.Model):
         max_length=20, choices=RecordType.choices, verbose_name="Tipo de Registro"
     )
     description = models.TextField(
-        help_text="Descrição detalhada do evento (Ex: Vacina V10, Lote XYZ)."
+        help_text="Descrição detalhada do evento (Ex: Vacina V10, Lote XYZ).",
+        verbose_name="Descrição",
     )
-    record_date = models.DateField(help_text="Data em que o evento ocorreu.")
+    record_date = models.DateField(
+        help_text="Data em que o evento ocorreu.", verbose_name="Data do Evento"
+    )
     next_due_date = models.DateField(
-        blank=True, null=True, help_text="Próxima data (ex: revacinação)."
+        blank=True,
+        null=True,
+        help_text="Próxima data (ex: revacinação).",
+        verbose_name="Próxima Data",
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="health_records_created",
+        verbose_name="Criado por",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
