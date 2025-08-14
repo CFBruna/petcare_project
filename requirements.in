@@ -9,3 +9,4 @@ pytest
 pytest-django
 pytest-cov
 factory-boy
+djangorestframework

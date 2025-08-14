@@ -20,6 +20,9 @@ django==5.2.5
     # via
     #   -r requirements.in
     #   dj-database-url
+    #   djangorestframework
+djangorestframework==3.16.1
+    # via -r requirements.in
 factory-boy==3.3.3
     # via -r requirements.in
 faker==37.5.3
