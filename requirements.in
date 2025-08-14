@@ -5,3 +5,7 @@ dj-database-url
 ruff
 pre-commit
 Pillow
+pytest
+pytest-django
+pytest-cov
+factory-boy

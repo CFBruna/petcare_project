@@ -33,3 +33,7 @@ ignore = ["E501"]
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "src.petcare.settings"
+python_files = "tests.py test_*.py *_tests.py"
