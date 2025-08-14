@@ -56,3 +56,29 @@ class Appointment(models.Model):
     def __str__(self):
         formatted_date = self.schedule_time.strftime("%d/%m/%Y ás %H:%M")
         return f"Agendamento para {self.pet.name} em {formatted_date}"
+
+
+class TimeSlot(models.Model):
+    day_of_week = models.IntegerField(
+        choices=[
+            (0, "Segunda-feira"),
+            (1, "Terça-feira"),
+            (2, "Quarta-feira"),
+            (3, "Quinta-feira"),
+            (4, "Sexta-feira"),
+            (5, "Sábado"),
+            (6, "Domingo"),
+        ],
+        verbose_name="Dia da Semana",
+    )
+    start_time = models.TimeField(verbose_name="Início do Horário")
+    end_time = models.TimeField(verbose_name="Fim do Horário")
+
+    class Meta:
+        verbose_name = "Horário Disponível"
+        verbose_name_plural = "Horários Disponíveis"
+        unique_together = ("day_of_week", "start_time")
+        ordering = ["day_of_week", "start_time"]
+
+    def __str__(self):
+        return f"{self.get_day_of_week_display()} de {self.start_time.strftime('%H:%M')} às {self.end_time.strftime('%H:%M')}"
