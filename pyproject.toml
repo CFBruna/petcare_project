@@ -37,3 +37,5 @@ skip-magic-trailing-comma = false
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "src.petcare.settings"
 python_files = "tests.py test_*.py *_tests.py"
+pythonpath = ["."]
+addopts = "--tb=short --cov --cov-report=term-missing"
