@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from rest_framework import status, viewsets
 from rest_framework.response import Response
@@ -21,10 +21,10 @@ class AvailableSlotsView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            appointment_date = date.fromisoformat(date_str)
             service = Service.objects.get(pk=service_id)
 
-            slots = get_available_slots(date, service)
+            slots = get_available_slots(appointment_date, service)
 
             formatted_slots = [s.strftime("%H:%M") for s in slots]
 
@@ -34,7 +34,7 @@ class AvailableSlotsView(APIView):
             return Response(
                 {"error": "Serviço não encontrado."}, status=status.HTTP_404_NOT_FOUND
             )
-        except (ValueError, TypeError):
+        except ValueError:
             return Response(
                 {"error": "Formato de data inválido. Use YYYY-MM-DD."},
                 status=status.HTTP_400_BAD_REQUEST,
