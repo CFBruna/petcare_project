@@ -12,7 +12,7 @@ class Customer(models.Model):
     cpf = models.CharField(
         max_length=14, unique=True, null=True, blank=True, verbose_name="CPF"
     )
-    phone = models.CharField(max_length=20, blank=True, verbose_name="Telefone")
+    phone = models.CharField(max_length=25, blank=True, verbose_name="Telefone")
     address = models.CharField(max_length=250, blank=True, verbose_name="Endereço")
 
     class Meta:
