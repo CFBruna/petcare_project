@@ -14,8 +14,9 @@ class TestCustomerAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_list_customers_authenticated(self, authenticated_client):
+        client, user = authenticated_client
         CustomerFactory.create_batch(3)
-        response = authenticated_client.get(URL)
+        response = client.get(URL)
         assert response.status_code == status.HTTP_200_OK
 
         data = response.json()
@@ -23,8 +24,9 @@ class TestCustomerAPI:
         assert len(data["results"]) == 3
 
     def test_retrieve_customer_detail(self, authenticated_client):
+        client, user = authenticated_client
         customer = CustomerFactory()
-        response = authenticated_client.get(f"{URL}{customer.id}/")
+        response = client.get(f"{URL}{customer.id}/")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["user"]["username"] == customer.user.username
