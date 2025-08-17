@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
             timeSelect.innerHTML = '<option value="">Buscando horários...</option>';
             console.log(`Buscando horários para o serviço ${serviceId} na data ${date}`);
 
-            const url = `/api/v1/available-slots/?date=${date}&service_id=${serviceId}`;
+            const url = `/api/v1/schedule/available-slots/?date=${date}&service_id=${serviceId}`;
 
             fetch(url)
                 .then(response => response.json())
