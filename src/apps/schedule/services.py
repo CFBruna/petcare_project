@@ -21,6 +21,7 @@ def get_available_slots(date: datetime.date, service: Service) -> list[time]:
     available_slots = []
     buffer_minutes = 0
     slot_increment_minutes = 15
+    now = timezone.now()
 
     for wh in working_hours:
         potential_slots = []
@@ -32,6 +33,9 @@ def get_available_slots(date: datetime.date, service: Service) -> list[time]:
             if current_time + timedelta(minutes=service.duration_minutes) <= end_dt:
                 potential_slots.append(current_time)
             current_time += timedelta(minutes=slot_increment_minutes)
+
+        if date == now.date():
+            potential_slots = [slot for slot in potential_slots if slot >= now]
 
         blocked_periods = []
         for app in existing_appointments:
