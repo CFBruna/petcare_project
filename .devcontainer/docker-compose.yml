@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+
+  web:
+
+    volumes:
+
+      - ..:/workspaces:cached
+
+    command: sleep infinity
+ 
