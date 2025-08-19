@@ -5,13 +5,16 @@
 	"workspaceFolder": "/usr/src/app",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
-			"installNano": true,
-			"configureGit": false
+			"installZsh": true,
+			"installOhMyZsh": true,
+			"upgradePackages": true
 		}
 	},
+	"postCreateCommand": "pre-commit install",
 	"customizations": {
 		"vscode": {
 			"settings": {
+				"terminal.integrated.defaultProfile.linux": "zsh",
 				"editor.formatOnSave": true,
 				"editor.codeActionsOnSave": {
 					"source.fixAll.ruff": "explicit"
