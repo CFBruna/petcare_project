@@ -24,4 +24,6 @@ class Customer(models.Model):
         return self.user.get_full_name()
 
     def __str__(self):
+        if self.cpf:
+            return f"{self.full_name or self.user.username} - {self.cpf}"
         return self.full_name or self.user.username
