@@ -73,6 +73,13 @@ class AppointmentAdminForm(forms.ModelForm):
 
             cleaned_data["schedule_time"] = timezone.make_aware(local_dt)
 
+            if cleaned_data["schedule_time"] < timezone.now():
+                raise forms.ValidationError(
+                    {
+                        "__all__": "Não é possível agendar serviços para o passado. Selecione uma data e hora futuras."
+                    }
+                )
+
         return cleaned_data
 
     def save(self, commit=True):

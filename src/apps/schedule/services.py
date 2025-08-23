@@ -6,6 +6,9 @@ from .models import Appointment, Service, TimeSlot
 
 
 def get_available_slots(date: datetime.date, service: Service) -> list[time]:
+    if date < timezone.now().date():
+        return []
+
     day_of_week = date.weekday()
     working_hours = TimeSlot.objects.filter(day_of_week=day_of_week)
 
