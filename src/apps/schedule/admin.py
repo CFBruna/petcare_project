@@ -9,6 +9,7 @@ class AppointmentAdmin(admin.ModelAdmin):
     form = AppointmentAdminForm
     list_display = ["pet", "service", "schedule_time", "status"]
     search_fields = ["pet__name", "service__name"]
+    autocomplete_fields = ["pet"]
     list_filter = ["service", "status", "schedule_time"]
 
     fieldsets = (
