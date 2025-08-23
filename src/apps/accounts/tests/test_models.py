@@ -15,17 +15,14 @@ class TestCustomerModel:
     def test_customer_str_representation(self):
         user = UserFactory(first_name="João", last_name="Silva")
         customer = CustomerFactory(user=user)
-
-        assert str(customer) == "João Silva"
+        assert str(customer) == f"{user.get_full_name()} - {customer.cpf}"
 
     def test_customer_full_name_property(self):
         user = UserFactory(first_name="Maria", last_name="Oliveira")
         customer = CustomerFactory(user=user)
-
         assert customer.full_name == "Maria Oliveira"
 
     def test_customer_str_representation_no_full_name(self):
         user = UserFactory(first_name="", last_name="")
         customer = CustomerFactory(user=user)
-
-        assert str(customer) == user.username
+        assert str(customer) == f"{user.username} - {customer.cpf}"

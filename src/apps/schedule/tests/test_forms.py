@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import time, timedelta
 
 import pytest
 from django.utils import timezone
@@ -17,8 +17,12 @@ class TestAppointmentAdminForm:
     def setup_method(self):
         self.service = ServiceFactory(duration_minutes=60)
         self.pet = PetFactory()
-        self.test_date = date(2025, 8, 21)  # A Thursday
-        TimeSlotFactory(day_of_week=3, start_time=time(9, 0), end_time=time(12, 0))
+        self.test_date = timezone.now().date() + timedelta(days=7)
+        TimeSlotFactory(
+            day_of_week=self.test_date.weekday(),
+            start_time=time(9, 0),
+            end_time=time(12, 0),
+        )
 
     def test_form_is_valid_with_correct_data(self):
         form_data = {
@@ -30,7 +34,7 @@ class TestAppointmentAdminForm:
             "appointment_time": "09:00",
         }
         form = AppointmentAdminForm(data=form_data)
-        assert form.is_valid()
+        assert form.is_valid(), form.errors
 
     def test_form_is_invalid_without_required_fields(self):
         form = AppointmentAdminForm(data={})
@@ -49,7 +53,9 @@ class TestAppointmentAdminForm:
         }
         form = AppointmentAdminForm(data=form_data)
         assert form.is_valid(), form.errors
-        expected_dt = timezone.make_aware(timezone.datetime(2025, 8, 21, 10, 0))
+        expected_dt = timezone.make_aware(
+            timezone.datetime.combine(self.test_date, time(10, 0))
+        )
         assert form.cleaned_data["schedule_time"] == expected_dt
 
     def test_save_method_creates_appointment(self):
@@ -67,10 +73,12 @@ class TestAppointmentAdminForm:
         assert appointment.pk is not None
         assert appointment.status == "CONFIRMED"
         assert appointment.notes == "A note for the appointment."
-        assert appointment.schedule_time.year == 2025
+        assert appointment.schedule_time.date() == self.test_date
 
     def test_form_initialization_with_instance(self):
-        appointment_time = timezone.make_aware(timezone.datetime(2025, 8, 21, 9, 0))
+        appointment_time = timezone.make_aware(
+            timezone.datetime.combine(self.test_date, time(9, 0))
+        )
         appointment = AppointmentFactory(
             schedule_time=appointment_time, service=self.service
         )
@@ -80,14 +88,28 @@ class TestAppointmentAdminForm:
         assert ("09:00", "09:00") in form.fields["appointment_time"].choices
 
     def test_dynamic_time_choices_are_loaded(self):
-        # Simulate the dynamic request that populates the time choices
         form_data = {
             "service": self.service.id,
             "appointment_date": self.test_date.isoformat(),
         }
         form = AppointmentAdminForm(data=form_data)
+        form.is_valid()
         assert len(form.fields["appointment_time"].choices) > 0
         assert ("09:00", "09:00") in form.fields["appointment_time"].choices
         assert ("10:00", "10:00") in form.fields["appointment_time"].choices
         assert ("11:00", "11:00") in form.fields["appointment_time"].choices
         assert ("12:00", "12:00") not in form.fields["appointment_time"].choices
+
+    def test_form_prevents_retroactive_appointments(self):
+        past_date = timezone.now().date() - timedelta(days=1)
+        form_data = {
+            "pet": self.pet.id,
+            "service": self.service.id,
+            "status": "PENDING",
+            "appointment_date": past_date.isoformat(),
+            "appointment_time": "10:00",
+        }
+        form = AppointmentAdminForm(data=form_data)
+        assert not form.is_valid()
+        assert "appointment_time" in form.errors
+        assert "Faça uma escolha válida." in form.errors["appointment_time"][0]

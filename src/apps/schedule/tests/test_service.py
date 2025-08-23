@@ -89,3 +89,8 @@ class TestAvailableSlotsService:
         assert time(9, 15) in slots
         assert time(10, 0) in slots
         assert time(11, 30) in slots
+
+    def test_get_slots_for_past_date(self):
+        past_date = date(2025, 1, 1)
+        slots = get_available_slots(past_date, self.service_30_min)
+        assert len(slots) == 0

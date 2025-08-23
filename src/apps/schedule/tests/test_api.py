@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import timedelta
 
 import pytest
 from django.utils import timezone
@@ -15,14 +15,14 @@ class TestAvailableSlotsAPI:
     def setup_method(self):
         self.url = "/api/v1/schedule/available-slots/"
         self.service = ServiceFactory(duration_minutes=60)
-        test_day_of_week = date(2025, 8, 14).weekday()
+        self.future_date = timezone.now().date() + timedelta(days=7)
         TimeSlotFactory(
-            day_of_week=test_day_of_week, start_time="09:00", end_time="12:00"
+            day_of_week=self.future_date.weekday(), start_time="09:00", end_time="12:00"
         )
 
     def test_get_available_slots_successfully(self, authenticated_client):
         client, user = authenticated_client
-        url = f"{self.url}?date=2025-08-14&service_id={self.service.id}"
+        url = f"{self.url}?date={self.future_date.isoformat()}&service_id={self.service.id}"
 
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
@@ -33,7 +33,7 @@ class TestAvailableSlotsAPI:
 
     def test_get_slots_missing_params_fails(self, authenticated_client):
         client, user = authenticated_client
-        response = client.get(f"{self.url}?date=2025-08-14")
+        response = client.get(f"{self.url}?date={self.future_date.isoformat()}")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_get_slots_invalid_date_fails(self, authenticated_client):
@@ -45,7 +45,7 @@ class TestAvailableSlotsAPI:
     def test_get_slots_invalid_service_id(self, authenticated_client):
         client, user = authenticated_client
         invalid_service_id = 9999
-        url = f"{self.url}?date=2025-08-14&service_id={invalid_service_id}"
+        url = f"{self.url}?date={self.future_date.isoformat()}&service_id={invalid_service_id}"
         response = client.get(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -54,6 +54,7 @@ class TestAvailableSlotsAPI:
 class TestAppointmentAPI:
     def setup_method(self):
         self.url = "/api/v1/schedule/appointments/"
+        self.future_date = timezone.now().date() + timedelta(days=7)
 
     def test_unauthenticated_user_cannot_access_appointments(self, api_client):
         response = api_client.get(self.url)
@@ -74,7 +75,11 @@ class TestAppointmentAPI:
         client, user = authenticated_client
         my_pet = PetFactory(owner__user=user)
         service = ServiceFactory()
-        appointment_time = timezone.make_aware(timezone.datetime(2025, 8, 15, 14, 0))
+        appointment_time = timezone.make_aware(
+            timezone.datetime.combine(
+                self.future_date, timezone.datetime.min.time()
+            ).replace(hour=14, minute=0)
+        )
 
         data = {
             "pet": my_pet.id,
