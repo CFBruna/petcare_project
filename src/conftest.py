@@ -12,6 +12,10 @@ def api_client():
 @pytest.fixture
 def authenticated_client():
     user = UserFactory()
+
+    user.is_staff = True
+    user.save()
+
     client = APIClient()
     client.force_authenticate(user=user)
     return client, user
