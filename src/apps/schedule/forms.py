@@ -7,6 +7,26 @@ from .models import Appointment, Service
 from .services import get_available_slots
 
 
+class ServiceAdminForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = "__all__"
+
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        if name:
+            normalized_name = name.strip().title()
+            query = Service.objects.filter(name__iexact=normalized_name)
+            if self.instance.pk:
+                query = query.exclude(pk=self.instance.pk)
+            if query.exists():
+                raise forms.ValidationError(
+                    "Um serviço com este nome já existe. Por favor, verifique a lista."
+                )
+            return normalized_name
+        return name
+
+
 class AppointmentAdminForm(forms.ModelForm):
     appointment_date = forms.DateField(
         label="Data do Agendamento",

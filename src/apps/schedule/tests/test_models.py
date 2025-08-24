@@ -10,7 +10,7 @@ from .factories import AppointmentFactory, ServiceFactory, TimeSlotFactory
 class TestScheduleModels:
     def test_service_str(self):
         service = ServiceFactory(name="Banho e Tosa")
-        assert str(service) == "Banho e Tosa"
+        assert str(service) == "Banho E Tosa"
 
     def test_timeslot_str(self):
         timeslot = TimeSlotFactory(

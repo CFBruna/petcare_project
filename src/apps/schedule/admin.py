@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .forms import AppointmentAdminForm
+from .forms import AppointmentAdminForm, ServiceAdminForm
 from .models import Appointment, Service, TimeSlot
 
 
@@ -31,6 +31,7 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
+    form = ServiceAdminForm
     list_display = ["name", "duration_minutes", "price"]
     search_fields = ["name"]
 

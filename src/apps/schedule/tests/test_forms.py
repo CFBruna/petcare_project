@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from django.utils import timezone
 
-from src.apps.schedule.forms import AppointmentAdminForm
+from src.apps.schedule.forms import AppointmentAdminForm, ServiceAdminForm
 from src.apps.schedule.models import Appointment
 from src.apps.schedule.tests.factories import (
     AppointmentFactory,
@@ -12,6 +12,36 @@ from src.apps.schedule.tests.factories import (
     ServiceFactory,
     TimeSlotFactory,
 )
+
+
+@pytest.mark.django_db
+class TestServiceAdminForm:
+    def test_form_prevents_duplicate_service_name(self):
+        ServiceFactory(name="Banho e Tosa")
+
+        form_data = {
+            "name": "banho e tosa",
+            "price": 50.00,
+            "duration_minutes": 60,
+        }
+        form = ServiceAdminForm(data=form_data)
+
+        assert not form.is_valid()
+        assert "name" in form.errors
+        assert "Um serviço com este nome já existe." in form.errors["name"][0]
+
+    def test_form_normalizes_name(self):
+        form_data = {
+            "name": "  banho higiênico  ",
+            "price": 45.00,
+            "duration_minutes": 45,
+        }
+        form = ServiceAdminForm(data=form_data)
+        assert form.is_valid()
+
+        service = form.save()
+
+        assert service.name == "Banho Higiênico"
 
 
 @pytest.mark.django_db
