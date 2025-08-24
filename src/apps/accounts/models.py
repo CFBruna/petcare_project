@@ -7,7 +7,7 @@ class Customer(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="customer_profile",
-        verbose_name="Usuário",
+        verbose_name="Tutor",
     )
     cpf = models.CharField(
         max_length=14, unique=True, null=True, blank=True, verbose_name="CPF"
@@ -16,8 +16,8 @@ class Customer(models.Model):
     address = models.CharField(max_length=250, blank=True, verbose_name="Endereço")
 
     class Meta:
-        verbose_name = "Cliente"
-        verbose_name_plural = "Clientes"
+        verbose_name = "Tutor"
+        verbose_name_plural = "Tutores"
 
     @property
     def full_name(self):

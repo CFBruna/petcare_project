@@ -19,14 +19,14 @@ class PetAdmin(admin.ModelAdmin):
         "name",
         "owner__user__first_name",
         "owner__user__last_name",
-        "owner__user__username",
+        "owner__cpf",
     ]
     list_filter = ["breed__name"]
     autocomplete_fields = ["owner"]
     fieldsets = (
         (None, {"fields": ("name", "breed", "birth_date", "owner")}),
         (
-            "Adicionar Novo Dono",
+            "Adicionar Novo Tutor",
             {
                 "fields": (
                     "new_customer_username",

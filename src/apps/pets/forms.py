@@ -1,5 +1,3 @@
-# src/apps/pets/forms.py
-
 from django import forms
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -13,24 +11,24 @@ class PetAdminForm(forms.ModelForm):
     new_customer_username = forms.CharField(
         max_length=150,
         required=False,
-        label="Nome de Usuário do Novo Dono",
-        help_text="Obrigatório se você estiver criando um novo dono.",
+        label="Nome de Usuário do Novo Tutor",
+        help_text="Obrigatório se você estiver criando um novo tutor.",
     )
     new_customer_first_name = forms.CharField(
         max_length=150,
         required=False,
-        label="Nome do Novo Dono",
+        label="Nome do Novo Tutor",
     )
     new_customer_phone = forms.CharField(
         max_length=25,
         required=False,
-        label="Telefone do Novo Dono",
+        label="Telefone do Novo Tutor",
     )
 
     new_customer_cpf = forms.CharField(
         max_length=14,
         required=False,
-        label="CPF do Novo Dono",
+        label="CPF do Novo Tutor",
     )
 
     class Meta:
@@ -50,7 +48,7 @@ class PetAdminForm(forms.ModelForm):
         if not owner and not new_customer_username:
             self.add_error(
                 "owner",
-                "Você deve selecionar um dono existente ou preencher os campos do novo dono.",
+                "Você deve selecionar um tutor existente ou preencher os campos do novo tutor.",
             )
 
         if new_customer_username:

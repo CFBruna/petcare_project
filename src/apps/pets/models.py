@@ -29,7 +29,7 @@ class Breed(models.Model):
 
 class Pet(models.Model):
     owner = models.ForeignKey(
-        Customer, on_delete=models.CASCADE, related_name="pets", verbose_name="Dono"
+        Customer, on_delete=models.CASCADE, related_name="pets", verbose_name="Tutor"
     )
     name = models.CharField(max_length=100, verbose_name="Nome do Pet")
     breed = models.ForeignKey(Breed, on_delete=models.PROTECT, verbose_name="Raça")
@@ -42,4 +42,5 @@ class Pet(models.Model):
         verbose_name_plural = "Pets"
 
     def __str__(self):
-        return f"{self.name} - {self.breed}"
+        owner_name = self.owner.full_name or self.owner.user.username
+        return f"{self.name} - Tutor: {owner_name}"
