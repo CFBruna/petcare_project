@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import BrandViewSet, CategoryViewSet, ProductViewSet
+from .views import BrandViewSet, CategoryViewSet, ProductPriceAPIView, ProductViewSet
 
 router = DefaultRouter()
 router.register(r"categories", CategoryViewSet, basename="category")
@@ -10,4 +10,7 @@ router.register(r"products", ProductViewSet, basename="product")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path(
+        "products/<int:pk>/price/", ProductPriceAPIView.as_view(), name="product-price"
+    ),
 ]
