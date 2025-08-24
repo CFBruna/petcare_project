@@ -11,13 +11,13 @@ class AppointmentAdminForm(forms.ModelForm):
     appointment_date = forms.DateField(
         label="Data do Agendamento",
         widget=forms.DateInput(attrs={"type": "date"}),
-        help_text="Selecione primeiro a data para ver os horários disponíveis.",
+        help_text="Selecione a data para ver os horários disponíveis.",
         required=True,
     )
     appointment_time = forms.ChoiceField(
-        label="Horário Disponível",
+        label="Horário do Agendamento",
         choices=[],
-        help_text="Este campo será preenchido após selecionar um serviço e uma data.",
+        help_text="Este campo será preenchido após selecionar uma data e um serviço.",
         required=True,
     )
 
@@ -31,17 +31,34 @@ class AppointmentAdminForm(forms.ModelForm):
         instance = kwargs.get("instance")
 
         if instance and instance.schedule_time:
-            self.fields["appointment_date"].initial = instance.schedule_time.date()
-            current_time_choice = instance.schedule_time.strftime("%H:%M")
-            valid_choices = self.get_dynamic_time_choices(
-                instance.service, instance.schedule_time.date()
-            )
-            if (current_time_choice, current_time_choice) not in valid_choices:
-                valid_choices.append((current_time_choice, current_time_choice))
-                valid_choices.sort()
+            local_schedule_time = timezone.localtime(instance.schedule_time)
 
-            self.fields["appointment_time"].choices = valid_choices
-            self.fields["appointment_time"].initial = current_time_choice
+            self.fields[
+                "appointment_date"
+            ].initial = local_schedule_time.date().isoformat()
+            current_time_choice = local_schedule_time.strftime("%H:%M")
+
+            try:
+                service_instance = instance.service
+                available_times = get_available_slots(
+                    local_schedule_time.date(), service_instance
+                )
+                valid_choices = [
+                    (t.strftime("%H:%M"), t.strftime("%H:%M")) for t in available_times
+                ]
+
+                if (current_time_choice, current_time_choice) not in valid_choices:
+                    valid_choices.append((current_time_choice, current_time_choice))
+                    valid_choices.sort()
+
+                self.fields["appointment_time"].choices = valid_choices
+                self.fields["appointment_time"].initial = current_time_choice
+
+            except Service.DoesNotExist:
+                self.fields["appointment_time"].choices = [
+                    (current_time_choice, current_time_choice)
+                ]
+                self.fields["appointment_time"].initial = current_time_choice
 
         elif self.data:
             service = self.data.get("service")
@@ -73,12 +90,27 @@ class AppointmentAdminForm(forms.ModelForm):
 
             cleaned_data["schedule_time"] = timezone.make_aware(local_dt)
 
-            if cleaned_data["schedule_time"] < timezone.now():
-                raise forms.ValidationError(
-                    {
-                        "__all__": "Não é possível agendar serviços para o passado. Selecione uma data e hora futuras."
-                    }
-                )
+            is_new_appointment = self.instance.pk is None
+            schedule_time_changed = False
+            if not is_new_appointment:
+                if self.instance.schedule_time != cleaned_data["schedule_time"]:
+                    schedule_time_changed = True
+
+            if is_new_appointment or schedule_time_changed:
+                if cleaned_data["schedule_time"] < timezone.now():
+                    raise forms.ValidationError(
+                        {
+                            "__all__": "Não é possível agendar serviços para o passado. Selecione uma data e hora futuras."
+                        }
+                    )
+
+            new_status = cleaned_data.get("status")
+            if new_status == Appointment.Status.COMPLETED:
+                if cleaned_data["schedule_time"] > timezone.now():
+                    self.add_error(
+                        "status",
+                        "Um agendamento futuro não pode ser marcado como 'Concluído'.",
+                    )
 
         return cleaned_data
 
