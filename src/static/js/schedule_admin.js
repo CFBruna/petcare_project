@@ -3,15 +3,14 @@ console.log("Arquivo schedule_admin.js carregado com sucesso!");
 document.addEventListener('DOMContentLoaded', function () {
     console.log("DOM está pronto. Procurando o formulário de agendamento...");
 
-    if (document.getElementById('appointment_form')) {
+    const appointmentForm = document.getElementById('appointment_form');
+
+    if (appointmentForm) {
         console.log("Formulário encontrado! Procurando os campos de serviço e data...");
 
         const serviceSelect = document.getElementById('id_service');
         const dateInput = document.getElementById('id_appointment_date');
         const timeSelect = document.getElementById('id_appointment_time');
-
-        console.log("Elemento do Serviço:", serviceSelect);
-        console.log("Elemento da Data:", dateInput);
 
         if (!serviceSelect || !dateInput || !timeSelect) {
             console.error("ERRO CRÍTICO: Um ou mais campos (serviço, data ou hora) não foram encontrados no HTML! Verifique os IDs no forms.py e admin.py.");
@@ -21,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("Todos os campos foram encontrados. Adicionando 'escutadores' de eventos.");
 
         const fetchAvailableSlots = () => {
-
             console.log("EVENTO DISPARADO! A função fetchAvailableSlots foi chamada.");
 
             const serviceId = serviceSelect.value;
@@ -29,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!serviceId || !date) {
                 console.log("Serviço ou data não preenchidos. Abortando busca.");
+
+                timeSelect.disabled = false;
+                timeSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
                 return;
             }
 
