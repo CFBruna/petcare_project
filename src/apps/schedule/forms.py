@@ -27,51 +27,53 @@ class AppointmentAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         instance = kwargs.get("instance")
 
-        if instance and instance.schedule_time:
-            local_schedule_time = timezone.localtime(instance.schedule_time)
+        if self.data:
+            service_id = self.data.get("service")
+            date_str = self.data.get("appointment_date")
+            if service_id and date_str:
+                try:
+                    service = Service.objects.get(pk=service_id)
+                    date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                    choices = self.get_dynamic_time_choices(service, date)
 
+                    if instance and instance.pk:
+                        original_time_str = timezone.localtime(
+                            instance.schedule_time
+                        ).strftime("%H:%M")
+                        if (original_time_str, original_time_str) not in choices:
+                            choices.append((original_time_str, original_time_str))
+                            choices.sort()
+
+                    self.fields["appointment_time"].choices = choices
+                except (ValueError, Service.DoesNotExist):
+                    pass
+        elif instance and instance.schedule_time:
+            local_schedule_time = timezone.localtime(instance.schedule_time)
             self.fields[
                 "appointment_date"
             ].initial = local_schedule_time.date().isoformat()
             current_time_choice = local_schedule_time.strftime("%H:%M")
 
             try:
-                service_instance = instance.service
                 available_times = get_available_slots(
-                    local_schedule_time.date(), service_instance
+                    local_schedule_time.date(), instance.service
                 )
                 valid_choices = [
                     (t.strftime("%H:%M"), t.strftime("%H:%M")) for t in available_times
                 ]
-
                 if (current_time_choice, current_time_choice) not in valid_choices:
                     valid_choices.append((current_time_choice, current_time_choice))
                     valid_choices.sort()
 
                 self.fields["appointment_time"].choices = valid_choices
                 self.fields["appointment_time"].initial = current_time_choice
-
             except Service.DoesNotExist:
                 self.fields["appointment_time"].choices = [
                     (current_time_choice, current_time_choice)
                 ]
                 self.fields["appointment_time"].initial = current_time_choice
-
-        elif self.data:
-            service = self.data.get("service")
-            date_str = self.data.get("appointment_date")
-            if service and date_str:
-                try:
-                    service_instance = Service.objects.get(pk=service)
-                    date = datetime.strptime(date_str, "%Y-%m-%d").date()
-                    self.fields[
-                        "appointment_time"
-                    ].choices = self.get_dynamic_time_choices(service_instance, date)
-                except (ValueError, Service.DoesNotExist):
-                    pass
 
     def get_dynamic_time_choices(self, service, date):
         available_times = get_available_slots(date, service)
@@ -87,7 +89,6 @@ class AppointmentAdminForm(forms.ModelForm):
             local_dt = datetime.combine(date, datetime.min.time()).replace(
                 hour=hour, minute=minute
             )
-
             cleaned_data["schedule_time"] = timezone.make_aware(local_dt)
 
             is_new_appointment = self.instance.pk is None
@@ -98,10 +99,9 @@ class AppointmentAdminForm(forms.ModelForm):
 
             if is_new_appointment or schedule_time_changed:
                 if cleaned_data["schedule_time"] < timezone.now():
-                    raise forms.ValidationError(
-                        {
-                            "__all__": "Não é possível agendar serviços para o passado. Selecione uma data e hora futuras."
-                        }
+                    self.add_error(
+                        "appointment_time",
+                        "Não é possível agendar serviços para o passado.",
                     )
 
             new_status = cleaned_data.get("status")
