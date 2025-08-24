@@ -47,6 +47,9 @@ class Appointment(models.Model):
         help_text="Observações do cliente ou do funcionário.",
         verbose_name="Observações",
     )
+    completed_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Concluído em"
+    )
 
     class Meta:
         ordering = ["-schedule_time"]
