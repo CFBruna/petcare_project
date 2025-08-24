@@ -7,7 +7,7 @@ from .models import Appointment, Service, TimeSlot
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
     form = AppointmentAdminForm
-    list_display = ["pet", "service", "schedule_time", "status"]
+    list_display = ["pet", "service", "schedule_time", "status", "completed_at"]
     search_fields = ["pet__name", "service__name"]
     autocomplete_fields = ["pet"]
     list_filter = ["service", "status", "schedule_time"]
@@ -23,6 +23,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             },
         ),
     )
+    readonly_fields = ["completed_at"]
 
     class Media:
         js = ("js/schedule_admin.js",)

@@ -23,7 +23,7 @@ class AppointmentAdminForm(forms.ModelForm):
 
     class Meta:
         model = Appointment
-        fields = ["pet", "service", "status", "notes"]
+        fields = ["pet", "service", "status", "notes", "completed_at"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -112,8 +112,29 @@ class AppointmentAdminForm(forms.ModelForm):
                         "Um agendamento futuro não pode ser marcado como 'Concluído'.",
                     )
 
+            if (
+                self.instance
+                and self.instance.status == Appointment.Status.COMPLETED
+                and new_status != Appointment.Status.COMPLETED
+            ):
+                if "completed_at" in cleaned_data:
+                    cleaned_data["completed_at"] = None
+
         return cleaned_data
 
     def save(self, commit=True):
+        is_completed_status = (
+            self.cleaned_data.get("status") == Appointment.Status.COMPLETED
+        )
+
+        if is_completed_status and not self.instance.completed_at:
+            self.instance.completed_at = timezone.now()
+
+        if (
+            self.instance.status == Appointment.Status.COMPLETED
+            and not is_completed_status
+        ):
+            self.instance.completed_at = None
+
         self.instance.schedule_time = self.cleaned_data.get("schedule_time")
         return super().save(commit)
