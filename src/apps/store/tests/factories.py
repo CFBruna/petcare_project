@@ -1,7 +1,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from src.apps.store.models import Brand, Category, Product
+from src.apps.store.models import Brand, Category, Product, Sale, SaleItem
 
 
 class CategoryFactory(DjangoModelFactory):
@@ -27,3 +27,21 @@ class ProductFactory(DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory)
     price = factory.Faker("pydecimal", left_digits=2, right_digits=2, positive=True)
     stock = 10
+
+
+class SaleFactory(DjangoModelFactory):
+    class Meta:
+        model = Sale
+
+    customer = factory.SubFactory("src.apps.accounts.tests.factories.CustomerFactory")
+    processed_by = factory.SubFactory("src.apps.accounts.tests.factories.UserFactory")
+
+
+class SaleItemFactory(DjangoModelFactory):
+    class Meta:
+        model = SaleItem
+
+    sale = factory.SubFactory(SaleFactory)
+    product = factory.SubFactory(ProductFactory)
+    quantity = factory.Faker("random_int", min=1, max=5)
+    unit_price = factory.LazyAttribute(lambda o: o.product.price)

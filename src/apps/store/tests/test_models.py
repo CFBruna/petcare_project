@@ -1,7 +1,13 @@
 import pytest
 from django.db.models import ProtectedError
 
-from .factories import BrandFactory, CategoryFactory, ProductFactory
+from .factories import (
+    BrandFactory,
+    CategoryFactory,
+    ProductFactory,
+    SaleFactory,
+    SaleItemFactory,
+)
 
 
 @pytest.mark.django_db
@@ -36,3 +42,28 @@ class TestStoreModels:
         brand = product.brand
         with pytest.raises(ProtectedError):
             brand.delete()
+
+    def test_decrease_stock_successfully(self):
+        product = ProductFactory(stock=10)
+        assert product.decrease_stock(3) is True
+        product.refresh_from_db()
+        assert product.stock == 7
+
+    def test_decrease_stock_insufficient_stock(self):
+        product = ProductFactory(stock=5)
+        assert product.decrease_stock(10) is False
+        product.refresh_from_db()
+        assert product.stock == 5
+
+
+@pytest.mark.django_db
+class TestSaleModels:
+    def test_sale_str_representation(self):
+        sale = SaleFactory()
+        expected_str = f"Venda #{sale.id} - {sale.created_at.strftime('%d/%m/%Y')}"
+        assert str(sale) == expected_str
+
+    def test_sale_item_str_representation(self):
+        product = ProductFactory(name="Ração Premium")
+        sale_item = SaleItemFactory(product=product, quantity=3)
+        assert str(sale_item) == "3x Ração Premium"
