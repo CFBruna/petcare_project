@@ -4,7 +4,27 @@ from django.db import transaction
 
 from src.apps.accounts.models import Customer
 
-from .models import Pet
+from .models import Breed, Pet
+
+
+class BreedAdminForm(forms.ModelForm):
+    class Meta:
+        model = Breed
+        fields = "__all__"
+
+    def clean_name(self):
+        name = self.cleaned_data["name"]
+        normalized_name = name.strip().lower().title()
+
+        query = Breed.objects.filter(name__iexact=normalized_name)
+        if self.instance.pk:
+            query = query.exclude(pk=self.instance.pk)
+
+        if query.exists():
+            raise forms.ValidationError(
+                "Uma raça com este nome já existe. Por favor, verifique a lista antes de adicionar uma nova."
+            )
+        return normalized_name
 
 
 class PetAdminForm(forms.ModelForm):

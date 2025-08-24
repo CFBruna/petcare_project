@@ -1,11 +1,12 @@
 from django.contrib import admin
 
-from .forms import PetAdminForm
+from .forms import BreedAdminForm, PetAdminForm
 from .models import Breed, Pet
 
 
 @admin.register(Breed)
 class BreedAdmin(admin.ModelAdmin):
+    form = BreedAdminForm
     list_display = ["name", "species"]
     search_fields = ["name"]
     list_filter = ["species"]
