@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 
+from .forms import SaleItemFormSet
 from .models import Brand, Category, Product, Sale, SaleItem
 
 
@@ -17,6 +18,7 @@ class BrandAdmin(admin.ModelAdmin):
 
 class SaleItemInline(admin.TabularInline):
     model = SaleItem
+    formset = SaleItemFormSet
     extra = 1
     autocomplete_fields = ["product"]
 
@@ -29,6 +31,9 @@ class SaleAdmin(admin.ModelAdmin):
     inlines = [SaleItemInline]
     readonly_fields = ["total_value", "processed_by", "created_at"]
 
+    class Media:
+        js = ("js/store_admin.js",)
+
     def save_model(self, request, obj, form, change):
         if not obj.pk:
             obj.processed_by = request.user
@@ -40,19 +45,16 @@ class SaleAdmin(admin.ModelAdmin):
         total = 0
 
         for item in instances:
-            item.unit_price = item.product.price
+            if not item.unit_price:
+                item.unit_price = item.product.price
             item.save()
             total += item.unit_price * item.quantity
-            if not item.product.decrease_stock(item.quantity):
-                self.message_user(
-                    request,
-                    f"Estoque insuficiente para o produto {item.product.name}.",
-                    messages.ERROR,
-                )
+            item.product.decrease_stock(item.quantity)
 
         if formset.deleted_objects:
             self.message_user(
                 request,
+                "Itens removidos não terão estoque restaurado.",
                 messages.WARNING,
             )
 
