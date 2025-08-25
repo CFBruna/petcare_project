@@ -14,15 +14,5 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
 
         return HealthRecord.objects.filter(pet__owner__user=user)
 
-    def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            from rest_framework.permissions import DjangoModelPermissions
-
-            self.permission_classes = [DjangoModelPermissions]
-
-        return super().get_permissions()
-
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

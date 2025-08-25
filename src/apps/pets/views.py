@@ -21,26 +21,11 @@ class BreedViewSet(viewsets.ModelViewSet):
 class PetViewSet(viewsets.ModelViewSet):
     queryset = Pet.objects.all()
     serializer_class = PetSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         return Pet.objects.filter(owner__user=user)
-
-    def get_permissions(self):
-        if self.action in [
-            "list",
-            "retrieve",
-            "create",
-            "update",
-            "partial_update",
-            "destroy",
-        ]:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            from rest_framework.permissions import DjangoModelPermissions
-
-            self.permission_classes = [DjangoModelPermissions]
-        return super().get_permissions()
 
     def perform_create(self, serializer):
         tutor = self.request.user.customer_profile
