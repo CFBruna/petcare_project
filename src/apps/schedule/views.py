@@ -1,7 +1,7 @@
 from datetime import date
 
-from rest_framework import status, viewsets
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework import permissions, status, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -47,18 +47,19 @@ class AvailableSlotsView(APIView):
 class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all().order_by("name")
     serializer_class = ServiceSerializer
-    permission_classes = [IsAdminUser]
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [permissions.DjangoModelPermissions]
         return super().get_permissions()
 
 
 class TimeSlotViewSet(viewsets.ModelViewSet):
     queryset = TimeSlot.objects.all()
     serializer_class = TimeSlotSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -67,3 +68,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Appointment.objects.filter(pet__owner__user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save()

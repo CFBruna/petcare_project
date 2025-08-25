@@ -1,5 +1,5 @@
-from rest_framework import status, viewsets
-from rest_framework.permissions import IsAdminUser
+from rest_framework import permissions, status, viewsets
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,15 +12,36 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [permissions.IsAdminUser]
+        return super().get_permissions()
+
 
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [permissions.IsAdminUser]
+        return super().get_permissions()
+
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [permissions.IsAdminUser]
+        return super().get_permissions()
 
 
 class ProductPriceAPIView(APIView):
