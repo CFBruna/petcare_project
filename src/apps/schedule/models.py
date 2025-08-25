@@ -20,10 +20,6 @@ class Service(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        self.name = self.name.strip().title()
-        super().save(*args, **kwargs)
-
 
 class Appointment(models.Model):
     class Status(models.TextChoices):

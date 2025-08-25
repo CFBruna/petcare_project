@@ -18,10 +18,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        self.name = self.name.strip().title()
-        super().save(*args, **kwargs)
-
 
 class Brand(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name="Nome da Marca")
@@ -34,10 +30,6 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        self.name = self.name.strip().title()
-        super().save(*args, **kwargs)
 
 
 class Product(models.Model):
