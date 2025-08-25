@@ -56,6 +56,12 @@ class TestAppointmentAPI:
         self.url = "/api/v1/schedule/appointments/"
         self.future_date = timezone.now().date() + timedelta(days=7)
 
+        TimeSlotFactory(
+            day_of_week=self.future_date.weekday(),
+            start_time="13:00",
+            end_time="17:00",
+        )
+
     def test_unauthenticated_user_cannot_access_appointments(self, api_client):
         response = api_client.get(self.url)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -75,16 +81,12 @@ class TestAppointmentAPI:
         client, user = authenticated_client
         my_pet = PetFactory(owner__user=user)
         service = ServiceFactory()
-        appointment_time = timezone.make_aware(
-            timezone.datetime.combine(
-                self.future_date, timezone.datetime.min.time()
-            ).replace(hour=14, minute=0)
-        )
 
         data = {
             "pet": my_pet.id,
             "service": service.id,
-            "schedule_time": appointment_time.isoformat(),
+            "schedule_date": self.future_date.isoformat(),
+            "schedule_time": "14:00",
         }
         response = client.post(self.url, data=data)
         assert response.status_code == status.HTTP_201_CREATED
