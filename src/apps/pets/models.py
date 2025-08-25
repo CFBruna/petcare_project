@@ -44,6 +44,7 @@ class Pet(models.Model):
     class Meta:
         verbose_name = "Pet"
         verbose_name_plural = "Pets"
+        unique_together = ("owner", "name")
 
     def __str__(self):
         owner_name = self.owner.full_name or self.owner.user.username

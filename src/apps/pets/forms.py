@@ -63,6 +63,7 @@ class PetAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         owner = cleaned_data.get("owner")
+        name = cleaned_data.get("name")
         new_customer_username = cleaned_data.get("new_customer_username")
 
         if not owner and not new_customer_username:
@@ -84,6 +85,15 @@ class PetAdminForm(forms.ModelForm):
                 "new_customer_cpf", "Este CPF já está cadastrado em nosso sistema."
             )
 
+        if owner and name:
+            query = Pet.objects.filter(owner=owner, name__iexact=name)
+            if self.instance.pk:
+                query = query.exclude(pk=self.instance.pk)
+            if query.exists():
+                raise forms.ValidationError(
+                    f"O tutor '{owner}' já possui um pet com o nome '{name}'. "
+                    "Por favor, escolha um nome diferente."
+                )
         return cleaned_data
 
     @transaction.atomic

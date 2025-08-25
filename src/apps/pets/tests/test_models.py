@@ -1,8 +1,8 @@
 import pytest
 
-from src.apps.pets.forms import BreedAdminForm
+from src.apps.pets.forms import BreedAdminForm, PetAdminForm
 
-from .factories import BreedFactory, PetFactory
+from .factories import BreedFactory, CustomerFactory, PetFactory
 
 
 @pytest.mark.django_db
@@ -37,3 +37,18 @@ class TestPetModel:
 
         expected_str = f"Whiskers - Tutor: {owner_name}"
         assert str(pet) == expected_str
+
+    def test_form_prevents_duplicate_pet_for_same_owner(self):
+        owner = CustomerFactory()
+        breed = BreedFactory()
+        PetFactory(name="Rex", owner=owner, breed=breed)
+
+        form_data = {
+            "name": "rex",
+            "owner": owner.id,
+            "breed": breed.id,
+        }
+        form = PetAdminForm(data=form_data)
+
+        assert not form.is_valid()
+        assert "já possui um pet com o nome" in str(form.errors)
