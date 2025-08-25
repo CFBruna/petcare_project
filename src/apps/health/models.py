@@ -19,6 +19,7 @@ class HealthRecord(models.Model):
         max_length=20, choices=RecordType.choices, verbose_name="Tipo de Registro"
     )
     description = models.TextField(
+        blank=True,
         help_text="Descrição detalhada do evento (Ex: Vacina V10, Lote XYZ).",
         verbose_name="Descrição",
     )
