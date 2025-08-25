@@ -11,14 +11,13 @@ class TestCustomerAPI:
     def test_list_customers_unauthenticated(self, api_client):
         CustomerFactory.create_batch(3)
         response = api_client.get(URL)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_list_customers_authenticated(self, authenticated_client):
         client, user = authenticated_client
         CustomerFactory.create_batch(3)
         response = client.get(URL)
         assert response.status_code == status.HTTP_200_OK
-
         data = response.json()
         assert data["count"] == 3
         assert len(data["results"]) == 3
@@ -27,7 +26,6 @@ class TestCustomerAPI:
         client, user = authenticated_client
         customer = CustomerFactory()
         response = client.get(f"{URL}{customer.id}/")
-
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["user"]["username"] == customer.user.username
         assert response.json()["cpf"] == customer.cpf

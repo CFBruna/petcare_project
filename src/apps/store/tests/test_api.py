@@ -12,7 +12,7 @@ class TestCategoryAPI:
 
     def test_unauthenticated_user_cannot_access(self, api_client):
         response = api_client.get(self.url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_list_categories(self, authenticated_client):
         client, user = authenticated_client
@@ -105,7 +105,7 @@ class TestProductPriceAPI:
 
     def test_get_price_unauthenticated_fails(self, api_client):
         response = api_client.get(self.url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_get_price_authenticated_succeeds(self, authenticated_client):
         client, user = authenticated_client

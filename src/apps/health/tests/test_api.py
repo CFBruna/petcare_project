@@ -13,10 +13,10 @@ URL = "/api/v1/health/health-records/"
 class TestHealthRecordAPI:
     def test_unauthenticated_user_cannot_access(self, api_client):
         response = api_client.get(URL)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
         response = api_client.post(URL, {})
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_list_health_records_for_owned_pets(self, authenticated_client):
         client, user = authenticated_client

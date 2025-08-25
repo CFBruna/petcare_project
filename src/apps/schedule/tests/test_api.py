@@ -58,7 +58,7 @@ class TestAppointmentAPI:
 
     def test_unauthenticated_user_cannot_access_appointments(self, api_client):
         response = api_client.get(self.url)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_user_can_list_only_their_appointments(self, authenticated_client):
         client, user = authenticated_client
