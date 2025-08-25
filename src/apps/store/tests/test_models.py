@@ -18,7 +18,7 @@ class TestStoreModels:
 
     def test_brand_str(self):
         brand = BrandFactory(name="PetSafe")
-        assert str(brand) == "PetSafe"
+        assert str(brand) == "Petsafe"
 
     def test_product_str(self):
         product = ProductFactory(name="Bolinha de Borracha")

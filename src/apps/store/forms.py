@@ -1,5 +1,43 @@
 from django import forms
 
+from .models import Brand, Category
+
+
+class CategoryAdminForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = "__all__"
+
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        if name:
+            normalized_name = name.strip().title()
+            query = Category.objects.filter(name__iexact=normalized_name)
+            if self.instance.pk:
+                query = query.exclude(pk=self.instance.pk)
+            if query.exists():
+                raise forms.ValidationError("Uma categoria com este nome já existe.")
+            return normalized_name
+        return name
+
+
+class BrandAdminForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = "__all__"
+
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        if name:
+            normalized_name = name.strip().title()
+            query = Brand.objects.filter(name__iexact=normalized_name)
+            if self.instance.pk:
+                query = query.exclude(pk=self.instance.pk)
+            if query.exists():
+                raise forms.ValidationError("Uma marca com este nome já existe.")
+            return normalized_name
+        return name
+
 
 class SaleItemFormSet(forms.BaseInlineFormSet):
     def clean(self):

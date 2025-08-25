@@ -1,10 +1,46 @@
 import pytest
 from django.forms import inlineformset_factory
 
-from src.apps.store.forms import SaleItemFormSet
+from src.apps.store.forms import BrandAdminForm, CategoryAdminForm, SaleItemFormSet
 from src.apps.store.models import Sale, SaleItem
 
-from .factories import ProductFactory, SaleFactory
+from .factories import BrandFactory, CategoryFactory, ProductFactory, SaleFactory
+
+
+@pytest.mark.django_db
+class TestCategoryAdminForm:
+    def test_form_prevents_duplicate_category_name(self):
+        CategoryFactory(name="Brinquedos")
+        form_data = {"name": "brinquedos"}
+        form = CategoryAdminForm(data=form_data)
+        assert not form.is_valid()
+        assert "name" in form.errors
+        assert "Uma categoria com este nome já existe." in form.errors["name"][0]
+
+    def test_form_normalizes_name(self):
+        form_data = {"name": "  higiene e limpeza  "}
+        form = CategoryAdminForm(data=form_data)
+        assert form.is_valid()
+        category = form.save()
+        assert category.name == "Higiene E Limpeza"
+
+
+@pytest.mark.django_db
+class TestBrandAdminForm:
+    def test_form_prevents_duplicate_brand_name(self):
+        BrandFactory(name="PetSafe")
+        form_data = {"name": "petsafe"}
+        form = BrandAdminForm(data=form_data)
+        assert not form.is_valid()
+        assert "name" in form.errors
+        assert "Uma marca com este nome já existe." in form.errors["name"][0]
+
+    def test_form_normalizes_name(self):
+        form_data = {"name": "  royal canin  "}
+        form = BrandAdminForm(data=form_data)
+        assert form.is_valid()
+        brand = form.save()
+        assert brand.name == "Royal Canin"
 
 
 @pytest.mark.django_db

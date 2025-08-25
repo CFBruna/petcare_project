@@ -1,17 +1,19 @@
 from django.contrib import admin, messages
 
-from .forms import SaleItemFormSet
+from .forms import BrandAdminForm, CategoryAdminForm, SaleItemFormSet
 from .models import Brand, Category, Product, Sale, SaleItem
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
+    form = CategoryAdminForm
     list_display = ["name", "description"]
     search_fields = ["name"]
 
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
+    form = BrandAdminForm
     list_display = ["name"]
     search_fields = ["name"]
 
