@@ -10,7 +10,7 @@
 			"upgradePackages": true
 		}
 	},
-	"postCreateCommand": "pre-commit install",
+	"postCreateCommand": "[ -d .git ] && pre-commit install || echo 'Skipping pre-commit (no .git found)'",
 	"customizations": {
 		"vscode": {
 			"settings": {
