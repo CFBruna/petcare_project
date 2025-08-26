@@ -189,6 +189,11 @@ if DEBUG:
         "rest_framework.renderers.BrowsableAPIRenderer"
     )
 
+# ==============================================================================
+# CELERY SETTINGS
+# ==============================================================================
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://redis:6379/0")
 
 # ==============================================================================
 # KNOWN ISSUES / WARNINGS
