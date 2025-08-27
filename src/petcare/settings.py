@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -158,13 +159,6 @@ ACCOUNT_LOGIN_METHODS = {"email", "username"}
 
 
 # ==============================================================================
-# EMAIL SETTINGS
-# ==============================================================================
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-
-# ==============================================================================
 # DJANGO REST FRAMEWORK SETTINGS
 # ==============================================================================
 
@@ -189,11 +183,6 @@ if DEBUG:
         "rest_framework.renderers.BrowsableAPIRenderer"
     )
 
-# ==============================================================================
-# CELERY SETTINGS
-# ==============================================================================
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://redis:6379/0")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://redis:6379/0")
 
 # ==============================================================================
 # KNOWN ISSUES / WARNINGS
@@ -212,3 +201,37 @@ Current warnings from dj-rest-auth v2.x:
 
 These are internal to the library and do not affect our application functionality.
 """
+# ==============================================================================
+# CELERY SETTINGS
+# ==============================================================================
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://redis:6379/0")
+
+# ==============================================================================
+# EMAIL SETTINGS
+# ==============================================================================
+
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    ADMIN_EMAIL = "admin@example.com"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = config("EMAIL_HOST")
+    EMAIL_PORT = config("EMAIL_PORT", cast=int)
+    EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
+    EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+    ADMIN_EMAIL = config("ADMIN_EMAIL")
+
+# ==============================================================================
+# CELERY BEAT SETTINGS
+# ==============================================================================
+
+CELERY_BEAT_SCHEDULE = {
+    "daily_completed_appointments_report": {
+        "task": "src.apps.schedule.tasks.generate_daily_appointments_report",
+        # Executa todos os dias à 1 da manhã
+        "schedule": crontab(hour=1, minute=0),
+    },
+}
