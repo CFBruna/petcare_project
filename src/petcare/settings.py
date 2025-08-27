@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -212,7 +213,10 @@ CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://redis:6
 # EMAIL SETTINGS
 # ==============================================================================
 
-if DEBUG:
+if "test" in sys.argv:
+    EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    ADMIN_EMAIL = "admin@example.com"
+elif DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     ADMIN_EMAIL = "admin@example.com"
 else:
