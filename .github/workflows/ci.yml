@@ -28,6 +28,11 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
 
     steps:
     - uses: actions/checkout@v3
@@ -50,5 +55,6 @@ jobs:
         pytest
       env:
         DATABASE_URL: "postgres://test_user:test_password@localhost:5432/test_db"
+        CELERY_BROKER_URL: "redis://localhost:6379/0"
         SECRET_KEY: "a-secret-key-for-testing-purposes-only"
         DEBUG: "False"
