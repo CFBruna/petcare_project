@@ -39,5 +39,16 @@ services:
       - web
       - redis
 
+  celery_beat:
+    build: .
+    command: celery -A src.petcare beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/usr/src/app/
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+
 volumes:
   postgres_data:
