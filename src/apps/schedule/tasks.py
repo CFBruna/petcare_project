@@ -1,0 +1,45 @@
+from celery import shared_task
+from django.conf import settings
+from django.core.mail import send_mail
+from django.utils import timezone
+
+from .models import Appointment
+
+
+@shared_task
+def generate_daily_appointments_report():
+    today = timezone.localdate()
+    yesterday = today - timezone.timedelta(days=1)
+
+    completed_appointments = Appointment.objects.filter(
+        status=Appointment.Status.COMPLETED, completed_at__date=yesterday
+    ).order_by("completed_at")
+
+    if not completed_appointments.exists():
+        subject = f"Relatório Diário de Agendamentos Concluídos - {yesterday.strftime('%d/%m/%Y')}"
+        message = "Nenhum agendamento foi concluído nesta data."
+    else:
+        subject = f"Relatório Diário de Agendamentos Concluídos - {yesterday.strftime('%d/%m/%Y')} ({completed_appointments.count()} agendamentos)"
+        report_lines = [
+            f"Relatório de agendamentos concluídos em {yesterday.strftime('%d/%m/%Y')}:"
+        ]
+
+        for app in completed_appointments:
+            pet_name = app.pet.name
+            service_name = app.service.name
+            completed_time = timezone.localtime(app.completed_at).strftime("%H:%M")
+            report_lines.append(
+                f"- {service_name} para {pet_name} concluído às {completed_time}."
+            )
+
+        message = "\n".join(report_lines)
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [settings.ADMIN_EMAIL],
+        fail_silently=False,
+    )
+
+    return f"Relatório de agendamentos concluídos para {yesterday.strftime('%d/%m/%Y')} enviado com sucesso."
