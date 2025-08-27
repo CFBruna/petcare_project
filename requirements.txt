@@ -13,7 +13,9 @@ asgiref==3.9.1
 billiard==4.2.1
     # via celery
 celery==5.5.3
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   django-celery-beat
 certifi==2025.8.3
     # via requests
 cfgv==3.4.0
@@ -38,6 +40,8 @@ colorama==0.4.6
     #   pytest
 coverage[toml]==7.10.3
     # via pytest-cov
+cron-descriptor==2.0.5
+    # via django-celery-beat
 distlib==0.4.0
     # via virtualenv
 dj-database-url==3.0.1
@@ -50,10 +54,16 @@ django==5.2.5
     #   dj-database-url
     #   dj-rest-auth
     #   django-allauth
+    #   django-celery-beat
+    #   django-timezone-field
     #   djangorestframework
     #   djangorestframework-simplejwt
 django-allauth==65.11.0
     # via -r requirements.in
+django-celery-beat==2.8.1
+    # via -r requirements.in
+django-timezone-field==7.1
+    # via django-celery-beat
 djangorestframework==3.16.1
     # via
     #   -r requirements.in
@@ -104,10 +114,15 @@ pytest==8.4.1
     #   -r requirements.in
     #   pytest-cov
     #   pytest-django
+    #   pytest-mock
 pytest-cov==6.2.1
     # via -r requirements.in
 pytest-django==4.11.1
     # via -r requirements.in
+pytest-mock==3.14.1
+    # via -r requirements.in
+python-crontab==3.3.0
+    # via django-celery-beat
 python-dateutil==2.9.0.post0
     # via celery
 python-decouple==3.8
@@ -124,9 +139,12 @@ six==1.17.0
     # via python-dateutil
 sqlparse==0.5.3
     # via django
+typing-extensions==4.15.0
+    # via cron-descriptor
 tzdata==2025.2
     # via
     #   django
+    #   django-celery-beat
     #   faker
     #   kombu
 urllib3==2.5.0

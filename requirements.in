@@ -16,3 +16,5 @@ django-allauth
 requests
 celery
 redis
+pytest-mock
+django-celery-beat
