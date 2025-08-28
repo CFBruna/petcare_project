@@ -1,10 +1,17 @@
+from decimal import Decimal
+
 import pytest
+from django.core.exceptions import ValidationError
 from django.db.models import ProtectedError
+from django.utils import timezone
 
 from .factories import (
     BrandFactory,
     CategoryFactory,
     ProductFactory,
+    ProductLotFactory,
+    PromotionFactory,
+    PromotionRuleFactory,
     SaleFactory,
     SaleItemFactory,
 )
@@ -43,18 +50,6 @@ class TestStoreModels:
         with pytest.raises(ProtectedError):
             brand.delete()
 
-    def test_decrease_stock_successfully(self):
-        product = ProductFactory(stock=10)
-        assert product.decrease_stock(3) is True
-        product.refresh_from_db()
-        assert product.stock == 7
-
-    def test_decrease_stock_insufficient_stock(self):
-        product = ProductFactory(stock=5)
-        assert product.decrease_stock(10) is False
-        product.refresh_from_db()
-        assert product.stock == 5
-
 
 @pytest.mark.django_db
 class TestSaleModels:
@@ -64,6 +59,63 @@ class TestSaleModels:
         assert str(sale) == expected_str
 
     def test_sale_item_str_representation(self):
-        product = ProductFactory(name="Ração Premium")
-        sale_item = SaleItemFactory(product=product, quantity=3)
-        assert str(sale_item) == "3x Ração Premium"
+        lot = ProductLotFactory(lot_number="A123", product__name="Ração Premium")
+        sale_item = SaleItemFactory(lot=lot, quantity=3)
+        assert str(sale_item) == "3x Ração Premium (Lote: A123)"
+
+
+@pytest.mark.django_db
+class TestProductInventoryModel:
+    def test_total_stock_is_calculated_from_lots(self):
+        product = ProductFactory()
+        ProductLotFactory(product=product, quantity=10)
+        ProductLotFactory(product=product, quantity=15)
+        assert product.total_stock == 25
+
+    def test_final_price_is_normal_price_without_promotion(self):
+        product = ProductFactory(price=100.00)
+        ProductLotFactory(product=product, quantity=10)
+        assert product.final_price == Decimal("100.00")
+
+    def test_final_price_reflects_active_promotion(self):
+        product = ProductFactory(price=Decimal("100.00"))
+        lot = ProductLotFactory(product=product, quantity=10)
+        now = timezone.now()
+        promotion = PromotionFactory(
+            start_date=now - timezone.timedelta(days=1),
+            end_date=now + timezone.timedelta(days=1),
+        )
+        PromotionRuleFactory(
+            promotion=promotion,
+            lot=lot,
+            discount_percentage=Decimal("20.00"),
+            promotional_stock=5,
+        )
+        assert product.final_price == Decimal("80.00")
+        assert lot.final_price == Decimal("80.00")
+
+    def test_final_price_is_normal_price_with_expired_promotion(self):
+        product = ProductFactory(price=Decimal("100.00"))
+        lot = ProductLotFactory(product=product, quantity=10)
+        now = timezone.now()
+        promotion = PromotionFactory(
+            start_date=now - timezone.timedelta(days=10),
+            end_date=now - timezone.timedelta(days=1),
+        )
+        PromotionRuleFactory(
+            promotion=promotion,
+            lot=lot,
+            discount_percentage=Decimal("20.00"),
+            promotional_stock=5,
+        )
+        assert product.final_price == Decimal("100.00")
+        assert lot.final_price == Decimal("100.00")
+
+    def test_promotion_rule_validation(self):
+        lot = ProductLotFactory(quantity=10)
+        promotion = PromotionFactory()
+        with pytest.raises(ValidationError):
+            rule = PromotionRuleFactory.build(
+                promotion=promotion, lot=lot, promotional_stock=15
+            )
+            rule.full_clean()

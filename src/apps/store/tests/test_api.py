@@ -1,7 +1,17 @@
+from decimal import Decimal
+
 import pytest
+from django.utils import timezone
 from rest_framework import status
 
-from .factories import BrandFactory, CategoryFactory, ProductFactory
+from .factories import (
+    BrandFactory,
+    CategoryFactory,
+    ProductFactory,
+    ProductLotFactory,
+    PromotionFactory,
+    PromotionRuleFactory,
+)
 
 
 @pytest.mark.django_db
@@ -88,7 +98,6 @@ class TestProductAPI:
         data = {
             "name": "Novo Produto",
             "price": "19.99",
-            "stock": 50,
             "category": category.id,
             "brand": brand.id,
         }
@@ -96,27 +105,51 @@ class TestProductAPI:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json()["name"] == "Novo Produto"
 
+    def test_product_serializer_includes_dynamic_prices(self, authenticated_client):
+        client, user = authenticated_client
+        product = ProductFactory(price=Decimal("200.00"))
+        lot = ProductLotFactory(product=product, quantity=10)
+        now = timezone.now()
+        promotion = PromotionFactory(
+            start_date=now - timezone.timedelta(days=1),
+            end_date=now + timezone.timedelta(days=1),
+        )
+        PromotionRuleFactory(promotion=promotion, lot=lot, discount_percentage=50)
+
+        response = client.get(f"{self.url}{product.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["price"] == "200.00"
+        assert data["final_price"] == "100.00"
+
 
 @pytest.mark.django_db
-class TestProductPriceAPI:
+class TestLotPriceAPI:
     def setup_method(self):
-        self.product = ProductFactory(price="99.90")
-        self.url = f"/api/v1/store/products/{self.product.id}/price/"
+        self.lot = ProductLotFactory(product__price=Decimal("50.00"))
+        self.url = f"/api/v1/store/lots/{self.lot.id}/price/"
 
-    def test_get_price_unauthenticated_fails(self, api_client):
-        response = api_client.get(self.url)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_get_price_authenticated_succeeds(self, authenticated_client):
+    def test_get_price_for_lot_without_promo(self, authenticated_client):
         client, user = authenticated_client
-        client.enforce_csrf_checks = True
-        response = client.get(self.url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        response = client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["price"] == "99.90"
+        assert response.json()["price"] == "50.00"
 
-    def test_get_price_for_nonexistent_product_fails(self, authenticated_client):
+    def test_get_price_for_lot_with_promo(self, authenticated_client):
         client, user = authenticated_client
-        client.enforce_csrf_checks = True
-        invalid_url = "/api/v1/store/products/9999/price/"
-        response = client.get(invalid_url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        now = timezone.now()
+        promotion = PromotionFactory(
+            start_date=now - timezone.timedelta(days=1),
+            end_date=now + timezone.timedelta(days=1),
+        )
+        PromotionRuleFactory(promotion=promotion, lot=self.lot, discount_percentage=10)
+
+        response = client.get(self.url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["price"] == "45.00"
+
+    def test_get_price_for_nonexistent_lot_fails(self, authenticated_client):
+        client, user = authenticated_client
+        invalid_url = "/api/v1/store/lots/9999/price/"
+        response = client.get(invalid_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND

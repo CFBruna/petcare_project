@@ -16,7 +16,7 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
     final_price = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
     )

@@ -43,24 +43,28 @@ class SaleItemFormSet(forms.BaseInlineFormSet):
     def clean(self):
         super().clean()
 
-        total_quantity_per_product = {}
+        total_quantity_per_lot = {}
 
         for form in self.forms:
-            if not form.is_valid() or form in self.deleted_forms:
+            if (
+                not form.is_valid()
+                or self.can_delete
+                and self._should_delete_form(form)
+            ):
                 continue
 
             cleaned_data = form.cleaned_data
-            product = cleaned_data.get("product")
+            lot = cleaned_data.get("lot")
             quantity = cleaned_data.get("quantity")
 
-            if product and quantity:
-                total_quantity_per_product[product] = (
-                    total_quantity_per_product.get(product, 0) + quantity
+            if lot and quantity:
+                total_quantity_per_lot[lot] = (
+                    total_quantity_per_lot.get(lot, 0) + quantity
                 )
 
-        for product, total_quantity in total_quantity_per_product.items():
-            if product.stock < total_quantity:
+        for lot, total_quantity in total_quantity_per_lot.items():
+            if lot.quantity < total_quantity:
                 raise forms.ValidationError(
-                    f"Estoque insuficiente para o produto '{product.name}'. "
-                    f"Disponível: {product.stock}, Solicitado: {total_quantity}."
+                    f"Estoque insuficiente para o lote '{lot}'. "
+                    f"Disponível: {lot.quantity}, Solicitado: {total_quantity}."
                 )

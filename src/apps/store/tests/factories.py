@@ -1,7 +1,17 @@
 import factory
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 
-from src.apps.store.models import Brand, Category, Product, Sale, SaleItem
+from src.apps.store.models import (
+    Brand,
+    Category,
+    Product,
+    ProductLot,
+    Promotion,
+    PromotionRule,
+    Sale,
+    SaleItem,
+)
 
 
 class CategoryFactory(DjangoModelFactory):
@@ -26,7 +36,38 @@ class ProductFactory(DjangoModelFactory):
     brand = factory.SubFactory(BrandFactory)
     category = factory.SubFactory(CategoryFactory)
     price = factory.Faker("pydecimal", left_digits=2, right_digits=2, positive=True)
-    stock = 10
+
+
+class ProductLotFactory(DjangoModelFactory):
+    class Meta:
+        model = ProductLot
+
+    product = factory.SubFactory(ProductFactory)
+    quantity = factory.Faker("random_int", min=10, max=100)
+    expiration_date = factory.Faker("future_date", end_date="+1y")
+
+
+class PromotionFactory(DjangoModelFactory):
+    class Meta:
+        model = Promotion
+
+    name = factory.Sequence(lambda n: f"Promoção {n}")
+    start_date = factory.LazyFunction(timezone.now)
+    end_date = factory.LazyFunction(
+        lambda: timezone.now() + timezone.timedelta(days=30)
+    )
+
+
+class PromotionRuleFactory(DjangoModelFactory):
+    class Meta:
+        model = PromotionRule
+
+    promotion = factory.SubFactory(PromotionFactory)
+    lot = factory.SubFactory(ProductLotFactory)
+    discount_percentage = factory.Faker(
+        "pydecimal", left_digits=2, right_digits=2, min_value=5, max_value=50
+    )
+    promotional_stock = 10
 
 
 class SaleFactory(DjangoModelFactory):
@@ -42,6 +83,6 @@ class SaleItemFactory(DjangoModelFactory):
         model = SaleItem
 
     sale = factory.SubFactory(SaleFactory)
-    product = factory.SubFactory(ProductFactory)
+    lot = factory.SubFactory(ProductLotFactory)
     quantity = factory.Faker("random_int", min=1, max=5)
-    unit_price = factory.LazyAttribute(lambda o: o.product.price)
+    unit_price = factory.LazyAttribute(lambda o: o.lot.final_price)
