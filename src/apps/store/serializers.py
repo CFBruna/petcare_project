@@ -16,8 +16,23 @@ class BrandSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    final_price = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "sku",
+            "barcode",
+            "brand",
+            "category",
+            "description",
+            "price",
+            "final_price",
+            "total_stock",
+            "image",
+        ]

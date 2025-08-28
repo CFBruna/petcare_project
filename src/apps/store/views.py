@@ -4,7 +4,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Brand, Category, Product
+from .models import Brand, Category, Product, ProductLot
 from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
 
 
@@ -44,14 +44,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
-class ProductPriceAPIView(APIView):
+class LotPriceAPIView(APIView):
     permission_classes = [IsAdminUser]
     renderer_classes = [JSONRenderer]
 
     def get(self, request, pk, format=None):
         try:
-            product = Product.objects.get(pk=pk)
-            formatted_price = f"{product.price:.2f}"
-            return Response({"price": formatted_price}, status=status.HTTP_200_OK)
-        except Product.DoesNotExist:
+            lot = ProductLot.objects.get(pk=pk)
+            return Response(
+                {"price": f"{lot.final_price:.2f}"}, status=status.HTTP_200_OK
+            )
+        except ProductLot.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
