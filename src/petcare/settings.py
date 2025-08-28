@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 
 import dj_database_url
@@ -213,13 +212,16 @@ CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://redis:6
 # EMAIL SETTINGS
 # ==============================================================================
 
-if "test" in sys.argv:
+if config("TESTING", default=False, cast=bool):
+    # Configuração para ambiente de testes (pytest)
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     ADMIN_EMAIL = "admin@example.com"
 elif DEBUG:
+    # Configuração para desenvolvimento local
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     ADMIN_EMAIL = "admin@example.com"
 else:
+    # Configuração para produção
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = config("EMAIL_HOST")
     EMAIL_PORT = config("EMAIL_PORT", cast=int)
@@ -236,7 +238,6 @@ else:
 CELERY_BEAT_SCHEDULE = {
     "daily_completed_appointments_report": {
         "task": "src.apps.schedule.tasks.generate_daily_appointments_report",
-        # Executa todos os dias à 1 da manhã
         "schedule": crontab(hour=1, minute=0),
     },
 }

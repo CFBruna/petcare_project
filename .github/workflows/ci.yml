@@ -54,6 +54,7 @@ jobs:
       run: |
         pytest
       env:
+        TESTING: "True"
         DATABASE_URL: "postgres://test_user:test_password@localhost:5432/test_db"
         CELERY_BROKER_URL: "redis://localhost:6379/0"
         SECRET_KEY: "a-secret-key-for-testing-purposes-only"
