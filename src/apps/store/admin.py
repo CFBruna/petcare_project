@@ -1,7 +1,9 @@
 from django.contrib import admin, messages
+from django.utils.html import format_html
 
 from .forms import BrandAdminForm, CategoryAdminForm, SaleItemFormSet
 from .models import (
+    AutoPromotion,
     Brand,
     Category,
     Product,
@@ -121,5 +123,56 @@ class PromotionAdmin(admin.ModelAdmin):
 
 @admin.register(ProductLot)
 class ProductLotAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "product", "lot_number", "quantity", "expiration_date")
+    list_display = (
+        "__str__",
+        "product",
+        "lot_number",
+        "quantity",
+        "expiration_date",
+        "auto_discount_percentage",
+    )
     search_fields = ("product__name", "lot_number", "product__sku", "product__barcode")
+    readonly_fields = ("auto_discount_percentage",)
+
+
+@admin.register(AutoPromotion)
+class AutoPromotionAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "lot_number",
+        "expiration_date",
+        "quantity",
+        "price_with_discount",
+    )
+    list_display_links = None
+    search_fields = ("product__name", "lot_number")
+    ordering = ("expiration_date",)
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .filter(auto_discount_percentage__gt=0, quantity__gt=0)
+        )
+
+    @admin.display(description="Preço Final")
+    def price_with_discount(self, obj):
+        original_price = obj.product.price
+        final_price = obj.final_price
+        discount = int(obj.auto_discount_percentage)
+
+        html_string = (
+            f'<span style="text-decoration: line-through;">R$ {original_price:.2f}</span><br>'
+            f'<strong style="color: #4CAF50;">R$ {final_price:.2f} (-{discount}%)</strong>'
+        )
+
+        return format_html(html_string)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
