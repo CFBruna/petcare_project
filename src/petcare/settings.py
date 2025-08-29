@@ -12,12 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # CORE SETTINGS
 # ==============================================================================
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
-
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="127.0.0.1",
@@ -133,7 +129,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
@@ -178,30 +173,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Add BrowsableAPIRenderer only in development
 if DEBUG:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
         "rest_framework.renderers.BrowsableAPIRenderer"
     )
 
-
-# ==============================================================================
-# KNOWN ISSUES / WARNINGS
-# ==============================================================================
-"""
-Known Warnings (Non-blocking):
-1. dj-rest-auth deprecation warnings:
-   - Source: Internal dj-rest-auth library using deprecated allauth settings
-   - Impact: No functional impact on application
-   - Status: Awaiting upstream library update
-   - Tracking: Monitor dj-rest-auth releases for fixes
-
-Current warnings from dj-rest-auth v2.x:
-- app_settings.USERNAME_REQUIRED is deprecated
-- app_settings.EMAIL_REQUIRED is deprecated
-
-These are internal to the library and do not affect our application functionality.
-"""
 # ==============================================================================
 # CELERY SETTINGS
 # ==============================================================================
@@ -213,15 +189,12 @@ CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://redis:6
 # ==============================================================================
 
 if config("TESTING", default=False, cast=bool):
-    # Configuração para ambiente de testes (pytest)
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     ADMIN_EMAIL = "admin@example.com"
 elif DEBUG:
-    # Configuração para desenvolvimento local
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     ADMIN_EMAIL = "admin@example.com"
 else:
-    # Configuração para produção
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = config("EMAIL_HOST")
     EMAIL_PORT = config("EMAIL_PORT", cast=int)

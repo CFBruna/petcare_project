@@ -1,10 +1,8 @@
 from django.contrib import admin
 
 from .forms import BreedAdminForm, PetAdminForm
-from .models import Breed, Pet
 
 
-@admin.register(Breed)
 class BreedAdmin(admin.ModelAdmin):
     form = BreedAdminForm
     list_display = ["name", "species"]
@@ -12,7 +10,6 @@ class BreedAdmin(admin.ModelAdmin):
     list_filter = ["species"]
 
 
-@admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
     form = PetAdminForm
     list_display = ["name", "breed", "birth_date", "owner"]

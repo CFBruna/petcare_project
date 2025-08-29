@@ -1,9 +1,150 @@
+from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from django.contrib import admin
+from django.contrib.auth.models import Group, User
+from django_celery_beat.models import (
+    ClockedSchedule,
+    CrontabSchedule,
+    IntervalSchedule,
+    PeriodicTask,
+    SolarSchedule,
+)
+from rest_framework.authtoken.models import TokenProxy
+
+from src.apps.health.admin import HealthRecordAdmin
+from src.apps.health.models import HealthRecord
+from src.apps.pets.admin import BreedAdmin, PetAdmin
+from src.apps.pets.models import Breed, Pet
+from src.apps.schedule.admin import AppointmentAdmin, ServiceAdmin, TimeSlotAdmin
+from src.apps.schedule.models import Appointment, Service, TimeSlot
+from src.apps.store.admin import (
+    AutoPromotionAdmin,
+    BrandAdmin,
+    CategoryAdmin,
+    ProductAdmin,
+    ProductLotAdmin,
+    PromotionAdmin,
+    SaleAdmin,
+)
+from src.apps.store.models import (
+    AutoPromotion,
+    Brand,
+    Category,
+    Product,
+    ProductLot,
+    Promotion,
+    Sale,
+)
 
 from .models import Customer
 
 
-@admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ["user", "cpf", "phone", "address"]
     search_fields = ["user__username", "cpf"]
+
+
+class PetCareAdminSite(admin.AdminSite):
+    site_header = "Administração PetCare"
+    site_title = "Painel PetCare"
+    index_title = "Bem-vindo ao Painel de Controle PetCare"
+
+    def get_app_list(self, request, app_label=None):
+        app_dict = self._build_app_dict(request)
+
+        ordering = {
+            "Vendas e Estoque": 1,
+            "Agendamentos": 2,
+            "Cadastros Gerais": 3,
+            "Marketing e Promoções": 4,
+            "Authentication and Authorization": 5,
+        }
+
+        cadastros_gerais_models = []
+        marketing_models = []
+
+        if "accounts" in app_dict:
+            cadastros_gerais_models.extend(app_dict.pop("accounts")["models"])
+        if "pets" in app_dict:
+            cadastros_gerais_models.extend(app_dict.pop("pets")["models"])
+        if "health" in app_dict:
+            cadastros_gerais_models.extend(app_dict.pop("health")["models"])
+
+        store_app = app_dict.get("store")
+        if store_app:
+            marketing_models.extend(
+                [
+                    m
+                    for m in store_app["models"]
+                    if m["object_name"] in ["Promotion", "AutoPromotion"]
+                ]
+            )
+            store_app["models"] = [
+                m
+                for m in store_app["models"]
+                if m["object_name"] not in ["Promotion", "AutoPromotion"]
+            ]
+            store_app["name"] = "Vendas e Estoque"
+
+        if "schedule" in app_dict:
+            app_dict["schedule"]["name"] = "Agendamentos"
+
+        if "auth" in app_dict:
+            app_dict["auth"]["name"] = "Administração do Sistema"
+            app_dict["auth"]["models"] = [
+                m for m in app_dict["auth"]["models"] if m["object_name"] == "User"
+            ]
+
+        app_list = list(app_dict.values())
+        if cadastros_gerais_models:
+            app_list.append(
+                {
+                    "name": "Cadastros Gerais",
+                    "app_label": "cadastros_gerais",
+                    "models": sorted(cadastros_gerais_models, key=lambda x: x["name"]),
+                }
+            )
+        if marketing_models:
+            app_list.append(
+                {
+                    "name": "Marketing e Promoções",
+                    "app_label": "marketing",
+                    "models": sorted(marketing_models, key=lambda x: x["name"]),
+                }
+            )
+
+        app_list.sort(key=lambda x: (ordering.get(x["name"], 99), x["name"]))
+
+        return app_list
+
+
+petcare_admin_site = PetCareAdminSite(name="petcare_admin")
+
+
+admin.site.unregister(Group)
+admin.site.unregister(TokenProxy)
+admin.site.unregister(EmailAddress)
+admin.site.unregister(SocialApp)
+admin.site.unregister(SocialAccount)
+admin.site.unregister(SocialToken)
+admin.site.unregister(PeriodicTask)
+admin.site.unregister(IntervalSchedule)
+admin.site.unregister(CrontabSchedule)
+admin.site.unregister(SolarSchedule)
+admin.site.unregister(ClockedSchedule)
+
+petcare_admin_site.register(User)
+petcare_admin_site.register(Customer, CustomerAdmin)
+petcare_admin_site.register(HealthRecord, HealthRecordAdmin)
+petcare_admin_site.register(Pet, PetAdmin)
+petcare_admin_site.register(Breed, BreedAdmin)
+petcare_admin_site.register(Appointment, AppointmentAdmin)
+petcare_admin_site.register(Service, ServiceAdmin)
+petcare_admin_site.register(TimeSlot, TimeSlotAdmin)
+petcare_admin_site.register(Sale, SaleAdmin)
+petcare_admin_site.register(Product, ProductAdmin)
+petcare_admin_site.register(ProductLot, ProductLotAdmin)
+petcare_admin_site.register(Category, CategoryAdmin)
+petcare_admin_site.register(Brand, BrandAdmin)
+petcare_admin_site.register(Promotion, PromotionAdmin)
+petcare_admin_site.register(AutoPromotion, AutoPromotionAdmin)

@@ -1,8 +1,9 @@
-from django.contrib import admin
 from django.urls import include, path
 
+from src.apps.accounts.admin import petcare_admin_site
+
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", petcare_admin_site.urls),
     path("api/v1/auth/", include("dj_rest_auth.urls")),
     path("api/v1/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("api/v1/accounts/", include("src.apps.accounts.urls")),
