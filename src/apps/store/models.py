@@ -112,20 +112,21 @@ class Product(models.Model):
 
     @property
     def final_price(self):
-        active_promotions = Promotion.objects.active().filter(rules__lot__product=self)
-        if not active_promotions.exists():
-            return self.price
+        lots_with_stock = self.lots.filter(quantity__gt=0).order_by("expiration_date")
 
-        earliest_lot_with_promo = (
-            self.lots.filter(promotional_rules__promotion__in=active_promotions)
-            .order_by("expiration_date")
-            .first()
-        )
+        best_price = self.price
 
-        if earliest_lot_with_promo:
-            return earliest_lot_with_promo.final_price
+        if not lots_with_stock.exists():
+            return best_price
 
-        return self.price
+        for lot in lots_with_stock:
+            if lot.final_price < best_price:
+                best_price = lot.final_price
+
+        if best_price == self.price:
+            return lots_with_stock.first().final_price
+
+        return best_price
 
 
 class ProductLot(models.Model):
@@ -151,6 +152,13 @@ class ProductLot(models.Model):
     received_date = models.DateField(
         default=timezone.now, verbose_name="Data de Recebimento"
     )
+    auto_discount_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        verbose_name="Desconto Automático (%)",
+        help_text="Desconto progressivo por proximidade da validade, gerenciado pelo sistema.",
+    )
 
     class Meta:
         verbose_name = "Lote do Produto"
@@ -161,20 +169,38 @@ class ProductLot(models.Model):
         expiration_str = (
             self.expiration_date.strftime("%d/%m/%Y") if self.expiration_date else "N/A"
         )
-        return (
-            f"Lote de {self.product.name} ({self.quantity} un.) - Val: {expiration_str}"
+        base_str = (
+            f"{self.product.name} (Lote: {self.lot_number or 'N/A'}) "
+            f"| Val: {expiration_str} | Qtd: {self.quantity}"
         )
 
+        discount = self.final_price_discount_percentage
+        if discount > 0:
+            return f"{base_str} | PROMO: -{int(discount)}%"
+
+        return base_str
+
     @property
-    def final_price(self):
+    def final_price_discount_percentage(self):
+        manual_discount = Decimal("0")
         active_rule = self.promotional_rules.filter(
             promotion__in=Promotion.objects.active()
         ).first()
 
         if active_rule:
-            discount_multiplier = active_rule.discount_percentage / Decimal("100")
+            manual_discount = active_rule.discount_percentage
+
+        return max(manual_discount, self.auto_discount_percentage)
+
+    @property
+    def final_price(self):
+        best_discount = self.final_price_discount_percentage
+
+        if best_discount > 0:
+            discount_multiplier = best_discount / Decimal("100")
             discount_amount = self.product.price * discount_multiplier
             return (self.product.price - discount_amount).quantize(Decimal("0.01"))
+
         return self.product.price
 
 
@@ -259,3 +285,10 @@ class SaleItem(models.Model):
     def __str__(self):
         lot_str = self.lot.lot_number or "N/A"
         return f"{self.quantity}x {self.product.name} (Lote: {lot_str})"
+
+
+class AutoPromotion(ProductLot):
+    class Meta:
+        proxy = True
+        verbose_name = "Promoção por Validade"
+        verbose_name_plural = "Promoções por Validade"
