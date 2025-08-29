@@ -3,7 +3,6 @@ from datetime import datetime
 from rest_framework import serializers
 
 from .models import Appointment, Service, TimeSlot
-from .services import get_available_slots
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -41,6 +40,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
         read_only_fields = ["status"]
 
     def validate(self, data):
+        from .services import get_available_slots
+
         schedule_date = data.get("schedule_date")
         schedule_time = data.get("schedule_time")
         service = data.get("service")

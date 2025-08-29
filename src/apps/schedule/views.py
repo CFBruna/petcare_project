@@ -7,13 +7,14 @@ from rest_framework.views import APIView
 
 from .models import Appointment, Service, TimeSlot
 from .serializers import AppointmentSerializer, ServiceSerializer, TimeSlotSerializer
-from .services import get_available_slots
 
 
 class AvailableSlotsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        from .services import get_available_slots
+
         try:
             date_str = request.query_params.get("date")
             service_id = request.query_params.get("service_id")
