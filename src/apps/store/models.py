@@ -159,6 +159,7 @@ class ProductLot(models.Model):
         verbose_name="Desconto Automático (%)",
         help_text="Desconto progressivo por proximidade da validade, gerenciado pelo sistema.",
     )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Última Atualização")
 
     class Meta:
         verbose_name = "Lote do Produto"
