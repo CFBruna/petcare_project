@@ -4,7 +4,6 @@ from django import forms
 from django.utils import timezone
 
 from .models import Appointment, Service
-from .services import get_available_slots
 
 
 class ServiceAdminForm(forms.ModelForm):
@@ -70,6 +69,8 @@ class AppointmentAdminForm(forms.ModelForm):
                 except (ValueError, Service.DoesNotExist):
                     pass
         elif instance and instance.schedule_time:
+            from .services import get_available_slots
+
             local_schedule_time = timezone.localtime(instance.schedule_time)
             self.fields[
                 "appointment_date"
@@ -96,6 +97,8 @@ class AppointmentAdminForm(forms.ModelForm):
                 self.fields["appointment_time"].initial = current_time_choice
 
     def get_dynamic_time_choices(self, service, date):
+        from .services import get_available_slots
+
         available_times = get_available_slots(date, service)
         return [(t.strftime("%H:%M"), t.strftime("%H:%M")) for t in available_times]
 

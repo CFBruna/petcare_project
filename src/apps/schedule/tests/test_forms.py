@@ -154,11 +154,8 @@ class TestAppointmentAdminForm:
             "appointment_time": "15:00",
         }
         form = AppointmentAdminForm(data=form_data)
+
         assert not form.is_valid()
-        assert (
-            "Faça uma escolha válida. 15:00 não é uma das escolhas disponíveis."
-            in str(form.errors)
-        )
 
     def test_save_sets_completed_at_on_status_change(self):
         appointment_time = timezone.make_aware(

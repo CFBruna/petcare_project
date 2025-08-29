@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 from django.utils import timezone
 
-from src.apps.schedule.services import get_available_slots
 from src.apps.schedule.tests.factories import (
     AppointmentFactory,
     ServiceFactory,
@@ -23,7 +22,7 @@ class TestAvailableSlotsService:
 
         mock_now_yesterday = timezone.make_aware(timezone.datetime(2025, 8, 17, 10, 0))
         self.patcher = patch(
-            "src.apps.schedule.services.timezone.now", return_value=mock_now_yesterday
+            "django.utils.timezone.now", return_value=mock_now_yesterday
         )
         self.patcher.start()
 
@@ -31,6 +30,8 @@ class TestAvailableSlotsService:
         self.patcher.stop()
 
     def test_get_slots_on_empty_day(self):
+        from src.apps.schedule.services import get_available_slots
+
         slots = get_available_slots(self.test_date, self.service_30_min)
         assert len(slots) > 0
         assert time(8, 0) in slots
@@ -38,11 +39,15 @@ class TestAvailableSlotsService:
         assert time(11, 45) not in slots
 
     def test_get_slots_for_non_working_day(self):
+        from src.apps.schedule.services import get_available_slots
+
         non_working_day = date(2025, 8, 17)
         slots = get_available_slots(non_working_day, self.service_30_min)
         assert len(slots) == 0
 
     def test_slots_are_correct_after_one_appointment(self):
+        from src.apps.schedule.services import get_available_slots
+
         appointment_time = timezone.make_aware(
             timezone.datetime.combine(self.test_date, time(9, 0))
         )
@@ -55,6 +60,8 @@ class TestAvailableSlotsService:
         assert time(10, 0) in slots
 
     def test_scenario_from_debugging_session(self):
+        from src.apps.schedule.services import get_available_slots
+
         appointment_time = timezone.make_aware(
             timezone.datetime.combine(self.test_date, time(8, 0))
         )
@@ -72,14 +79,14 @@ class TestAvailableSlotsService:
         assert time(11, 30) in slots_for_short_service
 
     def test_get_slots_for_today_only_shows_future_slots(self):
+        from src.apps.schedule.services import get_available_slots
+
         today = self.test_date
         mock_now_today = timezone.make_aware(
             timezone.datetime.combine(today, time(9, 10))
         )
 
-        with patch(
-            "src.apps.schedule.services.timezone.now", return_value=mock_now_today
-        ):
+        with patch("django.utils.timezone.now", return_value=mock_now_today):
             slots = get_available_slots(today, self.service_30_min)
 
         assert time(8, 0) not in slots
@@ -91,6 +98,8 @@ class TestAvailableSlotsService:
         assert time(11, 30) in slots
 
     def test_get_slots_for_past_date(self):
+        from src.apps.schedule.services import get_available_slots
+
         past_date = date(2025, 1, 1)
         slots = get_available_slots(past_date, self.service_30_min)
         assert len(slots) == 0

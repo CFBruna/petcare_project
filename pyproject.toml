@@ -39,3 +39,17 @@ DJANGO_SETTINGS_MODULE = "src.petcare.settings"
 python_files = "tests.py test_*.py *_tests.py"
 pythonpath = ["."]
 addopts = "--tb=short --cov --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "src/manage.py",
+    "src/petcare/settings.py",
+    "src/petcare/wsgi.py",
+    "src/petcare/asgi.py",
+    "src/petcare/celery.py",
+    "src/conftest.py",
+    "*/__init__.py",
+    "*/apps.py",
+]
