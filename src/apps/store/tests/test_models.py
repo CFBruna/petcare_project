@@ -119,3 +119,27 @@ class TestProductInventoryModel:
                 promotion=promotion, lot=lot, promotional_stock=15
             )
             rule.full_clean()
+
+    def test_final_price_uses_highest_discount_between_manual_and_auto(self):
+        product = ProductFactory(price=Decimal("100.00"))
+        lot = ProductLotFactory(product=product, quantity=10)
+
+        now = timezone.now()
+        promotion = PromotionFactory(
+            start_date=now - timezone.timedelta(days=1),
+            end_date=now + timezone.timedelta(days=1),
+        )
+        PromotionRuleFactory(
+            promotion=promotion, lot=lot, discount_percentage=Decimal("20.00")
+        )
+
+        lot.auto_discount_percentage = Decimal("50.00")
+        lot.save()
+
+        assert lot.final_price == Decimal("50.00")
+
+        manual_promo_rule = lot.promotional_rules.first()
+        manual_promo_rule.discount_percentage = Decimal("70.00")
+        manual_promo_rule.save()
+
+        assert lot.final_price == Decimal("30.00")
