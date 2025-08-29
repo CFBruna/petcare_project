@@ -240,4 +240,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "src.apps.schedule.tasks.generate_daily_appointments_report",
         "schedule": crontab(hour=1, minute=0),
     },
+    "apply_daily_expiration_discounts": {
+        "task": "src.apps.store.tasks.apply_expiration_discounts",
+        "schedule": crontab(hour=1, minute=30),
+    },
 }
