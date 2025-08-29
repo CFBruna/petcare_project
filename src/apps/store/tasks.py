@@ -50,11 +50,12 @@ def generate_daily_sales_report():
     )
     total_revenue = sales.aggregate(total=Sum("total_value"))["total"] or 0
 
+    subject = f"Relatório Diário de Vendas - {yesterday.strftime('%d/%m/%Y')}"
+
     if not sales.exists():
-        subject = f"Relatório Diário de Vendas - {yesterday.strftime('%d/%m/%Y')}"
         message = "Nenhuma venda foi registrada nesta data."
     else:
-        subject = f"Relatório de Vendas - {yesterday.strftime('%d/%m/%Y')} ({sales.count()} vendas)"
+        subject += f" ({sales.count()} vendas)"
         report_lines = [
             f"Relatório de vendas de {yesterday.strftime('%d/%m/%Y')}:",
             "=" * 40,

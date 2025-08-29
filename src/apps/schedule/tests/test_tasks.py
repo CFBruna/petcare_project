@@ -28,15 +28,17 @@ def test_generate_daily_report_with_completed_appointments(mocker):
     # Act:
     result = generate_daily_appointments_report()
 
+    # Assert
     send_mail_mock.assert_called_once()
 
     call_args = send_mail_mock.call_args[0]
     subject = call_args[0]
     message = call_args[1]
 
-    assert "Relatório Diário de Agendamentos Concluídos" in subject
-    assert "(1 agendamentos)" in subject
+    expected_subject = f"Relatório Diário de Agendamentos Concluídos - {yesterday_date.strftime('%d/%m/%Y')} (1 agendamentos)"
+    assert subject == expected_subject
     assert completed_appointment.pet.name in message
+    assert "Faturamento Total do Dia" in message
     assert (
         result
         == f"Relatório de agendamentos concluídos para {yesterday_date.strftime('%d/%m/%Y')} enviado com sucesso."
