@@ -6,56 +6,64 @@ from .models import Appointment, Service, TimeSlot
 
 
 def get_available_slots(date: datetime.date, service: Service) -> list[time]:
-    if date < timezone.now().date():
+    now = timezone.now()
+    if date < now.date():
         return []
 
     day_of_week = date.weekday()
-    working_hours = TimeSlot.objects.filter(day_of_week=day_of_week)
+    working_hours = TimeSlot.objects.filter(day_of_week=day_of_week).order_by(
+        "start_time"
+    )
 
-    if not working_hours.exists():
+    if not working_hours:
         return []
 
     existing_appointments = (
         Appointment.objects.filter(schedule_time__date=date)
-        .exclude(status="CANCELED")
+        .exclude(status=Appointment.Status.CANCELED)
+        .select_related("service")
         .order_by("schedule_time")
     )
 
+    occupied_periods = []
+    for app in existing_appointments:
+        app_start = timezone.localtime(app.schedule_time)
+        app_end = app_start + timedelta(minutes=app.service.duration_minutes)
+        occupied_periods.append((app_start, app_end))
+
     available_slots = []
-    buffer_minutes = 0
-    slot_increment_minutes = 15
-    now = timezone.now()
+    slot_increment = timedelta(minutes=15)
+    service_duration = timedelta(minutes=service.duration_minutes)
 
-    for wh in working_hours:
-        potential_slots = []
-        start_dt = timezone.make_aware(datetime.combine(date, wh.start_time))
-        end_dt = timezone.make_aware(datetime.combine(date, wh.end_time))
+    for timeslot in working_hours:
+        start_of_day_dt = timezone.make_aware(
+            datetime.combine(date, timeslot.start_time)
+        )
+        end_of_day_dt = timezone.make_aware(datetime.combine(date, timeslot.end_time))
 
-        current_time = start_dt
-        while current_time < end_dt:
-            if current_time + timedelta(minutes=service.duration_minutes) <= end_dt:
-                potential_slots.append(current_time)
-            current_time += timedelta(minutes=slot_increment_minutes)
+        current_time = start_of_day_dt
+        if date == now.date() and current_time < now:
+            minutes = (now.minute // 15 + 1) * 15
+            if minutes >= 60:
+                current_time = now.replace(
+                    minute=0, second=0, microsecond=0
+                ) + timedelta(hours=1)
+            else:
+                current_time = now.replace(minute=minutes, second=0, microsecond=0)
 
-        if date == now.date():
-            potential_slots = [slot for slot in potential_slots if slot >= now]
+        while current_time + service_duration <= end_of_day_dt:
+            slot_start = current_time
+            slot_end = slot_start + service_duration
+            is_available = True
 
-        blocked_periods = []
-        for app in existing_appointments:
-            app_start = app.schedule_time
-            app_end = app_start + timedelta(minutes=app.service.duration_minutes)
-            app_end_with_buffer = app_end + timedelta(minutes=buffer_minutes)
-            blocked_periods.append((app_start, app_end_with_buffer))
-
-        for slot_start in potential_slots:
-            slot_end = slot_start + timedelta(minutes=service.duration_minutes)
-            is_valid = True
-            for blocked_start, blocked_end in blocked_periods:
-                if not (slot_end <= blocked_start or slot_start >= blocked_end):
-                    is_valid = False
+            for occupied_start, occupied_end in occupied_periods:
+                if max(slot_start, occupied_start) < min(slot_end, occupied_end):
+                    is_available = False
                     break
 
-            if is_valid:
+            if is_available:
                 available_slots.append(slot_start.time())
 
-    return available_slots
+            current_time += slot_increment
+
+    return sorted(list(set(available_slots)))
