@@ -111,22 +111,10 @@ class Product(models.Model):
         return sum(lot.quantity for lot in self.lots.all())
 
     @property
-    def final_price(self):
-        lots_with_stock = self.lots.filter(quantity__gt=0).order_by("expiration_date")
+    def final_price(self) -> Decimal:
+        from src.apps.store import services
 
-        best_price = self.price
-
-        if not lots_with_stock.exists():
-            return best_price
-
-        for lot in lots_with_stock:
-            if lot.final_price < best_price:
-                best_price = lot.final_price
-
-        if best_price == self.price:
-            return lots_with_stock.first().final_price
-
-        return best_price
+        return services.calculate_product_final_price(self)
 
 
 class ProductLot(models.Model):
