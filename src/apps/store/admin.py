@@ -7,6 +7,7 @@ from .models import (
     PromotionRule,
     SaleItem,
 )
+from .services import InsufficientStockError, create_sale
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -26,6 +27,8 @@ class SaleItemInline(admin.TabularInline):
     formset = SaleItemFormSet
     extra = 1
     autocomplete_fields = ["lot"]
+    fields = ["lot", "quantity", "unit_price"]
+    readonly_fields = ["unit_price"]
 
 
 class SaleAdmin(admin.ModelAdmin):
@@ -34,41 +37,48 @@ class SaleAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "customer"]
     search_fields = ["id", "customer__user__username"]
     readonly_fields = ["total_value", "processed_by", "created_at"]
+    add_form_template = "admin/store/sale/add_form.html"
 
     class Media:
         js = ("js/store_admin.js",)
 
     def has_change_permission(self, request, obj=None):
-        return request.user.is_superuser
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
     def save_model(self, request, obj, form, change):
-        if not obj.pk:
-            obj.processed_by = request.user
         super().save_model(request, obj, form, change)
 
     def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
-        sale = form.instance
-        total = 0
-        for item in instances:
-            if not item.unit_price:
-                item.unit_price = item.lot.final_price
-            item.lot.quantity -= item.quantity
-            item.lot.save()
-            item.save()
-            total += item.unit_price * item.quantity
-        if formset.deleted_objects:
+        if not formset.is_valid():
+            return super().save_formset(request, form, formset, change)
+
+        items_data = []
+        for f in formset.cleaned_data:
+            if f and not f.get("DELETE"):
+                items_data.append(
+                    {
+                        "lot": f["lot"],
+                        "quantity": f["quantity"],
+                        "unit_price": f["lot"].final_price,
+                    }
+                )
+        if not items_data:
             self.message_user(
-                request,
-                "Itens removidos não terão estoque restaurado.",
-                messages.WARNING,
+                request, "Uma venda precisa ter pelo menos um item.", messages.ERROR
             )
-        sale.total_value = total
-        sale.save()
-        formset.save_m2m()
+            return
+
+        try:
+            create_sale(
+                user=request.user,
+                customer=form.instance.customer,
+                items_data=items_data,
+            )
+        except InsufficientStockError as e:
+            self.message_user(request, str(e), messages.ERROR)
 
 
 class ProductLotInline(admin.TabularInline):
