@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Brand, Category, Product
+from .services import calculate_product_final_price
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -17,9 +18,7 @@ class BrandSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    final_price = serializers.DecimalField(
-        max_digits=10, decimal_places=2, read_only=True
-    )
+    final_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -36,3 +35,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "total_stock",
             "image",
         ]
+
+    def get_final_price(self, obj: Product) -> str:
+        price = calculate_product_final_price(obj)
+        return f"{price:.2f}"
