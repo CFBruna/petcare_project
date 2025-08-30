@@ -28,7 +28,6 @@ class SaleItemInline(admin.TabularInline):
     extra = 1
     autocomplete_fields = ["lot"]
     fields = ["lot", "quantity", "unit_price"]
-    readonly_fields = ["unit_price"]
 
 
 class SaleAdmin(admin.ModelAdmin):
@@ -37,7 +36,6 @@ class SaleAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "customer"]
     search_fields = ["id", "customer__user__username"]
     readonly_fields = ["total_value", "processed_by", "created_at"]
-    add_form_template = "admin/store/sale/add_form.html"
 
     class Media:
         js = ("js/store_admin.js",)
@@ -49,6 +47,8 @@ class SaleAdmin(admin.ModelAdmin):
         return request.user.is_superuser
 
     def save_model(self, request, obj, form, change):
+        if not change:
+            obj.processed_by = request.user
         super().save_model(request, obj, form, change)
 
     def save_formset(self, request, form, formset, change):
@@ -57,7 +57,7 @@ class SaleAdmin(admin.ModelAdmin):
 
         items_data = []
         for f in formset.cleaned_data:
-            if f and not f.get("DELETE"):
+            if f and not f.get("DELETE") and "lot" in f:
                 items_data.append(
                     {
                         "lot": f["lot"],
@@ -65,20 +65,30 @@ class SaleAdmin(admin.ModelAdmin):
                         "unit_price": f["lot"].final_price,
                     }
                 )
+
+        sale_instance = form.instance
         if not items_data:
-            self.message_user(
-                request, "Uma venda precisa ter pelo menos um item.", messages.ERROR
-            )
+            if not change and sale_instance.pk:
+                self.message_user(
+                    request,
+                    "Venda cancelada pois não continha itens.",
+                    messages.WARNING,
+                )
+                sale_instance.delete()
             return
 
         try:
             create_sale(
                 user=request.user,
-                customer=form.instance.customer,
+                customer=sale_instance.customer,
                 items_data=items_data,
+                sale_instance=sale_instance,
             )
+            self.message_user(request, "Venda criada com sucesso!", messages.SUCCESS)
         except InsufficientStockError as e:
             self.message_user(request, str(e), messages.ERROR)
+            if not change and sale_instance.pk:
+                sale_instance.delete()
 
 
 class ProductLotInline(admin.TabularInline):
