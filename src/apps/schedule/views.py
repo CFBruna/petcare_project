@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from src.petcare.permissions import IsStaffOrReadOnly
+
 from .models import Appointment, Service, TimeSlot
 from .serializers import AppointmentSerializer, ServiceSerializer, TimeSlotSerializer
 
@@ -48,13 +50,7 @@ class AvailableSlotsView(APIView):
 class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all().order_by("name")
     serializer_class = ServiceSerializer
-
-    def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            self.permission_classes = [permissions.DjangoModelPermissions]
-        return super().get_permissions()
+    permission_classes = [IsStaffOrReadOnly]
 
 
 class TimeSlotViewSet(viewsets.ModelViewSet):
