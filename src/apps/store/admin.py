@@ -38,6 +38,12 @@ class SaleAdmin(admin.ModelAdmin):
     class Media:
         js = ("js/store_admin.js",)
 
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
     def save_model(self, request, obj, form, change):
         if not obj.pk:
             obj.processed_by = request.user
