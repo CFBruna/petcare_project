@@ -1,8 +1,10 @@
-from rest_framework import permissions, status, viewsets
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework import status, viewsets
+from rest_framework.permissions import IsAdminUser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from src.petcare.permissions import IsStaffOrReadOnly
 
 from .models import Brand, Category, Product, ProductLot
 from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
@@ -11,37 +13,21 @@ from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-
-    def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            self.permission_classes = [permissions.IsAdminUser]
-        return super().get_permissions()
+    permission_classes = [IsStaffOrReadOnly]
 
 
 class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
-
-    def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            self.permission_classes = [permissions.IsAdminUser]
-        return super().get_permissions()
+    permission_classes = [IsStaffOrReadOnly]
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.select_related("brand", "category").prefetch_related(
+        "lots"
+    )
     serializer_class = ProductSerializer
-
-    def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
-            self.permission_classes = [IsAuthenticated]
-        else:
-            self.permission_classes = [permissions.IsAdminUser]
-        return super().get_permissions()
+    permission_classes = [IsStaffOrReadOnly]
 
 
 class LotPriceAPIView(APIView):
@@ -50,7 +36,7 @@ class LotPriceAPIView(APIView):
 
     def get(self, request, pk, format=None):
         try:
-            lot = ProductLot.objects.get(pk=pk)
+            lot = ProductLot.objects.select_related("product").get(pk=pk)
             return Response(
                 {"price": f"{lot.final_price:.2f}"}, status=status.HTTP_200_OK
             )

@@ -1,6 +1,7 @@
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from django.contrib import admin
+from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group, User
 from django_celery_beat.models import (
     ClockedSchedule,
@@ -39,6 +40,32 @@ from src.apps.store.models import (
 from .models import Customer
 
 
+class CustomUserAdmin(UserAdmin):
+    fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        ("Personal info", {"fields": ("first_name", "last_name", "email")}),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        ("Important dates", {"fields": ("last_login", "date_joined")}),
+    )
+    list_display = ("username", "email", "first_name", "last_name", "is_staff")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups")
+
+
+class CustomGroupAdmin(GroupAdmin):
+    pass
+
+
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ["user", "cpf", "phone", "address"]
     search_fields = ["user__username", "cpf"]
@@ -49,6 +76,9 @@ class PetCareAdminSite(admin.AdminSite):
     site_title = "Painel PetCare"
     index_title = "Bem-vindo ao Painel de Controle PetCare"
 
+    def has_permission(self, request):
+        return request.user.is_active and request.user.is_staff
+
     def get_app_list(self, request, app_label=None):
         app_dict = self._build_app_dict(request)
 
@@ -57,7 +87,7 @@ class PetCareAdminSite(admin.AdminSite):
             "Agendamentos": 2,
             "Cadastros Gerais": 3,
             "Marketing e Promoções": 4,
-            "Authentication and Authorization": 5,
+            "Administração do Sistema": 5,
         }
 
         cadastros_gerais_models = []
@@ -92,7 +122,9 @@ class PetCareAdminSite(admin.AdminSite):
         if "auth" in app_dict:
             app_dict["auth"]["name"] = "Administração do Sistema"
             app_dict["auth"]["models"] = [
-                m for m in app_dict["auth"]["models"] if m["object_name"] == "User"
+                m
+                for m in app_dict["auth"]["models"]
+                if m["object_name"] in ["User", "Group"]
             ]
 
         app_list = list(app_dict.values())
@@ -133,7 +165,8 @@ admin.site.unregister(CrontabSchedule)
 admin.site.unregister(SolarSchedule)
 admin.site.unregister(ClockedSchedule)
 
-petcare_admin_site.register(User)
+petcare_admin_site.register(User, CustomUserAdmin)
+petcare_admin_site.register(Group, CustomGroupAdmin)
 petcare_admin_site.register(Customer, CustomerAdmin)
 petcare_admin_site.register(HealthRecord, HealthRecordAdmin)
 petcare_admin_site.register(Pet, PetAdmin)
