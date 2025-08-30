@@ -18,3 +18,4 @@ celery
 redis
 pytest-mock
 django-celery-beat
+drf-spectacular
