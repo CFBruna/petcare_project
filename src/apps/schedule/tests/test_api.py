@@ -86,7 +86,7 @@ class TestAppointmentAPI:
             "pet": my_pet.id,
             "service": service.id,
             "schedule_date": self.future_date.isoformat(),
-            "schedule_time": "14:00",
+            "schedule_time_input": "14:00",
         }
         response = client.post(self.url, data=data)
         assert response.status_code == status.HTTP_201_CREATED

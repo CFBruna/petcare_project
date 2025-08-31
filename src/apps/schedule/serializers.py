@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Appointment, Service, TimeSlot
@@ -22,7 +23,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
     service_name = serializers.CharField(source="service.name", read_only=True)
 
     schedule_date = serializers.DateField(write_only=True)
-    schedule_time = serializers.TimeField(write_only=True)
+    schedule_time_input = serializers.TimeField(write_only=True, source="schedule_time")
 
     class Meta:
         model = Appointment
@@ -35,9 +36,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "status",
             "notes",
             "schedule_date",
+            "schedule_time_input",
             "schedule_time",
         ]
-        read_only_fields = ["status"]
+        read_only_fields = ["status", "schedule_time"]
 
     def validate(self, data):
         from .services import get_available_slots
@@ -46,21 +48,19 @@ class AppointmentSerializer(serializers.ModelSerializer):
         schedule_time = data.get("schedule_time")
         service = data.get("service")
 
-        combined_datetime = datetime.combine(schedule_date, schedule_time)
-
         available_slots = get_available_slots(schedule_date, service)
 
-        if combined_datetime.time() not in available_slots:
+        if schedule_time not in available_slots:
             raise serializers.ValidationError(
-                "O horário e/ou a data selecionados não estão disponíveis."
+                "The selected time and/or date is not available."
             )
 
-        data["schedule_time"] = combined_datetime
+        combined_datetime = datetime.combine(schedule_date, schedule_time)
+        aware_datetime = timezone.make_aware(combined_datetime)
+        data["schedule_time"] = aware_datetime
 
         return data
 
     def create(self, validated_data):
-        schedule_time = validated_data.pop("schedule_time")
         validated_data.pop("schedule_date")
-
-        return Appointment.objects.create(schedule_time=schedule_time, **validated_data)
+        return Appointment.objects.create(**validated_data)
