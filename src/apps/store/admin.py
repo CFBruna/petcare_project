@@ -32,13 +32,46 @@ class SaleItemInline(admin.TabularInline):
 
 class SaleAdmin(admin.ModelAdmin):
     inlines = [SaleItemInline]
-    list_display = ["id", "customer", "total_value", "created_at", "processed_by"]
+    list_display = [
+        "id",
+        "display_sold_items",
+        "customer",
+        "created_at",
+        "processed_by",
+        "total_value",
+    ]
     list_filter = ["created_at", "customer"]
     search_fields = ["id", "customer__user__username"]
     readonly_fields = ["total_value", "processed_by", "created_at"]
 
     class Media:
         js = ("js/store_admin.js",)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.prefetch_related("items__lot__product")
+
+    @admin.display(description="Itens Vendidos")
+    def display_sold_items(self, obj):
+        items = obj.items.all()
+        if not items:
+            return "—"
+
+        max_items_to_show = 3
+        items_to_display = list(items[:max_items_to_show])
+
+        format_placeholders = ["{}x {}" for _ in items_to_display]
+
+        format_args = []
+        for item in items_to_display:
+            format_args.extend([item.quantity, item.lot.product.name])
+
+        html_format_string = "<br>".join(format_placeholders)
+
+        if len(items) > max_items_to_show:
+            html_format_string += "<br>..."
+
+        return format_html(html_format_string, *format_args)
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -149,16 +182,10 @@ class ProductLotAdmin(admin.ModelAdmin):
     readonly_fields = ("auto_discount_percentage",)
 
     def get_search_results(self, request, queryset, search_term):
-        """
-        Customizes the queryset for the autocomplete widget.
-        """
-
         queryset, use_distinct = super().get_search_results(
             request, queryset, search_term
         )
-
         queryset = queryset.filter(quantity__gt=0)
-
         return queryset, use_distinct
 
 
@@ -186,11 +213,17 @@ class AutoPromotionAdmin(admin.ModelAdmin):
         original_price = obj.product.price
         final_price = obj.final_price
         discount = int(obj.auto_discount_percentage)
+
         html_string = (
-            f'<span style="text-decoration: line-through;">R$ {original_price:.2f}</span><br>'
-            f'<strong style="color: #4CAF50;">R$ {final_price:.2f} (-{discount}%)</strong>'
+            '<span style="text-decoration: line-through;">R$ {:.2f}</span><br>'
+            '<strong style="color: #4CAF50;">R$ {:.2f} (-{}%)</strong>'
         )
-        return format_html(html_string)
+        return format_html(
+            html_string,
+            original_price,
+            final_price,
+            discount,
+        )
 
     def has_add_permission(self, request):
         return False
