@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import dj_database_url
 from celery.schedules import crontab
@@ -159,7 +160,7 @@ ACCOUNT_LOGIN_METHODS = {"email", "username"}
 # DJANGO REST FRAMEWORK SETTINGS
 # ==============================================================================
 
-REST_FRAMEWORK = {
+REST_FRAMEWORK: dict[str, Any] = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",

@@ -19,3 +19,5 @@ redis
 pytest-mock
 django-celery-beat
 drf-spectacular
+mypy
+django-stubs

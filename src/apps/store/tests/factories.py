@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import factory
 from django.utils import timezone
 from factory.django import DjangoModelFactory
@@ -53,9 +55,7 @@ class PromotionFactory(DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f"Promoção {n}")
     start_date = factory.LazyFunction(timezone.now)
-    end_date = factory.LazyFunction(
-        lambda: timezone.now() + timezone.timedelta(days=30)
-    )
+    end_date = factory.LazyFunction(lambda: timezone.now() + timedelta(days=30))
 
 
 class PromotionRuleFactory(DjangoModelFactory):

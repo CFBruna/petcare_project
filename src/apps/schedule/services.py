@@ -1,16 +1,16 @@
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.utils import timezone
 
 from .models import Appointment, Service, TimeSlot
 
 
-def get_available_slots(date: datetime.date, service: Service) -> list[time]:
+def get_available_slots(schedule_date: date, service: Service) -> list[time]:
     now = timezone.now()
-    if date < now.date():
+    if schedule_date < now.date():
         return []
 
-    day_of_week = date.weekday()
+    day_of_week = schedule_date.weekday()
     working_hours = TimeSlot.objects.filter(day_of_week=day_of_week).order_by(
         "start_time"
     )
@@ -19,7 +19,7 @@ def get_available_slots(date: datetime.date, service: Service) -> list[time]:
         return []
 
     existing_appointments = (
-        Appointment.objects.filter(schedule_time__date=date)
+        Appointment.objects.filter(schedule_time__date=schedule_date)
         .exclude(status=Appointment.Status.CANCELED)
         .select_related("service")
         .order_by("schedule_time")
@@ -37,12 +37,14 @@ def get_available_slots(date: datetime.date, service: Service) -> list[time]:
 
     for timeslot in working_hours:
         start_of_day_dt = timezone.make_aware(
-            datetime.combine(date, timeslot.start_time)
+            datetime.combine(schedule_date, timeslot.start_time)
         )
-        end_of_day_dt = timezone.make_aware(datetime.combine(date, timeslot.end_time))
+        end_of_day_dt = timezone.make_aware(
+            datetime.combine(schedule_date, timeslot.end_time)
+        )
 
         current_time = start_of_day_dt
-        if date == now.date() and current_time < now:
+        if schedule_date == now.date() and current_time < now:
             minutes = (now.minute // 15 + 1) * 15
             if minutes >= 60:
                 current_time = now.replace(
