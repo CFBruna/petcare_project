@@ -97,8 +97,10 @@ class BrandViewSet(viewsets.ModelViewSet):
     description="Endpoints for managing products and their inventory.",
 )
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related("brand", "category").prefetch_related(
-        "lots"
+    queryset = (
+        Product.objects.with_stock()
+        .select_related("brand", "category")
+        .prefetch_related("lots")
     )
     serializer_class = ProductSerializer
     permission_classes = [IsStaffOrReadOnly]

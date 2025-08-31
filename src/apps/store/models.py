@@ -60,6 +60,21 @@ class Promotion(models.Model):
         return self.name
 
 
+class ProductQuerySet(models.QuerySet):
+    def with_stock(self):
+        return self.filter(lots__quantity__gt=0).distinct()
+
+    def on_promotion(self):
+        now = timezone.now()
+        return self.filter(
+            models.Q(
+                lots__promotional_rules__promotion__start_date__lte=now,
+                lots__promotional_rules__promotion__end_date__gte=now,
+            )
+            | models.Q(lots__auto_discount_percentage__gt=0)
+        ).distinct()
+
+
 class Product(models.Model):
     name = models.CharField(max_length=250, verbose_name="Nome do Produto")
     sku = models.CharField(
@@ -98,6 +113,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Preço")
     image = models.ImageField(upload_to="products/", blank=True, null=True)
 
+    objects = ProductQuerySet.as_manager()
+
     class Meta:
         ordering = ["name"]
         verbose_name = "Produto"
@@ -108,7 +125,7 @@ class Product(models.Model):
 
     @property
     def total_stock(self):
-        return sum(lot.quantity for lot in self.lots.all())
+        return self.lots.aggregate(total=models.Sum("quantity"))["total"] or 0
 
     @property
     def final_price(self) -> Decimal:
