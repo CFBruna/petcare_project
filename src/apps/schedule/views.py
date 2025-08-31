@@ -156,7 +156,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Appointment.objects.filter(pet__owner__user=self.request.user)
+        user = self.request.user
+        return Appointment.objects.filter(pet__owner__user=user).select_related(
+            "pet", "service"
+        )
 
     def perform_create(self, serializer):
         serializer.save()
