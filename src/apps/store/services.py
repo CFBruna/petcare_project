@@ -1,9 +1,18 @@
+from __future__ import annotations
+
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from .models import Product, ProductLot, Sale, SaleItem
+if TYPE_CHECKING:
+    from src.apps.accounts.models import Customer
+
+    from .models import Product, ProductLot, Sale
+
+
+from .models import ProductLot, Sale, SaleItem
 
 
 class InsufficientStockError(Exception):
@@ -12,7 +21,11 @@ class InsufficientStockError(Exception):
 
 @transaction.atomic
 def create_sale(
-    *, user: User, items_data: list[dict], customer=None, sale_instance: Sale = None
+    *,
+    user: User,
+    items_data: list[dict],
+    customer: Customer | None = None,
+    sale_instance: Sale | None = None,
 ) -> Sale:
     if sale_instance is None:
         sale = Sale.objects.create(processed_by=user, customer=customer)
@@ -20,12 +33,12 @@ def create_sale(
         sale = sale_instance
 
     total_sale_value = Decimal("0")
-    items_to_create = []
-    lots_to_update = []
+    items_to_create: list[SaleItem] = []
+    lots_to_update: list[ProductLot] = []
 
     for item_data in items_data:
-        lot = item_data["lot"]
-        quantity = item_data["quantity"]
+        lot: ProductLot = item_data["lot"]
+        quantity: int = item_data["quantity"]
 
         if lot.quantity < quantity:
             raise InsufficientStockError(
@@ -67,6 +80,8 @@ def calculate_product_final_price(product: Product) -> Decimal:
             best_price = lot.final_price
 
     if best_price == product.price:
-        return lots_with_stock.first().final_price
+        first_lot = lots_with_stock.first()
+        if first_lot:
+            return first_lot.final_price
 
     return best_price
