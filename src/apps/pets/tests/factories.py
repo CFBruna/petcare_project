@@ -16,6 +16,6 @@ class PetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pet
 
-    name = factory.Faker("first_name")
+    name = factory.Sequence(lambda n: f"Pet {n}")
     owner = factory.SubFactory(CustomerFactory)
     breed = factory.SubFactory(BreedFactory)
