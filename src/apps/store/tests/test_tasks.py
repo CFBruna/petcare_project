@@ -113,6 +113,7 @@ class TestStoreReportTasks:
     def test_generate_daily_promotions_report(self, mocker):
         # Arrange
         mocked_now = timezone.make_aware(timezone.datetime(2025, 8, 26, 10, 0))
+        mocker.patch("django.utils.timezone.now", return_value=mocked_now)
         mocker.patch("django.utils.timezone.localdate", return_value=mocked_now.date())
         send_mail_mock = mocker.patch("src.apps.store.tasks.send_mail")
 
@@ -144,6 +145,7 @@ class TestStoreReportTasks:
     def test_generate_daily_promotions_report_no_data(self, mocker):
         # Arrange
         mocked_now = timezone.make_aware(timezone.datetime(2025, 8, 26, 10, 0))
+        mocker.patch("django.utils.timezone.now", return_value=mocked_now)
         mocker.patch("django.utils.timezone.localdate", return_value=mocked_now.date())
         send_mail_mock = mocker.patch("src.apps.store.tasks.send_mail")
 
