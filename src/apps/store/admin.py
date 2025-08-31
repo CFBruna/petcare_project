@@ -78,12 +78,20 @@ class SaleAdmin(admin.ModelAdmin):
             return
 
         try:
-            create_sale(
+            final_sale = create_sale(
                 user=request.user,
                 customer=sale_instance.customer,
                 items_data=items_data,
                 sale_instance=sale_instance,
             )
+
+            formset.new_objects = final_sale.items.all()
+            formset.changed_objects = []
+            formset.deleted_objects = []
+
+            for f in formset.forms:
+                f.instance.sale = final_sale
+
             self.message_user(request, "Venda criada com sucesso!", messages.SUCCESS)
         except InsufficientStockError as e:
             self.message_user(request, str(e), messages.ERROR)
