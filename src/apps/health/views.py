@@ -16,7 +16,9 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return HealthRecord.objects.filter(pet__owner__user=user)
+        return HealthRecord.objects.filter(pet__owner__user=user).select_related(
+            "pet", "created_by"
+        )
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

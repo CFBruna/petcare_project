@@ -47,13 +47,16 @@ class BreedViewSet(viewsets.ModelViewSet):
     description="Endpoints for users to manage their own pets.",
 )
 class PetViewSet(viewsets.ModelViewSet):
-    queryset = Pet.objects.all().order_by("name")
     serializer_class = PetSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return Pet.objects.filter(owner__user=user).order_by("name")
+        return (
+            Pet.objects.filter(owner__user=user)
+            .select_related("breed", "owner__user")
+            .order_by("name")
+        )
 
     def perform_create(self, serializer):
         tutor = self.request.user.customer_profile

@@ -10,7 +10,7 @@ from .serializers import CustomerSerializer
     description="Endpoints for retrieving customer (tutor) information.",
 )
 class CustomerViewSet(viewsets.ModelViewSet):
-    queryset = Customer.objects.all().order_by("id")
+    queryset = Customer.objects.select_related("user").order_by("id")
     serializer_class = CustomerSerializer
 
     @extend_schema(summary="List all customers (staff only)")
