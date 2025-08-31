@@ -77,10 +77,14 @@ class TestProductAPI:
     def setup_method(self):
         self.url = "/api/v1/store/products/"
         self.product = ProductFactory()
+        ProductLotFactory(product=self.product, quantity=10)
 
     def test_list_products(self, authenticated_client):
         client, user = authenticated_client
-        ProductFactory.create_batch(2)
+        products = ProductFactory.create_batch(2)
+        for p in products:
+            ProductLotFactory(product=p, quantity=5)
+
         response = client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["count"] == 3
