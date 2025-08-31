@@ -111,12 +111,11 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     search_fields = ["name", "sku", "barcode", "brand__name", "category__name"]
     list_filter = ["brand", "category"]
-    readonly_fields = ["total_stock", "final_price_display"]
+    readonly_fields = ["total_stock"]
 
+    @admin.display(description="Preço Final")
     def final_price_display(self, obj):
         return f"R$ {obj.final_price or obj.price}"
-
-    final_price_display.short_description = "Preço Final"
 
 
 class PromotionRuleInline(admin.TabularInline):
