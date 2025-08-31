@@ -84,7 +84,6 @@ class SaleAdmin(admin.ModelAdmin):
                 items_data=items_data,
                 sale_instance=sale_instance,
             )
-
             formset.new_objects = final_sale.items.all()
             formset.changed_objects = []
             formset.deleted_objects = []
@@ -148,6 +147,19 @@ class ProductLotAdmin(admin.ModelAdmin):
     )
     search_fields = ("product__name", "lot_number", "product__sku", "product__barcode")
     readonly_fields = ("auto_discount_percentage",)
+
+    def get_search_results(self, request, queryset, search_term):
+        """
+        Customizes the queryset for the autocomplete widget.
+        """
+
+        queryset, use_distinct = super().get_search_results(
+            request, queryset, search_term
+        )
+
+        queryset = queryset.filter(quantity__gt=0)
+
+        return queryset, use_distinct
 
 
 class AutoPromotionAdmin(admin.ModelAdmin):
