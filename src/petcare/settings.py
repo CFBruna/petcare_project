@@ -244,3 +244,47 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(hour=1, minute=10),
     },
 }
+
+# ==============================================================================
+# LOGGING SETTINGS
+# ==============================================================================
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "(%(asctime)s) [%(levelname)s] %(name)s: %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR.parent / "logs/petcare.log",
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 2,
+            "formatter": "verbose",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file", "mail_admins"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "src": {
+            "handlers": ["console", "file", "mail_admins"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
