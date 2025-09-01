@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from src.petcare.permissions import IsStaffOrReadOnly
+from src.petcare.permissions import IsOwnerOrStaff, IsStaffOrReadOnly
 
 from .models import Appointment, Service, TimeSlot
 from .serializers import (
@@ -153,7 +153,7 @@ class TimeSlotViewSet(viewsets.ModelViewSet):
 )
 class AppointmentViewSet(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrStaff]
 
     def get_queryset(self):
         user = self.request.user

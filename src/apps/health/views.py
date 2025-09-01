@@ -1,6 +1,7 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+
+from src.petcare.permissions import IsOwnerOrStaff
 
 from .models import HealthRecord
 from .serializers import HealthRecordSerializer
@@ -12,7 +13,7 @@ from .serializers import HealthRecordSerializer
 )
 class HealthRecordViewSet(viewsets.ModelViewSet):
     serializer_class = HealthRecordSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrStaff]
 
     def get_queryset(self):
         user = self.request.user
