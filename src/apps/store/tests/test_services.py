@@ -69,3 +69,21 @@ class TestStoreServices:
 
         final_price = calculate_product_final_price(product)
         assert final_price == Decimal("80.00")
+
+    def test_create_sale_logs_error_on_insufficient_stock(self, caplog):
+        # Arrange
+        user = UserFactory()
+        lot = ProductLotFactory(quantity=2)
+        items_data = [{"lot": lot, "quantity": 5}]
+
+        # Act
+        with pytest.raises(InsufficientStockError):
+            create_sale(user=user, items_data=items_data)
+
+        # Assert
+        assert len(caplog.records) == 1
+        record = caplog.records[0]
+        assert record.levelname == "ERROR"
+        assert "Sale creation failed" in record.message
+        assert "Estoque insuficiente" in record.message
+        assert "Disponível: 2, Solicitado: 5" in record.message

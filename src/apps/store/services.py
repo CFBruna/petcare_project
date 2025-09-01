@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import User
 from django.db import transaction
 
+from .models import Product, ProductLot, Sale, SaleItem
+
+logger = logging.getLogger(__name__)
+
 if TYPE_CHECKING:
     from src.apps.accounts.models import Customer
-
-    from .models import Product, ProductLot, Sale
-
-
-from .models import ProductLot, Sale, SaleItem
 
 
 class InsufficientStockError(Exception):
@@ -41,10 +41,17 @@ def create_sale(
         quantity: int = item_data["quantity"]
 
         if lot.quantity < quantity:
-            raise InsufficientStockError(
+            error_message = (
                 f"Estoque insuficiente para o produto {lot.product.name} (Lote: {lot.lot_number}). "
                 f"Disponível: {lot.quantity}, Solicitado: {quantity}."
             )
+            logger.error(
+                "Sale creation failed for user '%s': %s",
+                user.username,
+                error_message,
+                exc_info=True,
+            )
+            raise InsufficientStockError(error_message)
 
         unit_price = item_data.get("unit_price") or lot.final_price
         total_sale_value += unit_price * quantity
@@ -63,6 +70,13 @@ def create_sale(
 
     sale.total_value = total_sale_value
     sale.save(update_fields=["total_value"])
+
+    logger.info(
+        "Sale #%d created successfully. Total: %s. Processed by: %s.",
+        sale.id,
+        sale.total_value,
+        user.username,
+    )
 
     return sale
 
