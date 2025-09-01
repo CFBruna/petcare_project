@@ -23,7 +23,6 @@ class TestHealthRecordAPI:
         my_pet = PetFactory(owner__user=user)
         HealthRecordFactory.create_batch(2, pet=my_pet)
         HealthRecordFactory()
-
         response = client.get(URL)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["count"] == 2
@@ -48,10 +47,6 @@ class TestHealthRecordAPI:
     def test_user_cannot_access_other_users_records(self, authenticated_client):
         client, user = authenticated_client
         other_record = HealthRecordFactory()
-
-        permission = Permission.objects.get(codename="view_healthrecord")
-        user.user_permissions.add(permission)
-
         response = client.get(f"{URL}{other_record.id}/")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -81,11 +76,12 @@ class TestHealthRecordAPI:
     def test_user_cannot_update_other_users_record(self, authenticated_client):
         client, user = authenticated_client
         other_record = HealthRecordFactory()
-
-        permission = Permission.objects.get(codename="change_healthrecord")
-        user.user_permissions.add(permission)
-
         data = {"description": "Malicious update"}
         response = client.patch(f"{URL}{other_record.id}/", data=data)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    def test_user_cannot_delete_other_users_record(self, authenticated_client):
+        client, user = authenticated_client
+        other_record = HealthRecordFactory()
+        response = client.delete(f"{URL}{other_record.id}/")
         assert response.status_code == status.HTTP_404_NOT_FOUND

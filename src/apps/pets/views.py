@@ -1,8 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 
-from src.petcare.permissions import IsStaffOrReadOnly
+from src.petcare.permissions import IsOwnerOrStaff, IsStaffOrReadOnly
 
 from .models import Breed, Pet
 from .serializers import BreedSerializer, PetSerializer
@@ -48,7 +47,7 @@ class BreedViewSet(viewsets.ModelViewSet):
 )
 class PetViewSet(viewsets.ModelViewSet):
     serializer_class = PetSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrStaff]
 
     def get_queryset(self):
         user = self.request.user
