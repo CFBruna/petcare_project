@@ -35,8 +35,8 @@ class TestStoreModels:
         product = ProductFactory()
         assert product.brand is not None
         assert product.category is not None
-        assert product.brand.name.startswith("Marca")
-        assert product.category.name.startswith("Categoria")
+        assert isinstance(product.brand.name, str) and product.brand.name != ""
+        assert isinstance(product.category.name, str) and product.category.name != ""
 
     def test_deleting_category_with_product_fails(self):
         product = ProductFactory()

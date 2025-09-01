@@ -50,6 +50,17 @@ jobs:
       run: |
         ruff check .
 
+    - name: Run Mypy
+      run: |
+        mypy .
+      env:
+        TESTING: "True"
+        DATABASE_URL: "postgres://test_user:test_password@localhost:5432/test_db"
+        CELERY_BROKER_URL: "redis://localhost:6379/0"
+        CACHE_URL: "redis://localhost:6379/1"
+        SECRET_KEY: "a-secret-key-for-testing-purposes-only"
+        DEBUG: "False"
+
     - name: Run Pytest
       run: |
         pytest

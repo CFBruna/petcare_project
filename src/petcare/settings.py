@@ -44,6 +44,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "src.apps.core",
     "src.apps.accounts",
     "src.apps.health",
     "src.apps.pets",
