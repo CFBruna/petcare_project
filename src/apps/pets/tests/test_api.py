@@ -43,6 +43,7 @@ class TestPetAPI:
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         self.url = "/api/v1/pets/pets/"
+        self.my_pet = PetFactory(owner=self.customer)
 
     def test_unauthenticated_user_cannot_access_pets(self, api_client):
         response = api_client.get(self.url)
@@ -50,25 +51,34 @@ class TestPetAPI:
 
     def test_user_can_list_only_their_pets(self):
         PetFactory.create_batch(2, owner=self.customer)
-
         PetFactory()
-
         response = self.client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["count"] == 2
+        assert response.json()["count"] == 3
 
     def test_user_can_create_pet_for_themselves(self):
         breed = BreedFactory()
         data = {"name": "Bolinha", "breed": breed.id}
-
         response = self.client.post(self.url, data=data)
         assert response.status_code == status.HTTP_201_CREATED
-
         pet = Pet.objects.get(id=response.data["id"])
         assert pet.name == "Bolinha"
         assert pet.owner == self.customer
 
-    def test_user_cannot_list_other_users_pet_detail(self):
+    def test_user_cannot_access_other_users_pet_detail(self):
         other_pet = PetFactory()
         response = self.client.get(f"{self.url}{other_pet.id}/")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_user_can_update_their_own_pet(self):
+        data = {"name": "Fido"}
+        response = self.client.patch(f"{self.url}{self.my_pet.id}/", data=data)
+        assert response.status_code == status.HTTP_200_OK
+        self.my_pet.refresh_from_db()
+        assert self.my_pet.name == "Fido"
+
+    def test_user_cannot_update_other_users_pet(self):
+        other_pet = PetFactory()
+        data = {"name": "Malicious Name"}
+        response = self.client.patch(f"{self.url}{other_pet.id}/", data=data)
         assert response.status_code == status.HTTP_404_NOT_FOUND

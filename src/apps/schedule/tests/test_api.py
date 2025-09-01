@@ -55,7 +55,6 @@ class TestAppointmentAPI:
     def setup_method(self):
         self.url = "/api/v1/schedule/appointments/"
         self.future_date = timezone.now().date() + timedelta(days=7)
-
         TimeSlotFactory(
             day_of_week=self.future_date.weekday(),
             start_time="13:00",
@@ -70,9 +69,7 @@ class TestAppointmentAPI:
         client, user = authenticated_client
         my_pet = PetFactory(owner__user=user)
         AppointmentFactory.create_batch(2, pet=my_pet)
-
         AppointmentFactory()
-
         response = client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["count"] == 2
@@ -81,7 +78,6 @@ class TestAppointmentAPI:
         client, user = authenticated_client
         my_pet = PetFactory(owner__user=user)
         service = ServiceFactory()
-
         data = {
             "pet": my_pet.id,
             "service": service.id,
@@ -95,8 +91,13 @@ class TestAppointmentAPI:
     def test_user_cannot_access_other_users_appointment_detail(
         self, authenticated_client
     ):
-        client, user = authenticated_client
+        client, _ = authenticated_client
         other_appointment = AppointmentFactory()
-
         response = client.get(f"{self.url}{other_appointment.id}/")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_user_cannot_delete_other_users_appointment(self, authenticated_client):
+        client, _ = authenticated_client
+        other_appointment = AppointmentFactory()
+        response = client.delete(f"{self.url}{other_appointment.id}/")
         assert response.status_code == status.HTTP_404_NOT_FOUND
