@@ -3,33 +3,24 @@
 	"dockerComposeFile": "../docker-compose.yml",
 	"service": "web",
 	"workspaceFolder": "/usr/src/app",
+	"remoteUser": "appuser",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
+			"username": "appuser",
+			"uid": "auto",
+			"gid": "auto",
 			"installZsh": true,
 			"installOhMyZsh": true,
-			"upgradePackages": true
+			"upgradePackages": false,
+			"installGit": false,
+			"configureSudo": true
 		}
 	},
-	"postCreateCommand": "[ -d .git ] && pre-commit install || echo 'Skipping pre-commit (no .git found)'",
+	"postCreateCommand": "sudo chown -R appuser . && pre-commit install",
 	"customizations": {
 		"vscode": {
 			"settings": {
 				"terminal.integrated.defaultProfile.linux": "zsh",
-				"terminal.integrated.profiles.windows": {
-					"PowerShell 7": {
-						"path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-						"icon": "terminal-powershell",
-						"args": []
-					},
-					"PowerShell": {
-						"source": "PowerShell",
-						"icon": "terminal-powershell"
-					},
-					"Command Prompt": {
-						"path": "C:\\Windows\\System32\\cmd.exe",
-						"icon": "terminal-cmd"
-					}
-				},
 				"editor.formatOnSave": true,
 				"editor.codeActionsOnSave": {
 					"source.fixAll.ruff": "explicit"
