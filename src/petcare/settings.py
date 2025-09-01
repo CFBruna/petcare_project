@@ -177,7 +177,7 @@ REST_FRAMEWORK: dict[str, Any] = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "src.petcare.schema.CustomAutoSchema",
 }
 
 if DEBUG:

@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from src.apps.core.views import AutoSchemaModelNameMixin
 from src.petcare.permissions import IsOwnerOrStaff, IsStaffOrReadOnly
 
 from .models import Appointment, Service, TimeSlot
@@ -89,75 +90,27 @@ class AvailableSlotsView(APIView):
     tags=["Schedule - Services"],
     description="Endpoints for managing available services.",
 )
-class ServiceViewSet(viewsets.ModelViewSet):
+class ServiceViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Service.objects.all().order_by("name")
     serializer_class = ServiceSerializer
     permission_classes = [IsStaffOrReadOnly]
-
-    @extend_schema(summary="List all services")
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(summary="Retrieve a specific service")
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @extend_schema(summary="Create a new service")
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    @extend_schema(summary="Update a service")
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @extend_schema(summary="Partially update a service")
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @extend_schema(summary="Delete a service")
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
 
 
 @extend_schema(
     tags=["Schedule - TimeSlots"],
     description="Endpoints for managing the weekly work schedule (for staff/admins).",
 )
-class TimeSlotViewSet(viewsets.ModelViewSet):
+class TimeSlotViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = TimeSlot.objects.all()
     serializer_class = TimeSlotSerializer
     permission_classes = [permissions.IsAdminUser]
-
-    @extend_schema(summary="List all time slots")
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(summary="Retrieve a specific time slot")
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @extend_schema(summary="Create a new time slot")
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    @extend_schema(summary="Update a time slot")
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @extend_schema(summary="Partially update a time slot")
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @extend_schema(summary="Delete a time slot")
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
 
 
 @extend_schema(
     tags=["Schedule - Appointments"],
     description="Endpoints for users to manage their pets' appointments.",
 )
-class AppointmentViewSet(viewsets.ModelViewSet):
+class AppointmentViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsOwnerOrStaff]
 
@@ -180,42 +133,3 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             f"by user '{self.request.user.username}'."
         )
         instance.delete()
-
-    @extend_schema(summary="List the current user's appointments")
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(summary="Retrieve one of the user's appointments")
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Create a new appointment",
-        examples=[
-            OpenApiExample(
-                "Example Request",
-                value={
-                    "pet": 1,
-                    "service": 1,
-                    "notes": "My pet is a bit anxious.",
-                    "schedule_date": "2025-12-25",
-                    "schedule_time": "14:30",
-                },
-                request_only=True,
-            )
-        ],
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    @extend_schema(summary="Update an appointment")
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @extend_schema(summary="Partially update an appointment")
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @extend_schema(summary="Cancel (delete) an appointment")
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
