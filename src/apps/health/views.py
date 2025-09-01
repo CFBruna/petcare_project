@@ -1,8 +1,9 @@
 import logging
 
-from drf_spectacular.utils import OpenApiExample, extend_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 
+from src.apps.core.views import AutoSchemaModelNameMixin
 from src.petcare.permissions import IsOwnerOrStaff
 
 from .models import HealthRecord
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
     tags=["Health - Records"],
     description="Endpoints for users to manage their pets' health records.",
 )
-class HealthRecordViewSet(viewsets.ModelViewSet):
+class HealthRecordViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     serializer_class = HealthRecordSerializer
     permission_classes = [IsOwnerOrStaff]
 
@@ -31,42 +32,3 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
             f"HealthRecord #{health_record.id} (Type: {health_record.record_type}) created for pet "
             f"'{health_record.pet.name}' by user '{self.request.user.username}'."
         )
-
-    @extend_schema(summary="List health records for the user's pets")
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(summary="Retrieve a specific health record")
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Create a new health record",
-        examples=[
-            OpenApiExample(
-                "Example vaccine record",
-                value={
-                    "pet": 1,
-                    "record_type": "VACCINE",
-                    "description": "Rabies vaccine, Lot #XYZ123",
-                    "record_date": "2025-08-30",
-                    "next_due_date": "2026-08-30",
-                },
-                request_only=True,
-            )
-        ],
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-    @extend_schema(summary="Update a health record")
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @extend_schema(summary="Partially update a health record")
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @extend_schema(summary="Delete a health record")
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
