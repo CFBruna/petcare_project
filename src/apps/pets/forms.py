@@ -1,3 +1,5 @@
+import logging
+
 from django import forms
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -5,6 +7,8 @@ from django.db import transaction
 from src.apps.accounts.models import Customer
 
 from .models import Breed, Pet
+
+logger = logging.getLogger(__name__)
 
 
 class BreedAdminForm(forms.ModelForm):
@@ -113,7 +117,14 @@ class PetAdminForm(forms.ModelForm):
                 phone=new_customer_phone,
                 cpf=new_customer_cpf,
             )
+            logger.info(
+                f"New customer '{customer.user.username}' (ID: {customer.id}) created via PetAdminForm."
+            )
 
             self.instance.owner = customer
 
-        return super().save(commit)
+        pet = super().save(commit)
+        logger.info(
+            f"Pet '{pet.name}' (ID: {pet.id}) for owner '{pet.owner.user.username}' saved via PetAdminForm."
+        )
+        return pet

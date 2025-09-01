@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 from drf_spectacular.utils import (
@@ -18,6 +19,8 @@ from .serializers import (
     ServiceSerializer,
     TimeSlotSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema(
@@ -54,6 +57,9 @@ class AvailableSlotsView(APIView):
             service_id = request.query_params.get("service_id")
 
             if not date_str or not service_id:
+                logger.warning(
+                    f"AvailableSlotsView was called with missing parameters by user '{request.user.username}'."
+                )
                 return Response(
                     {"error": "Parameters 'date' and 'service_id' are required."},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -162,7 +168,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        serializer.save()
+        appointment = serializer.save()
+        logger.info(
+            f"Appointment #{appointment.id} created for pet '{appointment.pet.name}' "
+            f"by user '{self.request.user.username}' for {appointment.schedule_time}."
+        )
+
+    def perform_destroy(self, instance):
+        logger.warning(
+            f"Appointment #{instance.id} for pet '{instance.pet.name}' was CANCELED "
+            f"by user '{self.request.user.username}'."
+        )
+        instance.delete()
 
     @extend_schema(summary="List the current user's appointments")
     def list(self, request, *args, **kwargs):
