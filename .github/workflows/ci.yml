@@ -50,6 +50,10 @@ jobs:
       run: |
         ruff check .
 
+    - name: Run Mypy
+      run: |
+        mypy .
+
     - name: Run Pytest
       run: |
         pytest
