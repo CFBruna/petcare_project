@@ -16,6 +16,8 @@ attrs==25.3.0
     #   referencing
 billiard==4.2.1
     # via celery
+brotli==1.1.0
+    # via whitenoise
 celery==5.5.3
     # via
     #   -r requirements.in
@@ -203,3 +205,5 @@ virtualenv==20.33.1
     # via pre-commit
 wcwidth==0.2.13
     # via prompt-toolkit
+whitenoise[brotli]==6.9.0
+    # via -r requirements.in

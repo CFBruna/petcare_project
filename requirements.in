@@ -21,3 +21,4 @@ django-celery-beat
 drf-spectacular
 mypy
 django-stubs
+whitenoise[brotli]
