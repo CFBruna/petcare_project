@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 
 from src.apps.accounts.models import Customer
+from src.apps.accounts.services import CustomerService
 
 from .models import Breed, Pet
 
@@ -103,28 +104,22 @@ class PetAdminForm(forms.ModelForm):
     @transaction.atomic
     def save(self, commit=True):
         new_customer_username = self.cleaned_data.get("new_customer_username")
-        new_customer_first_name = self.cleaned_data.get("new_customer_first_name")
-        new_customer_phone = self.cleaned_data.get("new_customer_phone")
-        new_customer_cpf = self.cleaned_data.get("new_customer_cpf")
 
         if new_customer_username:
-            user = User.objects.create_user(
+            customer = CustomerService.create_customer(
                 username=new_customer_username,
-                first_name=new_customer_first_name,
+                first_name=self.cleaned_data.get("new_customer_first_name"),
+                phone=self.cleaned_data.get("new_customer_phone"),
+                cpf=self.cleaned_data.get("new_customer_cpf"),
             )
-            customer = Customer.objects.create(
-                user=user,
-                phone=new_customer_phone,
-                cpf=new_customer_cpf,
-            )
-            logger.info(
-                f"New customer '{customer.user.username}' (ID: {customer.id}) created via PetAdminForm."
-            )
-
             self.instance.owner = customer
 
-        pet = super().save(commit)
-        logger.info(
-            f"Pet '{pet.name}' (ID: {pet.id}) for owner '{pet.owner.user.username}' saved via PetAdminForm."
-        )
+        pet = super().save(commit=commit)
+        if commit:
+            logger.info(
+                "Pet '%s' (ID: %d) for owner '%s' saved via PetAdminForm.",
+                pet.name,
+                pet.id,
+                pet.owner.user.username,
+            )
         return pet

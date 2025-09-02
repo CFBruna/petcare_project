@@ -16,6 +16,7 @@ class Customer(models.Model):
     address = models.CharField(max_length=250, blank=True, verbose_name="Endereço")
 
     class Meta:
+        ordering = ["user__first_name", "user__last_name"]
         verbose_name = "Tutor"
         verbose_name_plural = "Tutores"
 

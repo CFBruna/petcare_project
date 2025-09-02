@@ -20,6 +20,7 @@ from .serializers import (
     ServiceSerializer,
     TimeSlotSerializer,
 )
+from .services import AppointmentService
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +52,6 @@ class AvailableSlotsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        from .services import get_available_slots
-
         try:
             date_str = request.query_params.get("date")
             service_id = request.query_params.get("service_id")
@@ -69,7 +68,7 @@ class AvailableSlotsView(APIView):
             appointment_date = date.fromisoformat(date_str)
             service = Service.objects.get(pk=service_id)
 
-            slots = get_available_slots(appointment_date, service)
+            slots = AppointmentService.get_available_slots(appointment_date, service)
 
             formatted_slots = [s.strftime("%H:%M") for s in slots]
 

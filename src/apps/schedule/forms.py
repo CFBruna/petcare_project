@@ -4,6 +4,7 @@ from django import forms
 from django.utils import timezone
 
 from .models import Appointment, Service
+from .services import AppointmentService
 
 
 class ServiceAdminForm(forms.ModelForm):
@@ -42,7 +43,7 @@ class AppointmentAdminForm(forms.ModelForm):
 
     class Meta:
         model = Appointment
-        fields = ["pet", "service", "status", "notes", "completed_at"]
+        fields = ["pet", "service", "status", "notes"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,8 +70,6 @@ class AppointmentAdminForm(forms.ModelForm):
                 except (ValueError, Service.DoesNotExist):
                     pass
         elif instance and instance.schedule_time:
-            from .services import get_available_slots
-
             local_schedule_time = timezone.localtime(instance.schedule_time)
             self.fields[
                 "appointment_date"
@@ -78,7 +77,7 @@ class AppointmentAdminForm(forms.ModelForm):
             current_time_choice = local_schedule_time.strftime("%H:%M")
 
             try:
-                available_times = get_available_slots(
+                available_times = AppointmentService.get_available_slots(
                     local_schedule_time.date(), instance.service
                 )
                 valid_choices = [
@@ -97,9 +96,7 @@ class AppointmentAdminForm(forms.ModelForm):
                 self.fields["appointment_time"].initial = current_time_choice
 
     def get_dynamic_time_choices(self, service, date):
-        from .services import get_available_slots
-
-        available_times = get_available_slots(date, service)
+        available_times = AppointmentService.get_available_slots(date, service)
         return [(t.strftime("%H:%M"), t.strftime("%H:%M")) for t in available_times]
 
     def clean(self):
@@ -113,51 +110,27 @@ class AppointmentAdminForm(forms.ModelForm):
                 hour=hour, minute=minute
             )
             cleaned_data["schedule_time"] = timezone.make_aware(local_dt)
-
-            is_new_appointment = self.instance.pk is None
-            schedule_time_changed = False
-            if not is_new_appointment:
-                if self.instance.schedule_time != cleaned_data["schedule_time"]:
-                    schedule_time_changed = True
-
-            if is_new_appointment or schedule_time_changed:
-                if cleaned_data["schedule_time"] < timezone.now():
-                    self.add_error(
-                        "appointment_time",
-                        "Não é possível agendar serviços para o passado.",
-                    )
-
-            new_status = cleaned_data.get("status")
-            if new_status == Appointment.Status.COMPLETED:
-                if cleaned_data["schedule_time"] > timezone.now():
-                    self.add_error(
-                        "status",
-                        "Um agendamento futuro não pode ser marcado como 'Concluído'.",
-                    )
-
-            if (
-                self.instance
-                and self.instance.status == Appointment.Status.COMPLETED
-                and new_status != Appointment.Status.COMPLETED
-            ):
-                if "completed_at" in cleaned_data:
-                    cleaned_data["completed_at"] = None
+            try:
+                AppointmentService.prepare_appointment_instance(
+                    appointment=self.instance,
+                    pet=cleaned_data.get("pet"),
+                    service=cleaned_data.get("service"),
+                    schedule_time=cleaned_data.get("schedule_time"),
+                    status=cleaned_data.get("status"),
+                    notes=cleaned_data.get("notes"),
+                )
+            except ValueError as e:
+                raise forms.ValidationError(str(e)) from e
 
         return cleaned_data
 
     def save(self, commit=True):
-        is_completed_status = (
-            self.cleaned_data.get("status") == Appointment.Status.COMPLETED
+        self.instance = AppointmentService.prepare_appointment_instance(
+            appointment=self.instance,
+            pet=self.cleaned_data.get("pet"),
+            service=self.cleaned_data.get("service"),
+            schedule_time=self.cleaned_data.get("schedule_time"),
+            status=self.cleaned_data.get("status"),
+            notes=self.cleaned_data.get("notes"),
         )
-
-        if is_completed_status and not self.instance.completed_at:
-            self.instance.completed_at = timezone.now()
-
-        if (
-            self.instance.status == Appointment.Status.COMPLETED
-            and not is_completed_status
-        ):
-            self.instance.completed_at = None
-
-        self.instance.schedule_time = self.cleaned_data.get("schedule_time")
-        return super().save(commit)
+        return super().save(commit=commit)
