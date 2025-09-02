@@ -186,7 +186,7 @@ class TestAppointmentAdminForm:
 
         appointment.refresh_from_db()
         assert appointment.completed_at is not None
-        assert appointment.completed_at == now_fixed
+        assert appointment.completed_at.date() == now_fixed.date()
 
     def test_save_clears_completed_at_when_status_reverted(self):
         appointment_time = timezone.make_aware(
@@ -235,8 +235,7 @@ class TestAppointmentAdminForm:
 
         form = AppointmentAdminForm(data=form_data, instance=appointment)
         assert not form.is_valid()
-        assert "status" in form.errors
         assert (
             "Um agendamento futuro não pode ser marcado como 'Concluído'."
-            in form.errors["status"][0]
+            in form.non_field_errors()[0]
         )

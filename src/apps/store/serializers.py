@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Brand, Category, Product
-from .services import calculate_product_final_price
+from .services import ProductService
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -37,5 +37,5 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
     def get_final_price(self, obj: Product) -> str:
-        price = calculate_product_final_price(obj)
+        price = ProductService.calculate_product_final_price(obj)
         return f"{price:.2f}"

@@ -7,7 +7,7 @@ from .models import (
     PromotionRule,
     SaleItem,
 )
-from .services import InsufficientStockError, create_sale
+from .services import InsufficientStockError, SaleService
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -111,7 +111,7 @@ class SaleAdmin(admin.ModelAdmin):
             return
 
         try:
-            final_sale = create_sale(
+            final_sale = SaleService.create_sale(
                 user=request.user,
                 customer=sale_instance.customer,
                 items_data=items_data,
@@ -186,6 +186,10 @@ class ProductLotAdmin(admin.ModelAdmin):
             request, queryset, search_term
         )
         queryset = queryset.filter(quantity__gt=0)
+
+        if "admin/store/promotion" in request.META.get("HTTP_REFERER", ""):
+            queryset = queryset.filter(auto_discount_percentage=0)
+
         return queryset, use_distinct
 
 
@@ -210,18 +214,18 @@ class AutoPromotionAdmin(admin.ModelAdmin):
 
     @admin.display(description="Preço Final")
     def price_with_discount(self, obj):
-        original_price = obj.product.price
-        final_price = obj.final_price
+        original_price_str = f"R$ {obj.product.price:.2f}"
+        final_price_str = f"R$ {obj.final_price:.2f}"
         discount = int(obj.auto_discount_percentage)
 
         html_string = (
-            '<span style="text-decoration: line-through;">R$ {:.2f}</span><br>'
-            '<strong style="color: #4CAF50;">R$ {:.2f} (-{}%)</strong>'
+            '<span style="text-decoration: line-through;">{}</span><br>'
+            '<strong style="color: #4CAF50;">{} (-{}%)</strong>'
         )
         return format_html(
             html_string,
-            original_price,
-            final_price,
+            original_price_str,
+            final_price_str,
             discount,
         )
 

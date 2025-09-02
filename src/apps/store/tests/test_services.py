@@ -7,8 +7,8 @@ from src.apps.accounts.tests.factories import UserFactory
 from src.apps.store.models import Sale
 from src.apps.store.services import (
     InsufficientStockError,
-    calculate_product_final_price,
-    create_sale,
+    ProductService,
+    SaleService,
 )
 from src.apps.store.tests.factories import (
     ProductFactory,
@@ -30,7 +30,7 @@ class TestStoreServices:
             {"lot": lot2, "quantity": 2},
         ]
 
-        sale = create_sale(user=user, items_data=items_data)
+        sale = SaleService.create_sale(user=user, items_data=items_data)
 
         lot1.refresh_from_db()
         lot2.refresh_from_db()
@@ -47,7 +47,7 @@ class TestStoreServices:
         items_data = [{"lot": lot, "quantity": 10}]
 
         with pytest.raises(InsufficientStockError):
-            create_sale(user=user, items_data=items_data)
+            SaleService.create_sale(user=user, items_data=items_data)
 
         assert Sale.objects.count() == 0
         lot.refresh_from_db()
@@ -67,7 +67,7 @@ class TestStoreServices:
             discount_percentage=Decimal("20.00"),
         )
 
-        final_price = calculate_product_final_price(product)
+        final_price = ProductService.calculate_product_final_price(product)
         assert final_price == Decimal("80.00")
 
     def test_create_sale_logs_error_on_insufficient_stock(self, caplog):
@@ -78,7 +78,7 @@ class TestStoreServices:
 
         # Act
         with pytest.raises(InsufficientStockError):
-            create_sale(user=user, items_data=items_data)
+            SaleService.create_sale(user=user, items_data=items_data)
 
         # Assert
         assert len(caplog.records) == 1

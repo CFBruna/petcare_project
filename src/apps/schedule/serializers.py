@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Appointment, Service, TimeSlot
+from .services import AppointmentService
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -42,13 +43,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
         read_only_fields = ["status", "schedule_time"]
 
     def validate(self, data):
-        from .services import get_available_slots
-
         schedule_date = data.get("schedule_date")
         schedule_time = data.get("schedule_time")
         service = data.get("service")
 
-        available_slots = get_available_slots(schedule_date, service)
+        available_slots = AppointmentService.get_available_slots(schedule_date, service)
 
         if schedule_time not in available_slots:
             raise serializers.ValidationError(

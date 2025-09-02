@@ -129,9 +129,9 @@ class Product(models.Model):
 
     @property
     def final_price(self) -> Decimal:
-        from src.apps.store import services
+        from src.apps.store.services import ProductService
 
-        return services.calculate_product_final_price(self)
+        return ProductService.calculate_product_final_price(self)
 
 
 class ProductLot(models.Model):
@@ -233,10 +233,11 @@ class PromotionRule(models.Model):
         verbose_name_plural = "Regras da Promoção"
 
     def clean(self):
-        if self.promotional_stock > self.lot.quantity:
-            raise ValidationError(
-                f"A quantidade em promoção ({self.promotional_stock}) não pode ser maior que a quantidade do lote ({self.lot.quantity})."
-            )
+        if self.promotional_stock is not None and self.lot:
+            if self.promotional_stock > self.lot.quantity:
+                raise ValidationError(
+                    f"A quantidade em promoção ({self.promotional_stock}) não pode ser maior que a quantidade do lote ({self.lot.quantity})."
+                )
 
     def __str__(self):
         return f"{self.promotion.name} para o lote {self.lot.lot_number or 'N/A'}"

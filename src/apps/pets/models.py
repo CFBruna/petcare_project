@@ -15,7 +15,9 @@ class Breed(models.Model):
         max_length=10, choices=Species.choices, verbose_name="Espécie"
     )
     description = models.TextField(
-        blank=True, help_text="Breve descrição e características da raça."
+        blank=True,
+        help_text="Breve descrição e características da raça.",
+        verbose_name="Descrição",
     )
 
     class Meta:
@@ -42,6 +44,7 @@ class Pet(models.Model):
     )
 
     class Meta:
+        ordering = ["name"]
         verbose_name = "Pet"
         verbose_name_plural = "Pets"
         unique_together = ("owner", "name")
