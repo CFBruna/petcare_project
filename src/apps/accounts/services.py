@@ -17,7 +17,7 @@ class CustomerService:
     @transaction.atomic
     def create_customer(
         *, username: str, first_name: str, phone: str, cpf: str
-    ) -> Customer:
+    ) -> "Customer":  # noqa: UP037
         """
         Creates a new User and an associated Customer profile.
         """

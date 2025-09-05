@@ -59,12 +59,12 @@ class AppointmentService:
         return appointment
 
     @staticmethod
-    def get_available_slots(schedule_date: date, service: Service) -> list[time]:
+    def get_available_slots(schedule_date: date, service: "Service") -> list[time]:  # noqa: UP037
         now = timezone.now()
         if schedule_date < now.date():
             return []
 
-        day_of_week = schedule_date.weekday()
+        day_of_week: int = schedule_date.weekday()
         working_hours = TimeSlot.objects.filter(day_of_week=day_of_week).order_by(
             "start_time"
         )
@@ -79,13 +79,13 @@ class AppointmentService:
             .order_by("schedule_time")
         )
 
-        occupied_periods = []
+        occupied_periods: list[tuple[datetime, datetime]] = []
         for app in existing_appointments:
             app_start = timezone.localtime(app.schedule_time)
             app_end = app_start + timedelta(minutes=app.service.duration_minutes)
             occupied_periods.append((app_start, app_end))
 
-        available_slots = []
+        available_slots: list[time] = []
         slot_increment = timedelta(minutes=15)
         service_duration = timedelta(minutes=service.duration_minutes)
 
@@ -99,13 +99,10 @@ class AppointmentService:
 
             current_time = start_of_day_dt
             if schedule_date == now.date() and current_time < now:
-                minutes = (now.minute // 15 + 1) * 15
-                if minutes >= 60:
-                    current_time = now.replace(
-                        minute=0, second=0, microsecond=0
-                    ) + timedelta(hours=1)
-                else:
-                    current_time = now.replace(minute=minutes, second=0, microsecond=0)
+                minutes_to_add = 15 - (now.minute % 15)
+                current_time = (now + timedelta(minutes=minutes_to_add)).replace(
+                    second=0, microsecond=0
+                )
 
             while current_time + service_duration <= end_of_day_dt:
                 slot_start = current_time

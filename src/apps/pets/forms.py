@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 from django import forms
 from django.contrib.auth.models import User
@@ -17,8 +20,8 @@ class BreedAdminForm(forms.ModelForm):
         model = Breed
         fields = "__all__"
 
-    def clean_name(self):
-        name = self.cleaned_data["name"]
+    def clean_name(self) -> str:
+        name: str = self.cleaned_data["name"]
         normalized_name = name.strip().lower().title()
 
         query = Breed.objects.filter(name__iexact=normalized_name)
@@ -60,16 +63,19 @@ class PetAdminForm(forms.ModelForm):
         model = Pet
         fields = ["name", "breed", "birth_date", "owner"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-
         self.fields["owner"].required = False
 
-    def clean(self):
-        cleaned_data = super().clean()
-        owner = cleaned_data.get("owner")
-        name = cleaned_data.get("name")
-        new_customer_username = cleaned_data.get("new_customer_username")
+    def clean(self) -> dict[str, Any]:
+        cleaned_data: dict[str, Any] | None = super().clean()
+
+        if cleaned_data is None:
+            return {}
+
+        owner: Customer | None = cleaned_data.get("owner")
+        name: str | None = cleaned_data.get("name")
+        new_customer_username: str | None = cleaned_data.get("new_customer_username")
 
         if not owner and not new_customer_username:
             self.add_error(
@@ -84,7 +90,7 @@ class PetAdminForm(forms.ModelForm):
                     "Este nome de usuário já existe. Por favor, escolha outro.",
                 )
 
-        new_customer_cpf = cleaned_data.get("new_customer_cpf")
+        new_customer_cpf: str | None = cleaned_data.get("new_customer_cpf")
         if new_customer_cpf and Customer.objects.filter(cpf=new_customer_cpf).exists():
             self.add_error(
                 "new_customer_cpf", "Este CPF já está cadastrado em nosso sistema."
@@ -102,19 +108,21 @@ class PetAdminForm(forms.ModelForm):
         return cleaned_data
 
     @transaction.atomic
-    def save(self, commit=True):
-        new_customer_username = self.cleaned_data.get("new_customer_username")
+    def save(self, commit: bool = True) -> Pet:
+        new_customer_username: str | None = self.cleaned_data.get(
+            "new_customer_username"
+        )
 
         if new_customer_username:
             customer = CustomerService.create_customer(
                 username=new_customer_username,
-                first_name=self.cleaned_data.get("new_customer_first_name"),
-                phone=self.cleaned_data.get("new_customer_phone"),
-                cpf=self.cleaned_data.get("new_customer_cpf"),
+                first_name=self.cleaned_data.get("new_customer_first_name", ""),
+                phone=self.cleaned_data.get("new_customer_phone", ""),
+                cpf=self.cleaned_data.get("new_customer_cpf", ""),
             )
             self.instance.owner = customer
 
-        pet = super().save(commit=commit)
+        pet: Pet = super().save(commit=commit)
         if commit:
             logger.info(
                 "Pet '%s' (ID: %d) for owner '%s' saved via PetAdminForm.",
