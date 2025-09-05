@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
 
@@ -10,6 +10,7 @@ from .models import ProductLot, Sale, SaleItem
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import User
+    from django.db.models.query import QuerySet
 
     from src.apps.accounts.models import Customer
     from src.apps.store.models import Product
@@ -19,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class InsufficientStockError(Exception):
+    """Custom exception for stock validation errors."""
+
     pass
 
 
@@ -27,11 +30,26 @@ class SaleService:
     @transaction.atomic
     def create_sale(
         *,
-        user: User,
-        items_data: list[dict],
-        customer: Customer | None = None,
+        user: "User",  # noqa: UP037
+        items_data: list[dict[str, Any]],
+        customer: "Customer" | None = None,  # noqa: UP037
         sale_instance: Sale | None = None,
     ) -> Sale:
+        """
+        Creates or updates a sale, processes items, updates stock, and calculates the total value.
+
+        Args:
+            user: The user processing the sale.
+            items_data: A list of dictionaries, each containing 'lot' and 'quantity'.
+            customer: The customer associated with the sale (optional).
+            sale_instance: An existing sale instance to update (optional).
+
+        Returns:
+            The created or updated Sale instance.
+
+        Raises:
+            InsufficientStockError: If the requested quantity for any lot exceeds available stock.
+        """
         if sale_instance is None:
             sale = Sale.objects.create(processed_by=user, customer=customer)
         else:
@@ -54,11 +72,10 @@ class SaleService:
                     "Sale creation failed for user '%s': %s",
                     user.username,
                     error_message,
-                    exc_info=True,
                 )
                 raise InsufficientStockError(error_message)
 
-            unit_price = item_data.get("unit_price") or lot.final_price
+            unit_price: Decimal = item_data.get("unit_price") or lot.final_price
             total_sale_value += unit_price * quantity
             lot.quantity -= quantity
             lots_to_update.append(lot)
@@ -88,12 +105,22 @@ class SaleService:
 
 class ProductService:
     @staticmethod
-    def calculate_product_final_price(product: Product) -> Decimal:
-        lots_with_stock = product.lots.filter(quantity__gt=0).order_by(
-            "expiration_date"
-        )
+    def calculate_product_final_price(product: "Product") -> Decimal:  # noqa: UP037
+        """
+        Calculates the best final price for a product based on its lots with available stock.
+        It considers the lowest price among all lots, factoring in promotions.
 
-        best_price = product.price
+        Args:
+            product: The Product instance to calculate the price for.
+
+        Returns:
+            The best final price for the product as a Decimal.
+        """
+        lots_with_stock: "QuerySet[ProductLot]" = product.lots.filter(  # noqa: UP037
+            quantity__gt=0
+        ).order_by("expiration_date")
+
+        best_price: Decimal = product.price
 
         if not lots_with_stock.exists():
             return best_price

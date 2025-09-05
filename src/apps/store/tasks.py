@@ -1,3 +1,6 @@
+from datetime import timedelta
+from decimal import Decimal
+
 from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
@@ -8,7 +11,7 @@ from .models import ProductLot, Promotion, Sale
 
 
 @shared_task
-def apply_expiration_discounts():
+def apply_expiration_discounts() -> str:
     today = timezone.now().date()
     lots_to_check = ProductLot.objects.filter(
         expiration_date__isnull=False, quantity__gt=0
@@ -16,10 +19,15 @@ def apply_expiration_discounts():
 
     updated_count = 0
     for lot in lots_to_check:
-        days_until_expiration = (lot.expiration_date - today).days
+        if not lot.expiration_date:
+            continue
+
+        days_until_expiration: int = (lot.expiration_date - today).days
         new_discount = 0
 
-        if 5 < days_until_expiration <= 14:
+        if 0 <= days_until_expiration <= 5:
+            new_discount = 60
+        elif 5 < days_until_expiration <= 14:
             new_discount = 50
         elif 14 < days_until_expiration <= 30:
             new_discount = 30
@@ -27,11 +35,9 @@ def apply_expiration_discounts():
             new_discount = 20
         elif 60 < days_until_expiration <= 90:
             new_discount = 10
-        elif 0 <= days_until_expiration <= 5:
-            new_discount = 60
 
         if lot.auto_discount_percentage != new_discount:
-            lot.auto_discount_percentage = new_discount
+            lot.auto_discount_percentage = Decimal(new_discount)
             lot.save(update_fields=["auto_discount_percentage"])
             updated_count += 1
 
@@ -39,9 +45,9 @@ def apply_expiration_discounts():
 
 
 @shared_task
-def generate_daily_sales_report():
+def generate_daily_sales_report() -> str:
     today = timezone.localdate()
-    yesterday = today - timezone.timedelta(days=1)
+    yesterday = today - timedelta(days=1)
 
     sales = (
         Sale.objects.filter(created_at__date=yesterday)
@@ -88,18 +94,20 @@ def generate_daily_sales_report():
 
 
 @shared_task
-def generate_daily_promotions_report():
+def generate_daily_promotions_report() -> str:
     today = timezone.localdate()
-    yesterday = today - timezone.timedelta(days=1)
+    yesterday = today - timedelta(days=1)
 
     newly_promoted_lots = ProductLot.objects.filter(
-        auto_discount_percentage__gt=0
+        auto_discount_percentage__gt=Decimal("0")
     ).extra(
         where=[f"DATE(updated_at AT TIME ZONE '{settings.TIME_ZONE}') = %s"],
         params=[yesterday],
     )
 
-    newly_unpromoted_lots = ProductLot.objects.filter(auto_discount_percentage=0).extra(
+    newly_unpromoted_lots = ProductLot.objects.filter(
+        auto_discount_percentage=Decimal("0")
+    ).extra(
         where=[f"DATE(updated_at AT TIME ZONE '{settings.TIME_ZONE}') = %s"],
         params=[yesterday],
     )
@@ -108,7 +116,7 @@ def generate_daily_promotions_report():
         "rules__lot__product"
     )
     active_auto_promotions = ProductLot.objects.filter(
-        auto_discount_percentage__gt=0, quantity__gt=0
+        auto_discount_percentage__gt=Decimal("0"), quantity__gt=0
     ).select_related("product")
 
     subject = f"Relatório Diário de Promoções - {today.strftime('%d/%m/%Y')}"
