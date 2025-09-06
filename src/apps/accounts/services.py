@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
+import structlog
 from django.contrib.auth.models import User
 from django.db import transaction
 
 if TYPE_CHECKING:
     from src.apps.accounts.models import Customer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class CustomerService:
@@ -33,8 +33,9 @@ class CustomerService:
             cpf=cpf,
         )
         logger.info(
-            "New customer '%s' (ID: %d) created via CustomerService.",
-            customer.user.username,
-            customer.id,
+            "customer_created",
+            customer_id=customer.id,
+            user_id=user.id,
+            username=user.username,
         )
         return customer

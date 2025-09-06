@@ -1,6 +1,6 @@
-import logging
 from datetime import date
 
+import structlog
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -22,7 +22,7 @@ from .serializers import (
 )
 from .services import AppointmentService
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @extend_schema(
@@ -58,7 +58,8 @@ class AvailableSlotsView(APIView):
 
             if not date_str or not service_id:
                 logger.warning(
-                    f"AvailableSlotsView was called with missing parameters by user '{request.user.username}'."
+                    "available_slots_missing_params",
+                    user=request.user.username,
                 )
                 return Response(
                     {"error": "Parameters 'date' and 'service_id' are required."},
@@ -122,13 +123,22 @@ class AppointmentViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         appointment = serializer.save()
         logger.info(
-            f"Appointment #{appointment.id} created for pet '{appointment.pet.name}' "
-            f"by user '{self.request.user.username}' for {appointment.schedule_time}."
+            "appointment_created",
+            appointment_id=appointment.id,
+            pet_id=appointment.pet.id,
+            pet_name=appointment.pet.name,
+            service_id=appointment.service.id,
+            service_name=appointment.service.name,
+            scheduled_for=appointment.schedule_time.isoformat(),
+            created_by=self.request.user.username,
         )
 
     def perform_destroy(self, instance):
         logger.warning(
-            f"Appointment #{instance.id} for pet '{instance.pet.name}' was CANCELED "
-            f"by user '{self.request.user.username}'."
+            "appointment_canceled",
+            appointment_id=instance.id,
+            pet_id=instance.pet.id,
+            pet_name=instance.pet.name,
+            canceled_by=self.request.user.username,
         )
         instance.delete()

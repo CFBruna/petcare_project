@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
+import structlog
 from django.db import transaction
 
 from .models import ProductLot, Sale, SaleItem
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from src.apps.store.models import Product
 
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class InsufficientStockError(Exception):
@@ -69,9 +69,13 @@ class SaleService:
                     f"Disponível: {lot.quantity}, Solicitado: {quantity}."
                 )
                 logger.error(
-                    "Sale creation failed for user '%s': %s",
-                    user.username,
-                    error_message,
+                    "sale_creation_failed",
+                    reason="insufficient_stock",
+                    user=user.username,
+                    product_name=lot.product.name,
+                    lot_number=lot.lot_number,
+                    quantity_available=lot.quantity,
+                    quantity_requested=quantity,
                 )
                 raise InsufficientStockError(error_message)
 
@@ -94,10 +98,11 @@ class SaleService:
         sale.save(update_fields=["total_value"])
 
         logger.info(
-            "Sale #%d created successfully. Total: %s. Processed by: %s.",
-            sale.id,
-            sale.total_value,
-            user.username,
+            "sale_created_successfully",
+            sale_id=sale.id,
+            total_value=float(sale.total_value),
+            processed_by=user.username,
+            customer_id=customer.id if customer else None,
         )
 
         return sale

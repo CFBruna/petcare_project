@@ -1,3 +1,4 @@
+import ast
 from decimal import Decimal
 
 import pytest
@@ -83,7 +84,12 @@ class TestStoreServices:
         # Assert
         assert len(caplog.records) == 1
         record = caplog.records[0]
+
+        log_dict = ast.literal_eval(record.message)
+
         assert record.levelname == "ERROR"
-        assert "Sale creation failed" in record.message
-        assert "Estoque insuficiente" in record.message
-        assert "Disponível: 2, Solicitado: 5" in record.message
+        assert log_dict["event"] == "sale_creation_failed"
+        assert log_dict["reason"] == "insufficient_stock"
+        assert log_dict["user"] == user.username
+        assert log_dict["quantity_available"] == 2
+        assert log_dict["quantity_requested"] == 5
