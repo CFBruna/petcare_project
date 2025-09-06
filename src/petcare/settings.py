@@ -8,7 +8,7 @@ from celery.schedules import crontab
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # ==============================================================================
@@ -130,9 +130,9 @@ USE_TZ = True
 # ==============================================================================
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR.parent / "staticfiles"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "src/static",
 ]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -291,7 +291,7 @@ LOGGING = {
         },
         "json_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR.parent / "logs/petcare.json.log",
+            "filename": BASE_DIR / "logs/petcare.json.log",
             "maxBytes": 1024 * 1024 * 5,
             "backupCount": 5,
             "formatter": "json_formatter",
