@@ -177,6 +177,8 @@ six==1.17.0
     # via python-dateutil
 sqlparse==0.5.3
     # via django
+structlog==25.4.0
+    # via -r requirements.in
 types-pyyaml==6.0.12.20250822
     # via django-stubs
 typing-extensions==4.15.0

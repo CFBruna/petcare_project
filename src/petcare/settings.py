@@ -1,7 +1,9 @@
+import sys
 from pathlib import Path
 from typing import Any
 
 import dj_database_url
+import structlog
 from celery.schedules import crontab
 from decouple import config
 
@@ -247,43 +249,67 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # ==============================================================================
-# LOGGING SETTINGS
+# LOGGING SETTINGS (STRUCTLOG)
 # ==============================================================================
+
+shared_processors = [
+    structlog.contextvars.merge_contextvars,
+    structlog.stdlib.add_logger_name,
+    structlog.stdlib.add_log_level,
+    structlog.processors.TimeStamper(fmt="iso"),
+]
+
+structlog.configure(
+    processors=shared_processors
+    + [
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],  # type: ignore
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    cache_logger_on_first_use=True,
+)
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "(%(asctime)s) [%(levelname)s] %(name)s: %(message)s",
+        "json_formatter": {
+            "()": "structlog.stdlib.ProcessorFormatter",
+            "processor": structlog.processors.JSONRenderer(),
+            "foreign_pre_chain": shared_processors,
+        },
+        "console_formatter": {
+            "()": "structlog.stdlib.ProcessorFormatter",
+            "processor": structlog.dev.ConsoleRenderer(),
+            "foreign_pre_chain": shared_processors,
         },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "verbose",
+            "formatter": "console_formatter",
+            "stream": sys.stdout,
         },
-        "file": {
+        "json_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR.parent / "logs/petcare.log",
+            "filename": BASE_DIR.parent / "logs/petcare.json.log",
             "maxBytes": 1024 * 1024 * 5,
-            "backupCount": 2,
-            "formatter": "verbose",
-        },
-        "mail_admins": {
-            "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
-            "formatter": "verbose",
+            "backupCount": 5,
+            "formatter": "json_formatter",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file", "mail_admins"],
+            "handlers": ["console", "json_file"],
             "level": "INFO",
-            "propagate": True,
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["json_file"],
+            "level": "WARNING",
+            "propagate": False,
         },
         "src": {
-            "handlers": ["console", "file", "mail_admins"],
+            "handlers": ["console", "json_file"],
             "level": "INFO",
             "propagate": True,
         },

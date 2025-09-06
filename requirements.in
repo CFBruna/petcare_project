@@ -22,3 +22,4 @@ drf-spectacular
 mypy
 django-stubs
 whitenoise[brotli]
+structlog

@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 
@@ -9,7 +8,7 @@ from src.petcare.permissions import IsOwnerOrStaff
 from .models import HealthRecord
 from .serializers import HealthRecordSerializer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @extend_schema(
@@ -29,6 +28,10 @@ class HealthRecordViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         health_record = serializer.save(created_by=self.request.user)
         logger.info(
-            f"HealthRecord #{health_record.id} (Type: {health_record.record_type}) created for pet "
-            f"'{health_record.pet.name}' by user '{self.request.user.username}'."
+            "health_record_created",
+            record_id=health_record.id,
+            record_type=health_record.record_type,
+            pet_id=health_record.pet.id,
+            pet_name=health_record.pet.name,
+            created_by=self.request.user.username,
         )

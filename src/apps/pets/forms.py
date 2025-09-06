@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import logging
 from typing import Any
 
+import structlog
 from django import forms
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -12,7 +12,7 @@ from src.apps.accounts.services import CustomerService
 
 from .models import Breed, Pet
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class BreedAdminForm(forms.ModelForm):
@@ -125,9 +125,10 @@ class PetAdminForm(forms.ModelForm):
         pet: Pet = super().save(commit=commit)
         if commit:
             logger.info(
-                "Pet '%s' (ID: %d) for owner '%s' saved via PetAdminForm.",
-                pet.name,
-                pet.id,
-                pet.owner.user.username,
+                "pet_saved",
+                pet_id=pet.id,
+                pet_name=pet.name,
+                owner_id=pet.owner.id,
+                owner_username=pet.owner.user.username,
             )
         return pet
