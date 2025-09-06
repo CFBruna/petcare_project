@@ -80,7 +80,7 @@ class SaleService:
                 raise InsufficientStockError(error_message)
 
             unit_price: Decimal = item_data.get("unit_price") or lot.final_price
-            total_sale_value += unit_price * quantity
+            total_sale_value += Decimal(unit_price) * quantity
             lot.quantity -= quantity
             lots_to_update.append(lot)
 

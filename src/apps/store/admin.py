@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.html import format_html
 
 from .forms import BrandAdminForm, CategoryAdminForm, SaleItemFormSet
@@ -125,10 +127,20 @@ class SaleAdmin(admin.ModelAdmin):
                 f.instance.sale = final_sale
 
             self.message_user(request, "Venda criada com sucesso!", messages.SUCCESS)
+            request._message_sent_for_sale = True
         except InsufficientStockError as e:
             self.message_user(request, str(e), messages.ERROR)
             if not change and sale_instance.pk:
                 sale_instance.delete()
+
+    def response_add(self, request, obj, post_url_continue=None):
+        if hasattr(request, "_message_sent_for_sale"):
+            post_url = reverse(
+                f"admin:{self.opts.app_label}_{self.opts.model_name}_changelist"
+            )
+            return HttpResponseRedirect(post_url)
+
+        return super().response_add(request, obj, post_url_continue)
 
 
 class ProductLotInline(admin.TabularInline):
