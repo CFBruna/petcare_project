@@ -1,0 +1,129 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-card {
+        background-color: var(--body-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .dashboard-card h2 {
+        font-size: 1.2rem;
+        margin-top: 0;
+        color: var(--header-link-color);
+    }
+
+    .dashboard-card .metric {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: var(--header-bg);
+    }
+
+    .dashboard-full-width {
+        grid-column: 1 / -1;
+    }
+
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Dashboard PetCare</h1>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h2>Faturamento de Hoje</h2>
+            <p class="metric">R$ {{ revenue_today|floatformat:2 }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h2>Agendamentos Confirmados para Hoje</h2>
+            <p class="metric">{{ appointments_today }}</p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card dashboard-full-width">
+            <h2>Faturamento (Últimos 7 Dias)</h2>
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card dashboard-full-width">
+            <h2>Produtos Mais Vendidos Hoje</h2>
+            {% if top_products %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade Vendida</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in top_products %}
+                    <tr>
+                        <td>{{ product.lot__product__name }}</td>
+                        <td>{{ product.total_sold }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Nenhum produto foi vendido hoje.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels| safe }},
+        datasets: [{
+            label: 'Faturamento (R$)',
+            data: {{ chart_values| safe }},
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1
+            }]
+        },
+        options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,8 +1,13 @@
+from datetime import timedelta
+
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group, User
+from django.db.models import Sum
+from django.db.models.functions import TruncDay
+from django.utils import timezone
 from django_celery_beat.models import (
     ClockedSchedule,
     CrontabSchedule,
@@ -35,6 +40,7 @@ from src.apps.store.models import (
     ProductLot,
     Promotion,
     Sale,
+    SaleItem,
 )
 
 from .models import Customer
@@ -75,9 +81,54 @@ class PetCareAdminSite(admin.AdminSite):
     site_header = "Administração PetCare"
     site_title = "Painel PetCare"
     index_title = "Bem-vindo ao Painel de Controle PetCare"
+    index_template = "admin/dashboard.html"
 
     def has_permission(self, request):
         return request.user.is_active and request.user.is_staff
+
+    def index(self, request, extra_context=None):
+        today = timezone.now().date()
+        start_of_week = today - timedelta(days=6)
+
+        sales_today = Sale.objects.filter(created_at__date=today)
+        revenue_today = sales_today.aggregate(total=Sum("total_value"))["total"] or 0
+
+        appointments_today = Appointment.objects.filter(
+            schedule_time__date=today, status=Appointment.Status.CONFIRMED
+        ).count()
+
+        revenue_by_day = (
+            Sale.objects.filter(created_at__date__gte=start_of_week)
+            .annotate(day=TruncDay("created_at"))
+            .values("day")
+            .annotate(total=Sum("total_value"))
+            .order_by("day")
+        )
+
+        chart_data = {
+            (start_of_week + timedelta(days=i)).strftime("%d/%m"): 0 for i in range(7)
+        }
+        for entry in revenue_by_day:
+            chart_data[entry["day"].strftime("%d/%m")] = float(entry["total"])
+
+        top_products_today = (
+            SaleItem.objects.filter(sale__in=sales_today)
+            .values("lot__product__name")
+            .annotate(total_sold=Sum("quantity"))
+            .order_by("-total_sold")[:5]
+        )
+
+        context = {
+            **self.each_context(request),
+            "title": self.index_title,
+            "revenue_today": revenue_today,
+            "appointments_today": appointments_today,
+            "chart_labels": list(chart_data.keys()),
+            "chart_values": list(chart_data.values()),
+            "top_products": top_products_today,
+        }
+
+        return super().index(request, extra_context=context)
 
     def get_app_list(self, request, app_label=None):
         app_dict = self._build_app_dict(request)
