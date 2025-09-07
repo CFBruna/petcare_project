@@ -128,22 +128,24 @@ class TestAppointmentAdminForm:
             schedule_time=appointment_time, service=self.service
         )
         form = AppointmentAdminForm(instance=appointment)
-        assert form.fields["appointment_date"].initial == self.future_date.isoformat()
-        assert form.fields["appointment_time"].initial == "09:00"
-        assert ("09:00", "09:00") in form.fields["appointment_time"].choices
+        assert form.initial["appointment_date"] == self.future_date.isoformat()
+        assert form.initial["appointment_time"] == "09:00"
+        assert ("09:00", "09:00") in form.fields["appointment_time"].widget.choices
 
     def test_dynamic_time_choices_are_loaded(self):
         form_data = {
             "service": self.service.id,
             "appointment_date": self.future_date.isoformat(),
         }
+
         form = AppointmentAdminForm(data=form_data)
-        form.is_valid()
-        assert len(form.fields["appointment_time"].choices) > 0
-        assert ("09:00", "09:00") in form.fields["appointment_time"].choices
-        assert ("10:00", "10:00") in form.fields["appointment_time"].choices
-        assert ("11:00", "11:00") in form.fields["appointment_time"].choices
-        assert ("12:00", "12:00") not in form.fields["appointment_time"].choices
+
+        choices = form.fields["appointment_time"].widget.choices
+        assert len(choices) > 0
+        assert ("09:00", "09:00") in choices
+        assert ("10:00", "10:00") in choices
+        assert ("11:00", "11:00") in choices
+        assert ("12:00", "12:00") not in choices
 
     def test_form_prevents_retroactive_appointments_on_create(self):
         form_data = {
