@@ -35,7 +35,13 @@ class Appointment(models.Model):
         related_name="appointments",
         verbose_name="Serviço",
     )
-    schedule_time = models.DateTimeField(verbose_name="Data e Hora do Agendamento")
+    schedule_time = models.DateTimeField(
+        verbose_name="Data e Hora do Agendamento",
+        unique=True,
+        error_messages={
+            "unique": "Já existe um agendamento exatamente neste mesmo horário."
+        },
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
