@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING
 
+import structlog
 from django.utils import timezone
 
 from .models import Appointment, TimeSlot
@@ -11,6 +12,8 @@ if TYPE_CHECKING:
     from src.apps.pets.models import Pet
 
     from .models import Service
+
+logger = structlog.get_logger(__name__)
 
 
 class AppointmentService:
