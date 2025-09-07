@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django import forms
+from django.db import IntegrityError
 from django.utils import timezone
 
 from .models import Appointment, Service
@@ -34,10 +35,10 @@ class AppointmentAdminForm(forms.ModelForm):
         help_text="Selecione a data para ver os horários disponíveis.",
         required=True,
     )
-    appointment_time = forms.ChoiceField(
+    appointment_time = forms.CharField(
         label="Horário do Agendamento",
-        choices=[],
         help_text="Este campo será preenchido após selecionar uma data e um serviço.",
+        widget=forms.Select(choices=[]),
         required=True,
     )
 
@@ -49,51 +50,55 @@ class AppointmentAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         instance = kwargs.get("instance")
 
-        if self.data:
-            service_id = self.data.get("service")
-            date_str = self.data.get("appointment_date")
-            if service_id and date_str:
-                try:
-                    service = Service.objects.get(pk=service_id)
-                    date = datetime.strptime(date_str, "%Y-%m-%d").date()
-                    choices = self.get_dynamic_time_choices(service, date)
+        choices = []
+        initial_time = None
+        initial_date = None
 
-                    if instance and instance.pk:
-                        original_time_str = timezone.localtime(
-                            instance.schedule_time
-                        ).strftime("%H:%M")
-                        if (original_time_str, original_time_str) not in choices:
-                            choices.append((original_time_str, original_time_str))
-                            choices.sort()
+        if self.data or instance:
+            service = self._get_service(instance)
+            date = self._get_date(instance)
 
-                    self.fields["appointment_time"].choices = choices
-                except (ValueError, Service.DoesNotExist):
-                    pass
-        elif instance and instance.schedule_time:
+            if service and date:
+                choices = self.get_dynamic_time_choices(service, date)
+                initial_date = date.isoformat()
+
+        if instance and instance.pk:
             local_schedule_time = timezone.localtime(instance.schedule_time)
-            self.fields[
-                "appointment_date"
-            ].initial = local_schedule_time.date().isoformat()
-            current_time_choice = local_schedule_time.strftime("%H:%M")
+            initial_time_str = local_schedule_time.strftime("%H:%M")
+            initial_time = initial_time_str
+            initial_date = local_schedule_time.date().isoformat()
 
+            if (initial_time_str, initial_time_str) not in choices:
+                choices.append((initial_time_str, initial_time_str))
+                choices.sort()
+
+        self.fields["appointment_time"].widget.choices = choices
+        if initial_time:
+            self.initial["appointment_time"] = initial_time
+        if initial_date:
+            self.initial["appointment_date"] = initial_date
+
+    def _get_service(self, instance):
+        if self.data:
             try:
-                available_times = AppointmentService.get_available_slots(
-                    local_schedule_time.date(), instance.service
-                )
-                valid_choices = [
-                    (t.strftime("%H:%M"), t.strftime("%H:%M")) for t in available_times
-                ]
-                if (current_time_choice, current_time_choice) not in valid_choices:
-                    valid_choices.append((current_time_choice, current_time_choice))
-                    valid_choices.sort()
+                return Service.objects.get(pk=self.data.get("service"))
+            except (Service.DoesNotExist, ValueError):
+                return None
+        if instance:
+            return instance.service
+        return None
 
-                self.fields["appointment_time"].choices = valid_choices
-                self.fields["appointment_time"].initial = current_time_choice
-            except Service.DoesNotExist:
-                self.fields["appointment_time"].choices = [
-                    (current_time_choice, current_time_choice)
-                ]
-                self.fields["appointment_time"].initial = current_time_choice
+    def _get_date(self, instance):
+        if self.data:
+            try:
+                return datetime.strptime(
+                    self.data.get("appointment_date"), "%Y-%m-%d"
+                ).date()
+            except (ValueError, TypeError):
+                return None
+        if instance and instance.schedule_time:
+            return timezone.localtime(instance.schedule_time).date()
+        return None
 
     def get_dynamic_time_choices(self, service, date):
         available_times = AppointmentService.get_available_slots(date, service)
@@ -103,34 +108,55 @@ class AppointmentAdminForm(forms.ModelForm):
         cleaned_data = super().clean()
         date = cleaned_data.get("appointment_date")
         time_str = cleaned_data.get("appointment_time")
+        service = cleaned_data.get("service")
 
-        if date and time_str:
-            hour, minute = map(int, time_str.split(":"))
-            local_dt = datetime.combine(date, datetime.min.time()).replace(
-                hour=hour, minute=minute
+        if not (date and time_str and service):
+            return cleaned_data
+
+        try:
+            submitted_time = datetime.strptime(time_str, "%H:%M").time()
+        except ValueError as e:
+            raise forms.ValidationError(
+                {"appointment_time": "Formato de hora inválido."}
+            ) from e
+
+        available_slots = AppointmentService.get_available_slots(date, service)
+        is_editing = self.instance and self.instance.pk
+        if is_editing:
+            original_time = timezone.localtime(self.instance.schedule_time).time()
+            if original_time not in available_slots:
+                available_slots.append(original_time)
+
+        if submitted_time not in available_slots:
+            self.add_error(
+                "appointment_time",
+                "Este horário não está mais disponível. Por favor, selecione outro.",
             )
-            cleaned_data["schedule_time"] = timezone.make_aware(local_dt)
-            try:
-                AppointmentService.prepare_appointment_instance(
-                    appointment=self.instance,
-                    pet=cleaned_data.get("pet"),
-                    service=cleaned_data.get("service"),
-                    schedule_time=cleaned_data.get("schedule_time"),
-                    status=cleaned_data.get("status"),
-                    notes=cleaned_data.get("notes"),
-                )
-            except ValueError as e:
-                raise forms.ValidationError(str(e)) from e
+            return cleaned_data
+
+        local_dt = datetime.combine(date, submitted_time)
+        cleaned_data["schedule_time"] = timezone.make_aware(local_dt)
+
+        try:
+            self.instance = AppointmentService.prepare_appointment_instance(
+                appointment=self.instance,
+                pet=cleaned_data.get("pet"),
+                service=cleaned_data.get("service"),
+                schedule_time=cleaned_data.get("schedule_time"),
+                status=cleaned_data.get("status"),
+                notes=cleaned_data.get("notes"),
+            )
+        except ValueError as e:
+            raise forms.ValidationError(str(e)) from e
 
         return cleaned_data
 
     def save(self, commit=True):
-        self.instance = AppointmentService.prepare_appointment_instance(
-            appointment=self.instance,
-            pet=self.cleaned_data.get("pet"),
-            service=self.cleaned_data.get("service"),
-            schedule_time=self.cleaned_data.get("schedule_time"),
-            status=self.cleaned_data.get("status"),
-            notes=self.cleaned_data.get("notes"),
-        )
-        return super().save(commit=commit)
+        try:
+            return super().save(commit=commit)
+        except IntegrityError:
+            self.add_error(
+                "appointment_time",
+                "Este horário foi agendado por outra pessoa. Por favor, escolha um novo horário.",
+            )
+            return self.instance
