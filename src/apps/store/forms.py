@@ -46,25 +46,30 @@ class SaleItemFormSet(forms.BaseInlineFormSet):
         total_quantity_per_lot = {}
 
         for form in self.forms:
-            if (
-                not form.is_valid()
-                or self.can_delete
-                and self._should_delete_form(form)
-            ):
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            if self.can_delete and self._should_delete_form(form):
                 continue
 
             cleaned_data = form.cleaned_data
             lot = cleaned_data.get("lot")
             quantity = cleaned_data.get("quantity")
 
-            if lot and quantity:
+            if lot and quantity and quantity > 0:
                 total_quantity_per_lot[lot] = (
                     total_quantity_per_lot.get(lot, 0) + quantity
                 )
 
+        errors = []
         for lot, total_quantity in total_quantity_per_lot.items():
-            if lot.quantity < total_quantity:
-                raise forms.ValidationError(
-                    f"Estoque insuficiente para o lote '{lot}'. "
-                    f"Disponível: {lot.quantity}, Solicitado: {total_quantity}."
+            if total_quantity > lot.quantity:
+                errors.append(
+                    forms.ValidationError(
+                        f"Estoque insuficiente para o lote {lot}. "
+                        f"Disponível: {lot.quantity}, Solicitado: {total_quantity}."
+                    )
                 )
+
+        if errors:
+            raise forms.ValidationError(errors)
