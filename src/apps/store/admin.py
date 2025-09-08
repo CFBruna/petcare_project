@@ -75,6 +75,13 @@ class SaleAdmin(admin.ModelAdmin):
 
         return format_html(html_format_string, *format_args)
 
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        if not self.has_change_permission(request):
+            from django.http import HttpResponseForbidden
+
+            return HttpResponseForbidden()
+        return super().change_view(request, object_id, form_url, extra_context)
+
     def has_change_permission(self, request, obj=None):
         return False
 
