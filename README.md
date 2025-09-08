@@ -8,6 +8,14 @@ Este projeto utiliza Django em um ambiente conteinerizado com Docker, oferecendo
 
 ---
 
+### ✨ Demonstração em Vídeo
+
+Assista a um vídeo de menos de 2 minutos que demonstra as principais funcionalidades, a arquitetura e o pipeline de qualidade do PetCare.
+
+[<img src="https://github.com/user-attachments/assets/4a9bc390-a421-40e7-8dbe-efa585e00ebe" width="100%">](https://youtu.be/hD8qak2FAoQ)
+
+---
+
 ## ✨ Funcionalidades Principais
 
 * **Gestão de Clientes e Pets:** Cadastro completo de tutores e seus animais.
