@@ -26,3 +26,8 @@ class TestCustomerModel:
         user = UserFactory(first_name="", last_name="")
         customer = CustomerFactory(user=user)
         assert str(customer) == f"{user.username} - {customer.cpf}"
+
+    def test_customer_str_representation_no_cpf(self):
+        user = UserFactory(first_name="Ana", last_name="Souza")
+        customer = CustomerFactory(user=user, cpf=None)
+        assert str(customer) == user.get_full_name()

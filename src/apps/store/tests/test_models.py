@@ -63,6 +63,28 @@ class TestSaleModels:
         sale_item = SaleItemFactory(lot=lot, quantity=3)
         assert str(sale_item) == "3x Ração Premium (Lote: A123)"
 
+    def test_sale_item_str_without_lot_number(self):
+        lot = ProductLotFactory(lot_number=None, product__name="Ração Padrão")
+        sale_item = SaleItemFactory(lot=lot, quantity=1)
+        assert str(sale_item) == "1x Ração Padrão (Lote: N/A)"
+
+
+@pytest.mark.django_db
+class TestProductLotModel:
+    def test_product_lot_str_with_promotion(self):
+        lot = ProductLotFactory(quantity=10)
+        now = timezone.now()
+        promotion = PromotionFactory(
+            start_date=now - timezone.timedelta(days=1),
+            end_date=now + timezone.timedelta(days=1),
+        )
+        PromotionRuleFactory(promotion=promotion, lot=lot, discount_percentage=20)
+        assert "PROMO: -20%" in str(lot)
+
+    def test_product_lot_str_without_promotion(self):
+        lot = ProductLotFactory()
+        assert "PROMO" not in str(lot)
+
 
 @pytest.mark.django_db
 class TestProductInventoryModel:

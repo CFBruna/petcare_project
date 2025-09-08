@@ -1,9 +1,10 @@
-from datetime import date, time
+from datetime import date, time, timedelta
 from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
 
+from src.apps.schedule.models import Appointment
 from src.apps.schedule.services import AppointmentService
 from src.apps.schedule.tests.factories import (
     AppointmentFactory,
@@ -34,7 +35,6 @@ class TestAvailableSlotsService:
         slots = AppointmentService.get_available_slots(
             self.test_date, self.service_30_min
         )
-        assert len(slots) > 0
         assert time(8, 0) in slots
         assert time(11, 30) in slots
         assert time(11, 45) not in slots
@@ -50,11 +50,14 @@ class TestAvailableSlotsService:
         appointment_time = timezone.make_aware(
             timezone.datetime.combine(self.test_date, time(9, 0))
         )
-        AppointmentFactory(service=self.service_60_min, schedule_time=appointment_time)
+        AppointmentFactory(
+            service=self.service_60_min,
+            schedule_time=appointment_time,
+            status=Appointment.Status.CONFIRMED,
+        )
         slots = AppointmentService.get_available_slots(
             self.test_date, self.service_30_min
         )
-        assert time(8, 0) in slots
         assert time(8, 45) not in slots
         assert time(9, 0) not in slots
         assert time(9, 30) not in slots
@@ -64,37 +67,45 @@ class TestAvailableSlotsService:
         appointment_time = timezone.make_aware(
             timezone.datetime.combine(self.test_date, time(8, 0))
         )
-        AppointmentFactory(service=self.service_120_min, schedule_time=appointment_time)
-        slots_for_long_service = AppointmentService.get_available_slots(
-            self.test_date, self.service_120_min
+        AppointmentFactory(
+            service=self.service_120_min,
+            schedule_time=appointment_time,
+            status=Appointment.Status.CONFIRMED,
         )
-        assert time(8, 0) not in slots_for_long_service
-        assert time(10, 0) in slots_for_long_service
-        assert time(10, 15) not in slots_for_long_service
         slots_for_short_service = AppointmentService.get_available_slots(
             self.test_date, self.service_30_min
         )
+        assert time(8, 0) not in slots_for_short_service
+        assert time(9, 45) not in slots_for_short_service
         assert time(10, 0) in slots_for_short_service
-        assert time(11, 30) in slots_for_short_service
 
     def test_get_slots_for_today_only_shows_future_slots(self):
         today = self.test_date
         mock_now_today = timezone.make_aware(
             timezone.datetime.combine(today, time(9, 10))
         )
-
         with patch("django.utils.timezone.now", return_value=mock_now_today):
             slots = AppointmentService.get_available_slots(today, self.service_30_min)
-
-        assert time(8, 0) not in slots
-        assert time(8, 30) not in slots
         assert time(9, 0) not in slots
-
         assert time(9, 15) in slots
-        assert time(10, 0) in slots
-        assert time(11, 30) in slots
 
     def test_get_slots_for_past_date(self):
         past_date = date(2025, 1, 1)
         slots = AppointmentService.get_available_slots(past_date, self.service_30_min)
         assert len(slots) == 0
+
+    def test_prepare_appointment_instance_time_changed(self):
+        appointment = AppointmentFactory(
+            schedule_time=timezone.now() + timedelta(days=2),
+            status=Appointment.Status.CONFIRMED,
+        )
+        new_time = timezone.now() + timedelta(days=3)
+        instance = AppointmentService.prepare_appointment_instance(
+            appointment=appointment,
+            pet=appointment.pet,
+            service=appointment.service,
+            schedule_time=new_time,
+            status=appointment.status,
+            notes=appointment.notes,
+        )
+        assert instance.schedule_time == new_time

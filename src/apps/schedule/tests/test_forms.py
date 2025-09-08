@@ -88,6 +88,36 @@ class TestAppointmentAdminForm:
         assert "service" in form.errors
         assert "appointment_date" in form.errors
 
+    def test_form_clean_invalid_time_format(self):
+        form_data = {
+            "pet": self.pet.id,
+            "service": self.service.id,
+            "status": "PENDING",
+            "appointment_date": self.future_date.isoformat(),
+            "appointment_time": "invalid-time",
+        }
+        form = AppointmentAdminForm(data=form_data)
+        assert not form.is_valid()
+        assert "appointment_time" in form.errors
+
+    def test_form_clean_unavailable_slot(self):
+        AppointmentFactory(
+            service=self.service,
+            schedule_time=timezone.make_aware(
+                timezone.datetime.combine(self.future_date, time(10, 0))
+            ),
+        )
+        form_data = {
+            "pet": self.pet.id,
+            "service": self.service.id,
+            "status": "PENDING",
+            "appointment_date": self.future_date.isoformat(),
+            "appointment_time": "10:00",
+        }
+        form = AppointmentAdminForm(data=form_data)
+        assert not form.is_valid()
+        assert "appointment_time" in form.errors
+
     def test_clean_method_creates_schedule_time(self):
         form_data = {
             "pet": self.pet.id,
