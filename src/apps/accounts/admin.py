@@ -83,9 +83,6 @@ class PetCareAdminSite(admin.AdminSite):
     index_title = "Bem-vindo ao Painel de Controle PetCare"
     index_template = "admin/dashboard.html"
 
-    def has_permission(self, request):
-        return request.user.is_active and request.user.is_staff
-
     def index(self, request, extra_context=None):
         today = timezone.now().date()
         start_of_week = today - timedelta(days=6)
