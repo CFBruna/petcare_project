@@ -106,6 +106,7 @@ Para executar a suíte de testes completa e gerar um relatório de cobertura, ut
 
 ```bash
 docker-compose exec web pytest --cov
+```
 
 ## 📄 Licença
 
