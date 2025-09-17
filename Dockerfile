@@ -27,6 +27,8 @@ RUN apt-get update && apt-get install -y git sudo && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/src"
+
 COPY --from=builder /usr/src/app/wheels /wheels
 RUN pip install --no-cache /wheels/*
 
