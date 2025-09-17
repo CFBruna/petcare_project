@@ -2,9 +2,20 @@
 
 [![Django CI](https://github.com/CFBruna/petcare_project/actions/workflows/ci.yml/badge.svg)](https://github.com/CFBruna/petcare_project/actions/workflows/ci.yml)
 
-> Um sistema web completo para gestão de pet shops, desenvolvido com foco em boas práticas, arquitetura robusta e qualidade de código.
+> Um sistema web completo para gestão de pet shops, desenvolvido com foco em boas práticas, arquitetura robusta e qualidade de código, totalmente hospedado em produção na AWS.
 
-Este projeto utiliza Django em um ambiente conteinerizado com Docker, oferecendo um portal administrativo completo, uma API REST bem documentada e um fluxo de trabalho de desenvolvimento automatizado com testes e integração contínua.
+---
+
+## 🚀 Demonstração Ao Vivo (Live Demo)
+
+Você pode testar a aplicação ao vivo, hospedada em uma arquitetura de produção na AWS.
+
+* **Link Principal:** **[http://petcare.brunadev.com](http://petcare.brunadev.com)**
+* **Acesso ao Admin:** **[http://petcare.brunadev.com/admin/](http://petcare.brunadev.com/admin/)**
+
+**Credenciais para teste:**
+* **Usuário:** `tester`
+* **Senha:** `tester1234`
 
 ---
 
@@ -13,6 +24,19 @@ Este projeto utiliza Django em um ambiente conteinerizado com Docker, oferecendo
 Assista a um vídeo de menos de 2 minutos que demonstra as principais funcionalidades, a arquitetura e o pipeline de qualidade do PetCare.
 
 [<img src="https://github.com/user-attachments/assets/4a9bc390-a421-40e7-8dbe-efa585e00ebe" width="100%">](https://youtu.be/hD8qak2FAoQ)
+
+---
+
+## 🏗️ Arquitetura de Produção (AWS)
+
+Este projeto está em produção utilizando uma arquitetura moderna e escalável na nuvem da AWS:
+
+* **Computação:** **EC2** para rodar a aplicação containerizada com Docker.
+* **Banco de Dados:** **RDS (PostgreSQL)** para um banco de dados relacional gerenciado e seguro.
+* **Cache & Tarefas Assíncronas:** **ElastiCache (Redis)** para gerenciar o Celery.
+* **Servidor Web & Proxy Reverso:** **Nginx** para servir arquivos estáticos e gerenciar o tráfego.
+* **DNS:** **Route 53** para gerenciamento dos domínios.
+* **Containerização:** **Docker e Docker Compose** para garantir consistência entre os ambientes.
 
 ---
 
@@ -30,10 +54,10 @@ Assista a um vídeo de menos de 2 minutos que demonstra as principais funcionali
 
 ## 📚 Documentação da API
 
-O projeto segue o padrão OpenAPI e a documentação da API é gerada automaticamente pelo `drf-spectacular`. Após iniciar o projeto, você pode acessar:
+O projeto segue o padrão OpenAPI e a documentação da API é gerada automaticamente. Na versão de produção, a documentação pode ser acessada nos seguintes links:
 
-* **Swagger UI:** `http://127.0.0.1:8000/api/v1/schema/swagger-ui/`
-* **ReDoc:** `http://127.0.0.1:8000/api/v1/schema/redoc/`
+* **Swagger UI:** `http://petcare.brunadev.com/api/v1/schema/swagger-ui/`
+* **ReDoc:** `http://petcare.brunadev.com/api/v1/schema/redoc/`
 
 ---
 
@@ -41,26 +65,28 @@ O projeto segue o padrão OpenAPI e a documentação da API é gerada automatica
 
 Este projeto utiliza um fluxo de trabalho de Integração Contínua (CI) com o **GitHub Actions**. A cada `push` ou `pull request` para a branch `main`, o seguinte pipeline é executado:
 
-1.  **Instalação de Dependências:** O ambiente é criado e as dependências do `requirements.txt` são instaladas.
-2.  **Verificação de Tipagem:** O `Mypy` é executado para garantir a segurança de tipos do código.
-3.  **Verificação de Linting:** O `Ruff` é executado para garantir a qualidade e o padrão de formatação.
-4.  **Execução dos Testes:** A suíte de testes (`pytest`) é executada, com um relatório de cobertura.
+1.  **Instalação de Dependências:** O ambiente é criado e as dependências são instaladas.
+2.  **Verificação de Tipagem (Mypy):** Garante a segurança de tipos do código.
+3.  **Verificação de Linting (Ruff):** Garante a qualidade e o padrão de formatação.
+4.  **Execução dos Testes (Pytest):** A suíte de testes é executada e um relatório de cobertura é gerado.
 
 ---
 
 ## 🛠️ Stack de Tecnologias
 
-* **Backend:** Django, Django Rest Framework
-* **Banco de Dados:** PostgreSQL
-* **Filas e Cache:** Celery, Redis
-* **Ambiente:** Docker, Docker Compose
+* **Backend:** Django, Django Rest Framework, Gunicorn
+* **Banco de Dados:** PostgreSQL, Redis
+* **Filas e Cache:** Celery
+* **Infraestrutura:** Docker, Docker Compose, Nginx, AWS (EC2, RDS, ElastiCache, Route 53)
 * **Qualidade de Código:** Ruff, Mypy, Pre-commit
 * **Testes:** Pytest, pytest-django, factory-boy
 * **Documentação da API:** drf-spectacular (OpenAPI)
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## 🚀 Como Rodar o Projeto (Desenvolvimento Local)
+
+Estas instruções são para rodar o projeto em um ambiente de desenvolvimento na sua máquina.
 
 ### Pré-requisitos
 
@@ -79,32 +105,25 @@ Este projeto utiliza um fluxo de trabalho de Integração Contínua (CI) com o *
     ```bash
     cp .env.example .env
     ```
-    > **Importante:** Abra o arquivo `.env` e gere uma nova `SECRET_KEY`. Você pode usar um gerador online ou o próprio Django para isso.
+    > **Importante:** Abra o arquivo `.env` e preencha as variáveis necessárias, como a `SECRET_KEY`.
 
 3.  **Construa e suba os containers Docker:**
     ```bash
     docker-compose up --build -d
     ```
 
-4.  **Rode as migrações (em um novo terminal):**
+4.  **Rode as migrações:**
     ```bash
     docker-compose exec web python manage.py migrate
     ```
 
-5.  **Crie um superusuário para acessar o Admin:**
+5.  **Crie um superusuário:**
     ```bash
     docker-compose exec web python manage.py createsuperuser
     ```
 
-6.  **(Opcional) Popule o banco de dados com dados de exemplo:**
-    Para ter uma experiência mais realista ao explorar o admin, use o comando abaixo.
-    ```bash
-    docker-compose exec web python manage.py seed_db
-    ```
-
-7.  **Acesse a aplicação:**
+6.  **Acesse a aplicação:**
     * **Admin:** `http://127.0.0.1:8000/admin/`
-    * **API (Swagger):** `http://127.0.0.1:8000/api/v1/schema/swagger-ui/`
 
 ---
 
