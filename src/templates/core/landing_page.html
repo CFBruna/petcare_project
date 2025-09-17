@@ -1,0 +1,589 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bruna Menezes - Desenvolvedora Backend Python</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'navy': '#0a192f',
+                        'light-navy': '#112240',
+                        'lightest-navy': '#233554',
+                        'slate': '#8892b0',
+                        'light-slate': '#a8b2d1',
+                        'lightest-slate': '#ccd6f6',
+                        'cyan': '#64ffda',
+                        'cyan-dark': '#4fd8b3',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-in': 'slide-in 0.6s ease-out',
+                        'fade-in-up': 'fade-in-up 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(100, 255, 218, 0.1)' },
+                            '100%': { boxShadow: '0 0 30px rgba(100, 255, 218, 0.3)' }
+                        },
+                        'slide-in': {
+                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' }
+                        },
+                        'fade-in-up': {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(100, 255, 218, 0.15)',
+                        'glow-lg': '0 0 40px rgba(100, 255, 218, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #233554, #64ffda);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #64ffda, #4fd8b3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #64ffda, #a8b2d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+        }
+
+        .skill-card {
+            background: linear-gradient(135deg, #112240 0%, #233554 100%);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .skill-card:hover {
+            border-color: rgba(100, 255, 218, 0.3);
+            box-shadow: 0 8px 25px rgba(100, 255, 218, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .project-card {
+            background: rgba(17, 34, 64, 0.8);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-navy text-slate antialiased selection:bg-cyan selection:text-navy">
+
+    <!-- Background Elements -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/3 right-1/4 w-80 h-80 bg-light-navy/30 rounded-full blur-3xl"></div>
+    </div>
+
+    <header class="fixed top-0 w-full z-50 bg-navy/90 nav-blur shadow-lg transition-all duration-500" id="navbar">
+        <nav class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#home"
+                class="text-2xl font-bold gradient-text hover:scale-110 transition-transform duration-300">BM</a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#about" class="hover:text-cyan transition-all duration-300 relative group">
+                    Sobre
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#skills" class="hover:text-cyan transition-all duration-300 relative group">
+                    Habilidades
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#projects" class="hover:text-cyan transition-all duration-300 relative group">
+                    Projetos
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#contact"
+                    class="border-2 border-cyan text-cyan px-6 py-2 rounded-lg hover:bg-cyan hover:text-navy font-semibold transition-all duration-300 hover:shadow-glow">
+                    Contato
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-cyan text-2xl" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-navy/95 nav-blur" id="mobileMenu">
+            <div class="px-6 py-4 space-y-4">
+                <a href="#about" class="block hover:text-cyan transition-colors">Sobre</a>
+                <a href="#skills" class="block hover:text-cyan transition-colors">Habilidades</a>
+                <a href="#projects" class="block hover:text-cyan transition-colors">Projetos</a>
+                <a href="#contact"
+                    class="block border border-cyan text-cyan px-4 py-2 rounded text-center hover:bg-cyan/10 transition-colors">
+                    Contato
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 relative">
+
+        <section id="home" class="min-h-screen flex flex-col justify-center py-20" data-aos="fade-up">
+            <div class="space-y-6">
+                <p class="text-cyan font-mono text-lg animate-slide-in">Olá, meu nome é</p>
+                <h1 class="text-5xl sm:text-7xl font-bold text-lightest-slate leading-tight animate-fade-in-up">
+                    Bruna Menezes.
+                </h1>
+                <h2 class="text-4xl sm:text-6xl font-bold text-slate mt-4 animate-fade-in-up"
+                    style="animation-delay: 0.2s;">
+                    Eu construo aplicações para a web.
+                </h2>
+                <p class="mt-8 max-w-2xl text-lg leading-relaxed animate-fade-in-up" style="animation-delay: 0.4s;">
+                    Como Desenvolvedora Backend, meu foco é transformar <strong
+                        class="gradient-text font-semibold">lógica de negócio em sistemas web escaláveis</strong>. Sou
+                    especializada em <strong class="gradient-text font-semibold">Python</strong> e <strong
+                        class="gradient-text font-semibold">Django</strong>, com experiência prática em todo o ciclo de
+                    vida do desenvolvimento, do primeiro commit ao deploy na <strong
+                        class="gradient-text font-semibold">AWS</strong>.
+                </p>
+                <div class="mt-10 flex flex-col sm:flex-row gap-4 animate-fade-in-up" style="animation-delay: 0.6s;">
+                    <a href="#projects"
+                        class="group bg-gradient-to-r from-cyan to-cyan-dark text-navy font-bold py-4 px-8 rounded-lg hover:shadow-glow-lg transition-all duration-300 inline-flex items-center justify-center">
+                        Veja meu trabalho
+                        <i
+                            class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/bruna-c-menezes/" target="_blank"
+                        class="border-2 border-cyan text-cyan font-semibold py-4 px-8 rounded-lg hover:bg-cyan hover:text-navy transition-all duration-300 inline-flex items-center justify-center">
+                        <i class="fab fa-linkedin mr-2"></i>
+                        LinkedIn
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="flex items-center justify-center my-24">
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
+            <div class="mx-4 w-2 h-2 bg-cyan rounded-full animate-glow"></div>
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
+        </div>
+
+        <section id="about" class="mb-32" data-aos="fade-up">
+            <div class="flex items-center mb-12">
+                <span class="text-cyan font-mono text-xl mr-4">01.</span>
+                <h2 class="text-4xl font-bold gradient-text">Sobre Mim</h2>
+                <div class="flex-grow h-px bg-gradient-to-r from-cyan/20 to-transparent ml-6"></div>
+            </div>
+            <div class="grid lg:grid-cols-5 gap-12 items-center">
+                <div class="lg:col-span-3 space-y-6 text-lg leading-relaxed">
+                    <p class="hover:text-light-slate transition-colors duration-300">
+                        Minha jornada na tecnologia é movida pela paixão em resolver problemas e construir soluções
+                        eficientes. Com foco em <strong class="text-lightest-slate font-semibold">arquitetura de
+                            software</strong> e
+                        <strong class="text-lightest-slate font-semibold">qualidade de código</strong>, dedico-me a
+                        criar aplicações
+                        que não apenas funcionam, mas são fáceis de manter e escalar.
+                    </p>
+                    <p class="hover:text-light-slate transition-colors duration-300">
+                        Recentemente, concluí o deploy de uma aplicação full-stack na <strong
+                            class="text-lightest-slate font-semibold">AWS</strong>,
+                        orquestrando serviços como <strong class="text-lightest-slate font-semibold">EC2, RDS e
+                            ElastiCache</strong>.
+                        Essa experiência prática solidificou minhas habilidades em <strong
+                            class="text-lightest-slate font-semibold">Docker,
+                            Nginx e CI/CD</strong>, me dando a visão completa do que é necessário para levar um projeto
+                        do
+                        desenvolvimento à produção.
+                    </p>
+                    <p class="hover:text-light-slate transition-colors duration-300">
+                        Estou em busca da minha primeira oportunidade como desenvolvedora, pronta para aplicar
+                        meu conhecimento, aprender rapidamente e contribuir para a construção de produtos incríveis.
+                    </p>
+                </div>
+                <div class="lg:col-span-2 flex justify-center">
+                    <div class="relative w-72 h-72 group">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-cyan to-cyan-dark rounded-2xl transform rotate-6 group-hover:rotate-3 transition-transform duration-500 animate-glow">
+                        </div>
+                        <div
+                            class="absolute inset-0 bg-light-navy rounded-2xl flex items-center justify-center shadow-2xl group-hover:shadow-glow-lg transition-all duration-500 overflow-hidden">
+                            <img src="https://media.licdn.com/dms/image/v2/D4D03AQFuF2-3UJRSdw/profile-displayphoto-crop_800_800/B4DZkWW6SEGQAI-/0/1757016735473?e=1761177600&v=beta&t=vTzNaKWK2DDc7vP9c03RPAIgq8KHuYt1mqlZLsjJFko"
+                                alt="Foto de Bruna Menezes"
+                                class="w-full h-full object-cover rounded-2xl transform group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="flex items-center justify-center my-24">
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
+            <div class="mx-4 w-2 h-2 bg-cyan rounded-full animate-glow"></div>
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
+        </div>
+
+        <section id="skills" class="mb-32" data-aos="fade-up">
+            <div class="flex items-center mb-12">
+                <span class="text-cyan font-mono text-xl mr-4">02.</span>
+                <h2 class="text-4xl font-bold gradient-text">Habilidades Técnicas</h2>
+                <div class="flex-grow h-px bg-gradient-to-r from-cyan/20 to-transparent ml-6"></div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fab fa-python text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Python</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-code text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Django & DRF</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-database text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">PostgreSQL</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-tasks text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Celery & Redis</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fab fa-docker text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Docker</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-server text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Nginx</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fab fa-aws text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">AWS (EC2, RDS, S3)</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-cogs text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">CI/CD com GitHub Actions</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-vial text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Pytest</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-layer-group text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Arquitetura Limpa</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fas fa-exchange-alt text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">APIs REST</div>
+                </div>
+                <div class="skill-card p-5 rounded-xl card-hover">
+                    <i class="fab fa-git-alt text-cyan text-2xl mb-3"></i>
+                    <div class="font-semibold text-lightest-slate">Git</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="flex items-center justify-center my-24">
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
+            <div class="mx-4 w-2 h-2 bg-cyan rounded-full animate-glow"></div>
+            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
+        </div>
+
+        <section id="projects" class="mb-32" data-aos="fade-up">
+            <div class="flex items-center mb-12">
+                <span class="text-cyan font-mono text-xl mr-4">03.</span>
+                <h2 class="text-4xl font-bold gradient-text">Projetos em Destaque</h2>
+                <div class="flex-grow h-px bg-gradient-to-r from-cyan/20 to-transparent ml-6"></div>
+            </div>
+            <div class="space-y-20">
+                <!-- Projeto PetCare -->
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div class="relative group overflow-hidden rounded-xl">
+                        <a href="https://petcare.brunadev.com/admin" target="_blank">
+                            <div
+                                class="w-full h-64 bg-gradient-to-br from-light-navy via-lightest-navy to-light-navy rounded-xl flex items-center justify-center group-hover:from-lightest-navy group-hover:to-light-navy transition-all duration-500">
+                                <div class="text-center space-y-4">
+                                    <div class="relative">
+                                        <i
+                                            class="fas fa-paw text-6xl text-cyan opacity-70 group-hover:opacity-100 transition-opacity duration-500"></i>
+                                        <i
+                                            class="fas fa-heart text-2xl text-pink-400 absolute -top-2 -right-2 animate-pulse"></i>
+                                    </div>
+                                    <p
+                                        class="text-slate group-hover:text-light-slate transition-colors duration-500 font-semibold">
+                                        PetCare System</p>
+                                    <div class="flex justify-center space-x-2">
+                                        <i class="fas fa-calendar-alt text-cyan text-sm opacity-60"></i>
+                                        <i class="fas fa-clipboard-list text-cyan text-sm opacity-60"></i>
+                                        <i class="fas fa-user-md text-cyan text-sm opacity-60"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-transparent group-hover:from-navy/50 transition-all duration-500 rounded-xl flex items-end p-6">
+                                <div
+                                    class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                    <i class="fas fa-external-link-alt text-2xl"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="text-left lg:text-right space-y-4">
+                        <p class="text-cyan font-mono">Projeto em Produção</p>
+                        <h3 class="text-3xl font-bold gradient-text">PetCare System</h3>
+                        <div class="project-card p-6 rounded-xl shadow-xl">
+                            <p class="text-lg leading-relaxed">
+                                Sistema de gestão completo para Pet Shops com deploy na AWS. Inclui API REST,
+                                agendamentos, controle de estoque e tarefas assíncronas com Celery.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap justify-start lg:justify-end gap-3 text-sm font-mono">
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Django</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">DRF</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Celery</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Docker</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Nginx</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">AWS</span>
+                        </div>
+                        <div class="flex justify-start lg:justify-end space-x-4">
+                            <a href="https://github.com/CFBruna/petcare_project" target="_blank"
+                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://petcare.brunadev.com/admin/" target="_blank"
+                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projeto Parking Service -->
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div class="text-left space-y-4 lg:order-1">
+                        <p class="text-cyan font-mono">Projeto Backend</p>
+                        <h3 class="text-3xl font-bold gradient-text">Parking Service</h3>
+                        <div class="project-card p-6 rounded-xl shadow-xl">
+                            <p class="text-lg leading-relaxed">
+                                API RESTful robusta para gerenciamento de estacionamentos, com 96% de cobertura de
+                                testes
+                                e lógica de negócio refatorada para uma camada de serviço desacoplada.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 text-sm font-mono">
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Django</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">DRF</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Pytest</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Service Layer</span>
+                        </div>
+                        <div class="flex space-x-4">
+                            <a href="https://github.com/CFBruna/parking_service" target="_blank"
+                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <span class="text-gray-600 text-3xl cursor-not-allowed opacity-50" title="Deploy em breve">
+                                <i class="fas fa-external-link-alt"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="relative group overflow-hidden rounded-xl lg:order-2">
+                        <a href="https://github.com/CFBruna/parking_service" target="_blank">
+                            <div
+                                class="w-full h-64 bg-gradient-to-br from-light-navy via-lightest-navy to-light-navy rounded-xl flex items-center justify-center group-hover:from-lightest-navy group-hover:to-light-navy transition-all duration-500">
+                                <div class="text-center space-y-4">
+                                    <div class="relative">
+                                        <i
+                                            class="fas fa-car text-6xl text-cyan opacity-70 group-hover:opacity-100 transition-opacity duration-500"></i>
+                                        <i class="fas fa-cog text-2xl text-blue-400 absolute -top-2 -right-2 animate-spin"
+                                            style="animation-duration: 3s;"></i>
+                                    </div>
+                                    <p
+                                        class="text-slate group-hover:text-light-slate transition-colors duration-500 font-semibold">
+                                        Parking Service API</p>
+                                    <div class="flex justify-center space-x-2">
+                                        <i class="fas fa-map-marker-alt text-cyan text-sm opacity-60"></i>
+                                        <i class="fas fa-credit-card text-cyan text-sm opacity-60"></i>
+                                        <i class="fas fa-shield-alt text-cyan text-sm opacity-60"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Projeto Library Management -->
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div class="relative group overflow-hidden rounded-xl">
+                        <a href="https://github.com/CFBruna/library_management" target="_blank">
+                            <div
+                                class="w-full h-64 bg-gradient-to-br from-light-navy via-lightest-navy to-light-navy rounded-xl flex items-center justify-center group-hover:from-lightest-navy group-hover:to-light-navy transition-all duration-500">
+                                <div class="text-center space-y-4">
+                                    <div class="relative">
+                                        <i
+                                            class="fas fa-book-open text-6xl text-cyan opacity-70 group-hover:opacity-100 transition-opacity duration-500"></i>
+                                        <i
+                                            class="fas fa-bookmark text-2xl text-yellow-400 absolute -top-1 -right-1 animate-bounce"></i>
+                                    </div>
+                                    <p
+                                        class="text-slate group-hover:text-light-slate transition-colors duration-500 font-semibold">
+                                        Library Management</p>
+                                    <div class="flex justify-center space-x-2">
+                                        <i class="fas fa-users text-cyan text-sm opacity-60"></i>
+                                        <i class="fas fa-exchange-alt text-cyan text-sm opacity-60"></i>
+                                        <i class="fas fa-calendar-check text-cyan text-sm opacity-60"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="text-left lg:text-right space-y-4">
+                        <p class="text-cyan font-mono">Projeto Backend</p>
+                        <h3 class="text-3xl font-bold gradient-text">Library Management</h3>
+                        <div class="project-card p-6 rounded-xl shadow-xl">
+                            <p class="text-lg leading-relaxed">
+                                Sistema de gestão para bibliotecas com controle de empréstimos, devoluções e transações
+                                atômicas para garantir a integridade dos dados de estoque.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap justify-start lg:justify-end gap-3 text-sm font-mono">
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Django</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">PostgreSQL</span>
+                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Docker</span>
+                        </div>
+                        <div class="flex justify-start lg:justify-end space-x-4">
+                            <a href="https://github.com/CFBruna/library_management" target="_blank"
+                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <span class="text-gray-600 text-3xl cursor-not-allowed opacity-50" title="Deploy em breve">
+                                <i class="fas fa-external-link-alt"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer id="contact" class="relative mt-20 py-16" data-aos="fade-up">
+        <div class="text-center space-y-8">
+            <h2 class="text-3xl font-bold gradient-text mb-8">Vamos conversar?</h2>
+            <p class="text-lg text-light-slate max-w-md mx-auto mb-8">
+                Estou sempre aberta a novas oportunidades e projetos interessantes. Entre em contato!
+            </p>
+            <div class="flex justify-center space-x-6">
+                <a href="https://github.com/CFBruna" target="_blank"
+                    class="text-light-slate hover:text-cyan text-3xl transition-all duration-300 hover:scale-125 transform">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/bruna-c-menezes/" target="_blank"
+                    class="text-light-slate hover:text-cyan text-3xl transition-all duration-300 hover:scale-125 transform">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="mailto:brunaads.ti@gmail.com"
+                    class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-125 transform">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+            <div class="space-y-2 mt-12">
+                <p class="text-slate">Desenvolvido com <i class="fas fa-heart text-red-500 animate-pulse"></i> por <span
+                        class="gradient-text font-semibold">Bruna Menezes</span></p>
+                <p class="text-xs text-lightest-navy/70">Inspirado no design de Brittany Chiang</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50,
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-lg');
+            } else {
+                navbar.classList.remove('shadow-lg');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

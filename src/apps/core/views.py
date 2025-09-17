@@ -1,3 +1,6 @@
+from django.views.generic import TemplateView
+
+
 class AutoSchemaModelNameMixin:
     """
     A helper mixin that provides a method to get the model's verbose name.
@@ -12,3 +15,7 @@ class AutoSchemaModelNameMixin:
         meta = model._meta
         name = meta.verbose_name_plural if plural else meta.verbose_name
         return name.title()
+
+
+class LandingPageView(TemplateView):
+    template_name = "core/landing_page.html"
