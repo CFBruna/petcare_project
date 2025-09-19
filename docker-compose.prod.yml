@@ -1,15 +1,17 @@
 services:
   web:
     build: .
-    command: gunicorn petcare.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn src.petcare.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - staticfiles:/usr/src/app/staticfiles
+      - staticfiles:/app/staticfiles
     expose:
       - 8000
     env_file:
       - .env
     depends_on:
       - redis
+      - db
+    restart: unless-stopped
 
   nginx:
     image: nginx:1.25-alpine
@@ -18,10 +20,11 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - staticfiles:/usr/src/app/staticfiles
+      - staticfiles:/app/staticfiles
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - web
+    restart: unless-stopped
 
   redis:
     image: "redis:7-alpine"
@@ -29,22 +32,27 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
 
-  celery_worker:
+  celery-worker:
     build: .
-    command: celery -A petcare worker -l info
-    env_file:
-      - .env
+    command: celery -A src.petcare worker -l info
     depends_on:
       - redis
-
-  celery_beat:
-    build: .
-    command: celery -A petcare beat -l info
+      - db
     env_file:
       - .env
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    command: celery -A src.petcare beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     depends_on:
       - redis
+      - db
+    env_file:
+      - .env
+    restart: unless-stopped
 
 volumes:
   redis_data:
