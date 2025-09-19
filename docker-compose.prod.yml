@@ -10,7 +10,6 @@ services:
       - .env
     depends_on:
       - redis
-      - db
     restart: unless-stopped
 
   nginx:
@@ -39,7 +38,6 @@ services:
     command: celery -A src.petcare worker -l info
     depends_on:
       - redis
-      - db
     env_file:
       - .env
     restart: unless-stopped
@@ -49,7 +47,6 @@ services:
     command: celery -A src.petcare beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     depends_on:
       - redis
-      - db
     env_file:
       - .env
     restart: unless-stopped

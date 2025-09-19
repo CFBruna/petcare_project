@@ -14,8 +14,8 @@ Você pode testar a aplicação ao vivo, hospedada em uma arquitetura de produç
 * **Acesso ao Admin:** **[http://petcare.brunadev.com/admin/](http://petcare.brunadev.com/admin/)**
 
 **Credenciais para teste:**
-* **Usuário:** `tester`
-* **Senha:** `tester1234`
+* **Usuário:** `recrutador@petcare.com`
+* **Senha:** `avaliar123`
 
 ---
 
