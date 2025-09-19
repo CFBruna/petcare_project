@@ -5,8 +5,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from apps.core.views import LandingPageView
 from src.apps.accounts.admin import petcare_admin_site
+from src.apps.core.views import LandingPageView
 
 urlpatterns = [
     path("", LandingPageView.as_view(), name="landing-page"),
