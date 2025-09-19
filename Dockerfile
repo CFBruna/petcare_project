@@ -36,6 +36,8 @@ COPY . .
 COPY ./entrypoint.prod.sh /app/entrypoint.prod.sh
 RUN chmod +x /app/entrypoint.prod.sh
 
+RUN chown -R appuser:appuser /app
+
 EXPOSE 8000
 
 USER appuser
