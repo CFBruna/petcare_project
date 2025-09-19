@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    command: gunicorn src.petcare.wsgi:application --bind 0.0.0.0:8000
+    command: sh /app/entrypoint.prod.sh
     volumes:
       - staticfiles:/app/staticfiles
     expose:
