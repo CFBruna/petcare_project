@@ -17,11 +17,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
+
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="127.0.0.1",
     cast=lambda v: [s.strip() for s in v.split(",")],
 )
+
+
+# ==============================================================================
+# SECURITY SETTINGS FOR PRODUCTION (HTTPS)
+# ==============================================================================
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://brunadev.com",
+    "https://petcare.brunadev.com",
+]
+
+
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+# ==============================================================================
+# APPLICATION DEFINITION
+# ==============================================================================
 
 # Application definition
 DJANGO_APPS = [
