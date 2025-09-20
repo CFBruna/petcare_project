@@ -2,13 +2,7 @@ django
 psycopg2-binary
 python-decouple
 dj-database-url
-ruff
-pre-commit
 Pillow
-pytest
-pytest-django
-pytest-cov
-factory-boy
 djangorestframework
 dj-rest-auth
 djangorestframework-simplejwt
@@ -16,11 +10,8 @@ django-allauth
 requests
 celery
 redis
-pytest-mock
 django-celery-beat
 drf-spectacular
-mypy
-django-stubs
 whitenoise[brotli]
 structlog
 gunicorn
