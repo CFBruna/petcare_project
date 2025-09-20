@@ -99,10 +99,7 @@ def generate_daily_promotions_report() -> str:
     yesterday = today - timedelta(days=1)
 
     newly_promoted_lots = ProductLot.objects.filter(
-        auto_discount_percentage__gt=Decimal("0")
-    ).extra(
-        where=[f"DATE(updated_at AT TIME ZONE '{settings.TIME_ZONE}') = %s"],
-        params=[yesterday],
+        auto_discount_percentage__gt=Decimal("0"), updated_at__date=yesterday
     )
 
     newly_unpromoted_lots = ProductLot.objects.filter(
