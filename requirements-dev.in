@@ -1,0 +1,21 @@
+# Inherit production dependencies
+-r requirements.in
+
+# --- Development & Testing Tools ---
+
+# Code Quality & Linting
+ruff
+pre-commit
+mypy
+django-stubs
+
+# Testing Framework
+pytest
+pytest-django
+pytest-cov
+pytest-mock
+factory-boy
+
+# Security Scanners
+bandit
+safety
