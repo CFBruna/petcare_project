@@ -40,6 +40,5 @@ RUN chown -R appuser:appuser /app
 
 EXPOSE 8000
 
-USER appuser
 
 CMD ["/app/entrypoint.prod.sh"]
