@@ -1,5 +1,4 @@
 import factory
-from factory.faker import Faker as FactoryFaker
 from faker import Faker
 
 from src.apps.accounts.tests.factories import CustomerFactory
@@ -35,7 +34,7 @@ class PetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Pet
 
-    name = FactoryFaker("first_name", unique=True)
+    name = factory.Sequence(lambda n: f"{fake.first_name()}-{n}")
     owner = factory.SubFactory(CustomerFactory)
     breed = factory.SubFactory(BreedFactory)
     birth_date = factory.LazyFunction(
