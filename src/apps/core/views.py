@@ -1,3 +1,5 @@
+from django.http import JsonResponse
+from django.views import View
 from django.views.generic import TemplateView
 
 
@@ -19,3 +21,13 @@ class AutoSchemaModelNameMixin:
 
 class LandingPageView(TemplateView):
     template_name = "core/landing_page.html"
+
+
+class HealthCheckView(View):
+    """
+    A simple view that returns a 200 OK status if the service is running.
+    Used by the deployment script to verify application health.
+    """
+
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({"status": "ok", "service": "petcare"})

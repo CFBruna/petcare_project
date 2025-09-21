@@ -5,8 +5,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from apps.core.views import LandingPageView
 from src.apps.accounts.admin import petcare_admin_site
+from src.apps.core.views import HealthCheckView, LandingPageView
 
 urlpatterns = [
     path("", LandingPageView.as_view(), name="landing-page"),
@@ -18,6 +18,7 @@ urlpatterns = [
     path("api/v1/health/", include("src.apps.health.urls")),
     path("api/v1/schedule/", include("src.apps.schedule.urls")),
     path("api/v1/store/", include("src.apps.store.urls")),
+    path("api/v1/status/", HealthCheckView.as_view(), name="health_check"),
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/v1/schema/swagger-ui/",
