@@ -40,7 +40,7 @@ services:
 
   celery_beat:
     build: .
-    command: celery -A petcare beat -l info
+    command: celery -A petcare beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     env_file:
       - .env
     depends_on:
