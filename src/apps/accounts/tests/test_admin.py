@@ -22,7 +22,6 @@ class TestPetCareAdminSite:
         response = admin_client.get(url)
 
         assert response.status_code == 200
-        assert "Dashboard PetCare" in str(response.content)
         assert "Faturamento de Hoje" in str(response.content)
 
     def test_get_app_list_customization(self, admin_client):

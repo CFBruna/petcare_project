@@ -5,7 +5,7 @@ from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group, User
-from django.db.models import Sum
+from django.db.models import DecimalField, F, Sum
 from django.db.models.functions import TruncDay
 from django.utils import timezone
 from django_celery_beat.models import (
@@ -84,8 +84,8 @@ class PetCareAdminSite(admin.AdminSite):
     index_template = "admin/dashboard.html"
 
     def index(self, request, extra_context=None):
-        now = timezone.now()
-        today = now.date()
+        today = timezone.localdate()
+        now = timezone.localtime()
         start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
         end_of_day = start_of_day + timedelta(days=1)
         start_of_week = today - timedelta(days=6)
@@ -96,6 +96,24 @@ class PetCareAdminSite(admin.AdminSite):
         appointments_today = Appointment.objects.filter(
             schedule_time__date=today, status=Appointment.Status.CONFIRMED
         ).count()
+
+        monthly_sales = Sale.objects.filter(
+            created_at__year=today.year, created_at__month=today.month
+        )
+        revenue_monthly = (
+            monthly_sales.aggregate(total=Sum("total_value"))["total"] or 0
+        )
+
+        new_customers_monthly = Customer.objects.filter(
+            user__date_joined__year=today.year, user__date_joined__month=today.month
+        ).count()
+
+        low_stock_threshold = 5
+        low_stock_lots = (
+            ProductLot.objects.filter(quantity__lte=low_stock_threshold, quantity__gt=0)
+            .select_related("product")
+            .order_by("quantity")[:5]
+        )
 
         revenue_by_day = (
             Sale.objects.filter(created_at__date__gte=start_of_week)
@@ -114,18 +132,26 @@ class PetCareAdminSite(admin.AdminSite):
         top_products_today = (
             SaleItem.objects.filter(sale__in=sales_today)
             .values("lot__product__name")
-            .annotate(total_sold=Sum("quantity"))
-            .order_by("-total_sold")[:5]
+            .annotate(
+                total_sold=Sum("quantity"),
+                revenue=Sum(
+                    F("quantity") * F("unit_price"), output_field=DecimalField()
+                ),
+            )
+            .order_by("-revenue")[:5]
         )
 
         context = {
             **self.each_context(request),
-            "title": self.index_title,
+            "title": "Dashboard",
             "revenue_today": revenue_today,
             "appointments_today": appointments_today,
+            "revenue_monthly": revenue_monthly,
+            "new_customers_monthly": new_customers_monthly,
             "chart_labels": list(chart_data.keys()),
             "chart_values": list(chart_data.values()),
             "top_products": top_products_today,
+            "low_stock_lots": low_stock_lots,
         }
 
         return super().index(request, extra_context=context)

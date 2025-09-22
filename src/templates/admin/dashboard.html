@@ -45,12 +45,16 @@
         padding: 8px;
         border-bottom: 1px solid var(--border-color);
     }
+
+    #revenueChart {
+        height: 250px !important;
+        max-height: 250px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div id="content-main">
-    <h1>Dashboard PetCare</h1>
 
     <div class="dashboard-grid">
         <div class="dashboard-card">
@@ -60,6 +64,14 @@
         <div class="dashboard-card">
             <h2>Agendamentos Confirmados para Hoje</h2>
             <p class="metric">{{ appointments_today }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h2>Faturamento do Mês</h2>
+            <p class="metric">R$ {{ revenue_monthly|default:"0.00"|floatformat:2 }}</p>
+        </div>
+        <div class="dashboard-card">
+            <h2>Novos Clientes no Mês</h2>
+            <p class="metric">{{ new_customers_monthly|default:"0" }}</p>
         </div>
     </div>
 
@@ -79,6 +91,7 @@
                     <tr>
                         <th>Produto</th>
                         <th>Quantidade Vendida</th>
+                        <th>Receita</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,6 +99,7 @@
                     <tr>
                         <td>{{ product.lot__product__name }}</td>
                         <td>{{ product.total_sold }}</td>
+                        <td>R$ {{ product.revenue|default:"0.00"|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -113,17 +127,35 @@
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1
-            }]
-        },
+                }]
+            },
         options: {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: true,
+                ticks: {
+                    callback: function (value) {
+                        return 'R$ ' + value.toLocaleString('pt-BR');
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        return 'Faturamento: R$ ' + context.parsed.y.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2
+                        });
+                    }
+                }
             }
         }
     }
+        });
     });
-});
 </script>
 
 {% endblock %}
