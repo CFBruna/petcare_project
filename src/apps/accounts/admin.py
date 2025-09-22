@@ -84,10 +84,13 @@ class PetCareAdminSite(admin.AdminSite):
     index_template = "admin/dashboard.html"
 
     def index(self, request, extra_context=None):
-        today = timezone.now().date()
+        now = timezone.now()
+        today = now.date()
+        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
         start_of_week = today - timedelta(days=6)
 
-        sales_today = Sale.objects.filter(created_at__date=today)
+        sales_today = Sale.objects.filter(created_at__range=(start_of_day, end_of_day))
         revenue_today = sales_today.aggregate(total=Sum("total_value"))["total"] or 0
 
         appointments_today = Appointment.objects.filter(
