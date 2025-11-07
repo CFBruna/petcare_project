@@ -132,9 +132,9 @@ class ProductLotFactory(DjangoModelFactory):
         model = ProductLot
 
     product = factory.SubFactory(ProductFactory)
-    lotnumber = factory.LazyFunction(lambda: fake.bothify(text="???-####").upper())
+    lot_number = factory.LazyFunction(lambda: fake.bothify(text="???-####").upper())
     quantity = factory.Faker("random_int", min=10, max=100)
-    expirationdate = factory.Faker("future_date", end_date="+2y")
+    expiration_date = factory.Faker("future_date", end_date="+2y")
 
 
 class PromotionFactory(DjangoModelFactory):
@@ -144,8 +144,8 @@ class PromotionFactory(DjangoModelFactory):
         model = Promotion
 
     name = factory.Sequence(lambda n: f"Promoção {n} - {fake.catch_phrase()}")
-    startdate = factory.LazyFunction(timezone.now)
-    enddate = factory.LazyFunction(lambda: timezone.now() + timedelta(days=30))
+    start_date = factory.LazyFunction(timezone.now)
+    end_date = factory.LazyFunction(lambda: timezone.now() + timedelta(days=30))
 
 
 class PromotionRuleFactory(DjangoModelFactory):
@@ -156,10 +156,10 @@ class PromotionRuleFactory(DjangoModelFactory):
 
     promotion = factory.SubFactory(PromotionFactory)
     lot = factory.SubFactory(ProductLotFactory)
-    discountpercentage = factory.Faker(
+    discount_percentage = factory.Faker(
         "pydecimal", left_digits=2, right_digits=2, min_value=5, max_value=50
     )
-    promotionalstock = 10
+    promotional_stock = 10
 
 
 class SaleFactory(DjangoModelFactory):
@@ -169,7 +169,7 @@ class SaleFactory(DjangoModelFactory):
         model = Sale
 
     customer = factory.SubFactory("src.apps.accounts.tests.factories.CustomerFactory")
-    processedby = factory.SubFactory("src.apps.accounts.tests.factories.UserFactory")
+    processed_by = factory.SubFactory("src.apps.accounts.tests.factories.UserFactory")
 
 
 class SaleItemFactory(DjangoModelFactory):
@@ -181,4 +181,4 @@ class SaleItemFactory(DjangoModelFactory):
     sale = factory.SubFactory(SaleFactory)
     lot = factory.SubFactory(ProductLotFactory)
     quantity = factory.Faker("random_int", min=1, max=5)
-    unitprice = factory.LazyAttribute(lambda o: o.lot.finalprice)
+    unit_price = factory.LazyAttribute(lambda o: o.lot.final_price)

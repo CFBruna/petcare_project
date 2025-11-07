@@ -19,6 +19,8 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && apt-get install -y git sudo && rm -rf /var/lib/apt/lists/*
 
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 WORKDIR /usr/src/app
 
 ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/src"
@@ -32,4 +34,16 @@ RUN if [ "$INSTALL_DEV" = "true" ]; then pip install --no-cache /dev-wheels/*; \
     else pip install --no-cache /prod-wheels/*; fi
 
 COPY . .
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+
+RUN mkdir -p logs && \
+    touch logs/petcare.json.log && \
+    chown appuser:appuser logs/petcare.json.log
+
+USER appuser
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

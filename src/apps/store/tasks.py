@@ -236,42 +236,89 @@ def simulate_daily_activity(
         existing_pets = PetFactory.create_batch(5)
 
     if not existing_services:
-        existing_services = ServiceFactory.create_batch(3)
+        existing_services.extend(ServiceFactory.create_batch(3))
 
     all_available_slots = []
     if existing_services:
-        base_service = existing_services[0]
-        for day_offset in range(1, 8):
+        # Obter slots disponíveis para todos os serviços
+        for day_offset in range(8):
             appointment_date = today + timedelta(days=day_offset)
-            slots_for_day = AppointmentService.get_available_slots(
-                appointment_date, base_service
-            )
-            for slot_time in slots_for_day:
-                all_available_slots.append(
-                    timezone.make_aware(
+            for service in existing_services:
+                slots_for_day = AppointmentService.get_available_slots(
+                    appointment_date, service
+                )
+                for slot_time in slots_for_day:
+                    time_slot = timezone.make_aware(
                         timezone.datetime.combine(appointment_date, slot_time)
                     )
-                )
+                    # Verificar se o horário + tempo de serviço não ultrapassa o horário de funcionamento
+                    end_time = time_slot + timedelta(minutes=service.duration_minutes)
+                    # Considerar que o último horário possível deve terminar antes do horário de fechamento
+                    # Considerando que os horários de funcionamento são das 8h às 20h
+                    close_time = timezone.make_aware(
+                        timezone.datetime.combine(appointment_date, time(20, 0))
+                    )
+                    if end_time <= close_time:
+                        # Armazenar junto com o serviço correspondente
+                        all_available_slots.append((time_slot, service))
 
     occupied_times = set(
-        Appointment.objects.filter(schedule_time__in=all_available_slots).values_list(
-            "schedule_time", flat=True
-        )
+        Appointment.objects.filter(
+            schedule_time__in=[slot[0] for slot in all_available_slots]
+        ).values_list("schedule_time", flat=True)
     )
-    available_slots = [
-        slot for slot in all_available_slots if slot not in occupied_times
+
+    # Remover slots já ocupados
+    available_slots_with_service = [
+        (slot, service)
+        for slot, service in all_available_slots
+        if slot not in occupied_times
     ]
 
-    random.shuffle(available_slots)
+    # Separar appointments para hoje para garantir pelo menos 2 confirmados
+    today_appointments = [
+        (slot, service)
+        for slot, service in available_slots_with_service
+        if slot.date() == today
+    ]
+    other_appointments = [
+        (slot, service)
+        for slot, service in available_slots_with_service
+        if slot.date() != today
+    ]
+
+    # Primeiro, garantir pelo menos 2 agendamentos confirmados para hoje
     created_appointments_count = 0
 
-    for _ in range(num_appointments):
-        if not available_slots or not existing_pets or not existing_services:
+    # Criar pelo menos 2 agendamentos confirmados para hoje se houver slots disponíveis
+    if len(today_appointments) >= 2:
+        for _ in range(min(2, len(today_appointments))):
+            if today_appointments and existing_pets and existing_services:
+                schedule_time, service = today_appointments.pop(0)
+                pet = random.choice(existing_pets)
+
+                appointment = AppointmentFactory(
+                    pet=pet,
+                    service=service,
+                    status=Appointment.Status.CONFIRMED,
+                    schedule_time=schedule_time,
+                )
+                created_appointments_count += 1
+
+    # Combinar agendamentos restantes
+    remaining_slots_with_service = today_appointments + other_appointments
+    random.shuffle(remaining_slots_with_service)
+
+    for _ in range(num_appointments - created_appointments_count):
+        if (
+            not remaining_slots_with_service
+            or not existing_pets
+            or not existing_services
+        ):
             break
 
-        schedule_time = available_slots.pop()
+        schedule_time, service = remaining_slots_with_service.pop()
         pet = random.choice(existing_pets)
-        service = random.choice(existing_services)
 
         status = random.choices(
             [
@@ -289,9 +336,16 @@ def simulate_daily_activity(
         )
 
         if status == Appointment.Status.COMPLETED:
-            appointment.completed_at = schedule_time + timedelta(
-                minutes=random.randint(0, service.duration_minutes)
+            # Verificar se o horário de conclusão não ultrapassa o horário de funcionamento
+            close_time = timezone.make_aware(
+                timezone.datetime.combine(schedule_time.date(), time(20, 0))
             )
+            calculated_completion = schedule_time + timedelta(
+                minutes=service.duration_minutes
+            )
+            # Definir o horário de conclusão como o menor entre o cálculo e o horário de fechamento
+            actual_completion = min(calculated_completion, close_time)
+            appointment.completed_at = actual_completion
             appointment.save()
 
         created_appointments_count += 1
@@ -440,7 +494,7 @@ def generate_daily_promotions_report() -> str:
     active_promotions = Promotion.objects.filter(
         start_date__lte=yesterday,
         end_date__gte=yesterday,
-    ).prefetch_related("promotion_rules__lot__product")
+    ).prefetch_related("rules__lot__product")
 
     if not active_promotions.exists():
         subject = f"Relatório Diário de Promoções - {yesterday.strftime('%d/%m/%Y')}"
@@ -456,7 +510,7 @@ def generate_daily_promotions_report() -> str:
             report_lines.append(f"Promoção: {promo.name}")
             report_lines.append(f"  Vigência: {promo.start_date} até {promo.end_date}")
 
-            for rule in promo.promotion_rules.all():
+            for rule in promo.rules.all():
                 product_name = rule.lot.product.name
                 discount = rule.discount_percentage
                 stock = rule.promotional_stock
