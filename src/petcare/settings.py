@@ -252,23 +252,29 @@ else:
 # ==============================================================================
 
 CELERY_BEAT_SCHEDULE = {
-    "daily_completed_appointments_report": {
+    "daily-completed-appointments-report": {
         "task": "src.apps.schedule.tasks.generate_daily_appointments_report",
         "schedule": crontab(hour=1, minute=0),
     },
-    "apply_daily_expiration_discounts": {
+    "apply-daily-expiration-discounts": {
         "task": "src.apps.store.tasks.apply_expiration_discounts",
         "schedule": crontab(hour=1, minute=30),
     },
-    "daily_sales_report": {
+    "daily-sales-report": {
         "task": "src.apps.store.tasks.generate_daily_sales_report",
         "schedule": crontab(hour=1, minute=5),
     },
-    "daily_promotions_report": {
+    "daily-promotions-report": {
         "task": "src.apps.store.tasks.generate_daily_promotions_report",
         "schedule": crontab(hour=1, minute=10),
     },
+    "simulate-daily-activity": {
+        "task": "src.apps.store.tasks.simulate_daily_activity",
+        "schedule": crontab(hour=2, minute=0),
+        "args": [5, 3, 2, 5, 7, 2, 4],
+    },
 }
+
 
 # ==============================================================================
 # LOGGING SETTINGS (STRUCTLOG)

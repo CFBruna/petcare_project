@@ -112,9 +112,13 @@ dparse==0.6.4
 drf-spectacular==0.28.0
     # via -r requirements.in
 factory-boy==3.3.3
-    # via -r requirements-dev.in
+    # via
+    #   -r requirements-dev.in
+    #   -r requirements.in
 faker==37.8.0
-    # via factory-boy
+    # via
+    #   -r requirements.in
+    #   factory-boy
 filelock==3.19.1
     # via
     #   safety
@@ -311,6 +315,8 @@ vine==5.1.0
     #   kombu
 virtualenv==20.34.0
     # via pre-commit
+watchdog==6.0.0
+    # via -r requirements-dev.in
 wcwidth==0.2.13
     # via prompt-toolkit
 whitenoise[brotli]==6.11.0

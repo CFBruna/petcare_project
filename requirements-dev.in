@@ -19,3 +19,4 @@ factory-boy
 # Security Scanners
 bandit
 safety
+watchdog

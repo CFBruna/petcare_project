@@ -15,3 +15,5 @@ drf-spectacular
 whitenoise[brotli]
 structlog
 gunicorn
+factory-boy
+Faker

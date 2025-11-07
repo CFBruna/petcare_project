@@ -16,7 +16,7 @@
 			"configureSudo": true
 		}
 	},
-	"postCreateCommand": "sudo chown -R appuser . && pre-commit install",
+	"postCreateCommand": "sudo chown -R ${remoteUser}:${remoteUser} . && pre-commit install",
 	"customizations": {
 		"vscode": {
 			"settings": {

@@ -73,6 +73,12 @@ djangorestframework-simplejwt==5.5.1
     # via -r requirements.in
 drf-spectacular==0.28.0
     # via -r requirements.in
+factory-boy==3.3.3
+    # via -r requirements.in
+faker==37.12.0
+    # via
+    #   -r requirements.in
+    #   factory-boy
 gunicorn==23.0.0
     # via -r requirements.in
 idna==3.10
@@ -131,6 +137,7 @@ tzdata==2025.2
     # via
     #   django
     #   django-celery-beat
+    #   faker
     #   kombu
 uritemplate==4.2.0
     # via drf-spectacular
