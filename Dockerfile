@@ -24,6 +24,7 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /usr/src/app
 
 ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/src"
+ENV PATH="/home/appuser/.local/bin:${PATH}"
 
 ARG INSTALL_DEV=false
 
