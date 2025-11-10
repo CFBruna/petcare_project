@@ -1,5 +1,5 @@
 import random
-from datetime import time, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 import structlog
@@ -100,7 +100,7 @@ def simulate_daily_activity(
     This includes new customers, products, lots, sales, appointments, promotions, and health records.
     """
     results = []
-    today = timezone.now().date()
+    today: date = timezone.now().date()
 
     for day in range(5):
         TimeSlot.objects.get_or_create(
@@ -253,7 +253,7 @@ def simulate_daily_activity(
                         minutes=service.duration_minutes
                     )
                     close_time = timezone.make_aware(
-                        timezone.datetime.combine(appointment_date, time(20, 0))
+                        datetime.combine(appointment_date, time(20, 0))
                     )
                     if end_time <= close_time:
                         # Armazenar junto com o serviço correspondente
@@ -298,9 +298,7 @@ def simulate_daily_activity(
             pet = random.choice(existing_pets)
             service = random.choice(existing_services)
             # Usar horários fixos para evitar colisões e garantir a criação
-            schedule_time = timezone.make_aware(
-                timezone.datetime.combine(today, time(9 + i, 0))
-            )
+            schedule_time = timezone.make_aware(datetime.combine(today, time(9 + i, 0)))
 
             # Criar apenas se o slot não estiver ocupado
             if not Appointment.objects.filter(schedule_time=schedule_time).exists():
@@ -338,22 +336,23 @@ def simulate_daily_activity(
             k=1,
         )[0]
 
-        appointment = AppointmentFactory(
-            pet=pet, service=service, status=status, schedule_time=schedule_time
-        )
-
+        completed_at_time = None
         if status == Appointment.Status.COMPLETED:
-            # Verificar se o horário de conclusão não ultrapassa o horário de funcionamento
             close_time = timezone.make_aware(
-                timezone.datetime.combine(schedule_time.date(), time(20, 0))
+                datetime.combine(schedule_time.date(), time(20, 0))
             )
             calculated_completion = schedule_time + timedelta(
                 minutes=service.duration_minutes
             )
-            # Definir o horário de conclusão como o menor entre o cálculo e o horário de fechamento
-            actual_completion = min(calculated_completion, close_time)
-            appointment.completed_at = actual_completion
-            appointment.save()
+            completed_at_time = min(calculated_completion, close_time)
+
+        AppointmentFactory(
+            pet=pet,
+            service=service,
+            status=status,
+            schedule_time=schedule_time,
+            completed_at=completed_at_time,
+        )
 
         created_appointments_count += 1
 
@@ -431,6 +430,9 @@ def apply_expiration_discounts() -> str:
     )
 
     for lot in lots:
+        if not lot.expiration_date:
+            continue
+
         days_until_expiration = (lot.expiration_date - today).days
         new_discount = Decimal("0.00")
 
@@ -469,7 +471,9 @@ def generate_daily_sales_report() -> str:
         ]
 
         for sale in sales:
-            customer_name = sale.customer.full_name or sale.customer.user.username
+            customer_name = "Cliente Anônimo"
+            if sale.customer:
+                customer_name = sale.customer.full_name or sale.customer.user.username
             sale_time = timezone.localtime(sale.created_at).strftime("%H:%M")
             report_lines.append(
                 f"- {sale_time}h | Cliente: {customer_name} | Total: R$ {sale.total_value:.2f}"
