@@ -28,10 +28,10 @@ class TestAvailableSlotsAPI:
 
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert "09:00:00" in response.data
-        assert "10:00:00" in response.data
-        assert "11:00:00" in response.data
-        assert "12:00:00" not in response.data
+        assert "09:00" in response.data
+        assert "10:00" in response.data
+        assert "11:00" in response.data
+        assert "12:00" not in response.data
 
     def test_get_slots_missing_params_fails(self, authenticated_client):
         client, _ = authenticated_client
