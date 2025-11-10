@@ -120,14 +120,18 @@ class AppointmentAdminForm(forms.ModelForm):
                 {"appointment_time": "Formato de hora inválido."}
             ) from e
 
-        available_slots = AppointmentService.get_available_slots(date, service)
+        # Busca os datetimes completos e conscientes do fuso horário
+        available_datetimes = AppointmentService.get_available_slots(date, service)
+        # Converte para objetos time apenas para a validação
+        available_times = [dt.time() for dt in available_datetimes]
+
         is_editing = self.instance and self.instance.pk
         if is_editing:
             original_time = timezone.localtime(self.instance.schedule_time).time()
-            if original_time not in available_slots:
-                available_slots.append(original_time)
+            if original_time not in available_times:
+                available_times.append(original_time)
 
-        if submitted_time not in available_slots:
+        if submitted_time not in available_times:
             self.add_error(
                 "appointment_time",
                 "Este horário não está mais disponível. Por favor, selecione outro.",

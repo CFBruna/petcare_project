@@ -44,20 +44,31 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         schedule_date = data.get("schedule_date")
+        # O campo 'schedule_time_input' é mapeado para 'schedule_time' por causa do `source`
         schedule_time = data.get("schedule_time")
         service = data.get("service")
 
-        available_slots = AppointmentService.get_available_slots(schedule_date, service)
-
-        if schedule_time not in available_slots:
+        if not (schedule_date and schedule_time and service):
             raise serializers.ValidationError(
-                "The selected time and/or date is not available."
+                "'schedule_date', 'schedule_time_input', e 'service' são obrigatórios."
             )
 
-        combined_datetime = datetime.combine(schedule_date, schedule_time)
-        aware_datetime = timezone.make_aware(combined_datetime)
-        data["schedule_time"] = aware_datetime
+        # 1. Combina e torna o datetime 'aware' primeiro.
+        submitted_datetime = timezone.make_aware(
+            datetime.combine(schedule_date, schedule_time)
+        )
 
+        # 2. Busca os slots disponíveis.
+        available_slots = AppointmentService.get_available_slots(schedule_date, service)
+
+        # 3. Agora, compara objetos iguais (aware datetime com aware datetime).
+        if submitted_datetime not in available_slots:
+            raise serializers.ValidationError(
+                {"schedule_time_input": "O horário selecionado não está disponível."}
+            )
+
+        # 4. Atualiza o campo 'schedule_time' com o objeto datetime validado e aware.
+        data["schedule_time"] = submitted_datetime
         return data
 
     def create(self, validated_data):

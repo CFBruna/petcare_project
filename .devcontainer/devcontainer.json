@@ -16,7 +16,7 @@
 			"configureSudo": true
 		}
 	},
-	"postCreateCommand": "sudo chown -R appuser . && pre-commit install",
+	"postCreateCommand": "pip install --no-warn-script-location -r requirements-dev.txt && sudo chown -R appuser . && pre-commit install",
 	"customizations": {
 		"vscode": {
 			"settings": {
