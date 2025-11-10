@@ -35,9 +35,10 @@ class TestAvailableSlotsService:
         slots = AppointmentService.get_available_slots(
             self.test_date, self.service_30_min
         )
-        assert time(8, 0) in slots
-        assert time(11, 30) in slots
-        assert time(11, 45) not in slots
+        slot_times = [dt.time() for dt in slots]
+        assert time(8, 0) in slot_times
+        assert time(11, 30) in slot_times
+        assert time(11, 45) not in slot_times
 
     def test_get_slots_for_non_working_day(self):
         non_working_day = date(2025, 8, 17)
@@ -58,10 +59,11 @@ class TestAvailableSlotsService:
         slots = AppointmentService.get_available_slots(
             self.test_date, self.service_30_min
         )
-        assert time(8, 45) not in slots
-        assert time(9, 0) not in slots
-        assert time(9, 30) not in slots
-        assert time(10, 0) in slots
+        slot_times = [dt.time() for dt in slots]
+        assert time(8, 45) not in slot_times
+        assert time(9, 0) not in slot_times
+        assert time(9, 30) not in slot_times
+        assert time(10, 0) in slot_times
 
     def test_scenario_from_debugging_session(self):
         appointment_time = timezone.make_aware(
@@ -75,9 +77,10 @@ class TestAvailableSlotsService:
         slots_for_short_service = AppointmentService.get_available_slots(
             self.test_date, self.service_30_min
         )
-        assert time(8, 0) not in slots_for_short_service
-        assert time(9, 45) not in slots_for_short_service
-        assert time(10, 0) in slots_for_short_service
+        slot_times = [dt.time() for dt in slots_for_short_service]
+        assert time(8, 0) not in slot_times
+        assert time(9, 45) not in slot_times
+        assert time(10, 0) in slot_times
 
     def test_get_slots_for_today_only_shows_future_slots(self):
         today = self.test_date
@@ -86,8 +89,10 @@ class TestAvailableSlotsService:
         )
         with patch("django.utils.timezone.now", return_value=mock_now_today):
             slots = AppointmentService.get_available_slots(today, self.service_30_min)
-        assert time(9, 0) not in slots
-        assert time(9, 15) in slots
+
+        slot_times = [dt.time() for dt in slots]
+        assert time(9, 0) not in slot_times
+        assert time(9, 15) in slot_times
 
     def test_get_slots_for_past_date(self):
         past_date = date(2025, 1, 1)

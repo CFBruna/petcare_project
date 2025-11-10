@@ -21,6 +21,8 @@ services:
       dockerfile: Dockerfile
       args:
         - INSTALL_DEV=true
+        - USER_ID=${u:-1000}
+        - GROUP_ID=${un:-1000}
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/usr/src/app/
@@ -38,6 +40,8 @@ services:
       dockerfile: Dockerfile
       args:
         - INSTALL_DEV=true
+        - USER_ID=${u:-1000}
+        - GROUP_ID=${un:-1000}
     command: watchmedo auto-restart --directory=./src --pattern=*.py --recursive -- celery -A petcare worker -l info
     volumes:
       - .:/usr/src/app/
@@ -53,6 +57,8 @@ services:
       dockerfile: Dockerfile
       args:
         - INSTALL_DEV=true
+        - USER_ID=${u:-1000}
+        - GROUP_ID=${un:-1000}
     command: celery -A petcare beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/usr/src/app/

@@ -70,10 +70,8 @@ class AvailableSlotsView(APIView):
             service = Service.objects.get(pk=service_id)
 
             slots = AppointmentService.get_available_slots(appointment_date, service)
-
-            formatted_slots = [s.strftime("%H:%M") for s in slots]
-
-            return Response(formatted_slots, status=status.HTTP_200_OK)
+            time_strings = [slot.strftime("%H:%M:%S") for slot in slots]
+            return Response(time_strings)
 
         except Service.DoesNotExist:
             return Response(

@@ -3,9 +3,30 @@ services:
   web:
     build:
       context: ..
+      dockerfile: Dockerfile
+      args:
+        - INSTALL_DEV=true
+        - USER_ID=${u:-1000}
+        - GROUP_ID=${un:-1000}
     volumes:
       - ..:/workspaces:cached
+      - ~/.gitconfig:/home/appuser/.gitconfig:ro
     command: sleep infinity
+    env_file:
+      - ../.env
     depends_on:
       - db
       - redis
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ../.env
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  postgres_data:

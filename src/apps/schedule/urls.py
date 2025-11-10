@@ -8,6 +8,8 @@ from .views import (
     TimeSlotViewSet,
 )
 
+app_name = "schedule"
+
 router = DefaultRouter()
 router.register(r"services", ServiceViewSet, basename="service")
 router.register(r"time-slots", TimeSlotViewSet, basename="timeslot")

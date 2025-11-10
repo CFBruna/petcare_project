@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import structlog
@@ -62,7 +62,7 @@ class AppointmentService:
         return appointment
 
     @staticmethod
-    def get_available_slots(schedule_date: date, service: "Service") -> list[time]:  # noqa: UP037
+    def get_available_slots(schedule_date: date, service: Service) -> list[datetime]:
         now = timezone.now()
         if schedule_date < now.date():
             return []
@@ -88,7 +88,7 @@ class AppointmentService:
             app_end = app_start + timedelta(minutes=app.service.duration_minutes)
             occupied_periods.append((app_start, app_end))
 
-        available_slots: list[time] = []
+        available_slots: list[datetime] = []
         slot_increment = timedelta(minutes=15)
         service_duration = timedelta(minutes=service.duration_minutes)
 
@@ -101,11 +101,15 @@ class AppointmentService:
             )
 
             current_time = start_of_day_dt
-            if schedule_date == now.date() and current_time < now:
-                minutes_to_add = 15 - (now.minute % 15)
-                current_time = (now + timedelta(minutes=minutes_to_add)).replace(
-                    second=0, microsecond=0
-                )
+            if schedule_date == now.date():
+                # Se a hora atual já passou do início do expediente, comece a partir da hora atual.
+                if now > current_time:
+                    # Arredonda a hora atual para o próximo intervalo de 15 minutos
+                    minutes_to_add = 15 - (now.minute % 15)
+                    rounded_now = (now + timedelta(minutes=minutes_to_add)).replace(
+                        second=0, microsecond=0
+                    )
+                    current_time = rounded_now
 
             while current_time + service_duration <= end_of_day_dt:
                 slot_start = current_time
@@ -118,7 +122,7 @@ class AppointmentService:
                         break
 
                 if is_available:
-                    available_slots.append(slot_start.time())
+                    available_slots.append(slot_start)
 
                 current_time += slot_increment
 

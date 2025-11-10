@@ -17,9 +17,14 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update && apt-get install -y git sudo && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git sudo zsh curl && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+RUN groupadd -g ${GROUP_ID} appuser && \
+    useradd -u ${USER_ID} -g appuser -m -s /bin/zsh appuser && \
+    echo "appuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/vscode-appuser
 
 WORKDIR /usr/src/app
 
@@ -34,17 +39,17 @@ COPY --from=builder /usr/src/app/dev-wheels /dev-wheels
 RUN if [ "$INSTALL_DEV" = "true" ]; then pip install --no-cache /dev-wheels/*; \
     else pip install --no-cache /prod-wheels/*; fi
 
-COPY . .
+COPY --chown=appuser:appuser . .
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-
 RUN mkdir -p logs && \
-    touch logs/petcare.json.log && \
-    chown appuser:appuser logs/petcare.json.log
+    chown -R appuser:appuser logs
 
 USER appuser
+
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
