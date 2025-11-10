@@ -98,8 +98,7 @@ class TestStoreReportTasks:
         mocker.patch("django.utils.timezone.localdate", return_value=mocked_now.date())
         send_mail_mock = mocker.patch("src.apps.store.tasks.send_mail")
 
-        # Arrange: Create a promotion that was active yesterday and is no longer active today
-        # Explicitly create aware datetime objects to avoid ambiguity and warnings.
+        # Arrange
         start_date_aware = mocked_now - timedelta(days=2)
         end_date_aware = mocked_now - timedelta(days=1)
         PromotionFactory(
@@ -123,11 +122,9 @@ class TestSimulateDailyActivityTask:
     ):
         # Arrange
         today = timezone.now().date()
-        # Garante que existem pets e serviços para criar agendamentos
         PetFactory.create_batch(5)
         ServiceFactory.create_batch(3)
 
-        # Garante que existem horários para todos os dias da semana
         for day in range(7):
             TimeSlot.objects.get_or_create(
                 day_of_week=day,
