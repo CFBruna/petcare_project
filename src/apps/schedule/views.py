@@ -1,3 +1,4 @@
+import zoneinfo
 from datetime import date
 
 import structlog
@@ -70,7 +71,11 @@ class AvailableSlotsView(APIView):
             service = Service.objects.get(pk=service_id)
 
             slots = AppointmentService.get_available_slots(appointment_date, service)
-            time_strings = [slot.strftime("%H:%M:%S") for slot in slots]
+
+            sao_paulo_tz = zoneinfo.ZoneInfo("America/Sao_Paulo")
+            time_strings = [
+                slot.astimezone(sao_paulo_tz).strftime("%H:%M:%S") for slot in slots
+            ]
             return Response(time_strings)
 
         except Service.DoesNotExist:
