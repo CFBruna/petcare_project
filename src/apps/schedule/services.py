@@ -86,14 +86,10 @@ class AppointmentService:
         )
 
         if schedule_date == now.date():
-            minutes = now.minute
-            rounded_minute = (minutes + 14) // 15 * 15
-            rounded_time = now.replace(minute=0, second=0, microsecond=0) + timedelta(
-                minutes=rounded_minute
-            )
-            current_time = timezone.make_aware(
-                datetime.combine(schedule_date, rounded_time.time())
-            )
+            minutes_to_add = 15 - (now.minute % 15)
+            current_time = now + timedelta(minutes=minutes_to_add)
+            current_time = current_time.replace(second=0, microsecond=0)
+
             if current_time < start_of_day_dt:
                 current_time = start_of_day_dt
         else:
