@@ -120,9 +120,7 @@ class AppointmentAdminForm(forms.ModelForm):
                 {"appointment_time": "Formato de hora inválido."}
             ) from e
 
-        # Busca os datetimes completos e conscientes do fuso horário
         available_datetimes = AppointmentService.get_available_slots(date, service)
-        # Converte para objetos time apenas para a validação
         available_times = [dt.time() for dt in available_datetimes]
 
         is_editing = self.instance and self.instance.pk

@@ -240,7 +240,6 @@ def simulate_daily_activity(
 
     all_available_slots = []
     if existing_services:
-        # Obter slots disponíveis para todos os serviços
         for day_offset in range(8):
             appointment_date = today + timedelta(days=day_offset)
             for service in existing_services:
@@ -248,7 +247,6 @@ def simulate_daily_activity(
                     appointment_date, service
                 )
                 for slot_datetime in slots_for_day:
-                    # Verificar se o horário + tempo de serviço não ultrapassa o horário de funcionamento
                     end_time = slot_datetime + timedelta(
                         minutes=service.duration_minutes
                     )
@@ -256,7 +254,6 @@ def simulate_daily_activity(
                         datetime.combine(appointment_date, time(20, 0))
                     )
                     if end_time <= close_time:
-                        # Armazenar junto com o serviço correspondente
                         all_available_slots.append((slot_datetime, service))
 
     occupied_times = set(
@@ -265,14 +262,12 @@ def simulate_daily_activity(
         ).values_list("schedule_time", flat=True)
     )
 
-    # Remover slots já ocupados
     available_slots_with_service = [
         (slot, service)
         for slot, service in all_available_slots
         if slot not in occupied_times
     ]
 
-    # Separar appointments para hoje para garantir pelo menos 2 confirmados
     today_appointments = [
         (slot, service)
         for slot, service in available_slots_with_service
@@ -285,9 +280,7 @@ def simulate_daily_activity(
     ]
 
     created_appointments_count = 0
-    # Forçar a criação de 2 agendamentos confirmados para hoje para garantir a consistência do teste
     if existing_pets and existing_services:
-        # Garante que o horário de funcionamento de hoje existe
         TimeSlot.objects.get_or_create(
             day_of_week=today.weekday(),
             start_time=time(8, 0),
@@ -297,10 +290,8 @@ def simulate_daily_activity(
         for i in range(2):
             pet = random.choice(existing_pets)
             service = random.choice(existing_services)
-            # Usar horários fixos para evitar colisões e garantir a criação
             schedule_time = timezone.make_aware(datetime.combine(today, time(9 + i, 0)))
 
-            # Criar apenas se o slot não estiver ocupado
             if not Appointment.objects.filter(schedule_time=schedule_time).exists():
                 AppointmentFactory(
                     pet=pet,
@@ -310,7 +301,6 @@ def simulate_daily_activity(
                 )
                 created_appointments_count += 1
 
-    # Combinar agendamentos restantes
     remaining_slots_with_service = today_appointments + other_appointments
     random.shuffle(remaining_slots_with_service)
 

@@ -28,7 +28,6 @@ class TestAvailableSlotsAPI:
 
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        # Assert that the API returns the correct time format HH:MM:SS
         assert "09:00:00" in response.data
         assert "10:00:00" in response.data
         assert "11:00:00" in response.data
@@ -82,16 +81,13 @@ class TestAppointmentAPI:
         my_pet = PetFactory(owner__user=user)
         service = ServiceFactory(duration_minutes=30)
 
-        # Call the service directly to get the exact, timezone-aware datetime objects
         available_slots = AppointmentService.get_available_slots(
             self.future_date, service
         )
         assert len(available_slots) > 0, "No available slots found for test setup"
 
-        # Use the first available, aware datetime object
         valid_slot = available_slots[0]
 
-        # Build the payload in the format the API expects
         data = {
             "pet": my_pet.id,
             "service": service.id,
