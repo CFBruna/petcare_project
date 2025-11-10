@@ -1,6 +1,5 @@
-from datetime import datetime
+import zoneinfo
 
-from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Appointment, Service, TimeSlot
@@ -52,18 +51,27 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 "'schedule_date', 'schedule_time_input', e 'service' são obrigatórios."
             )
 
-        submitted_datetime = timezone.make_aware(
-            datetime.combine(schedule_date, schedule_time)
-        )
-
         available_slots = AppointmentService.get_available_slots(schedule_date, service)
+        sao_paulo_tz = zoneinfo.ZoneInfo("America/Sao_Paulo")
+        matching_slot = None
+        for slot in available_slots:
+            slot_local_time = slot.astimezone(sao_paulo_tz).time()
+            if slot_local_time == schedule_time:
+                matching_slot = slot
+                break
 
-        if submitted_datetime not in available_slots:
+        if matching_slot is None:
+            available_times_local = [
+                slot.astimezone(sao_paulo_tz).strftime("%H:%M")
+                for slot in available_slots
+            ]
             raise serializers.ValidationError(
-                {"schedule_time_input": "O horário selecionado não está disponível."}
+                {
+                    "schedule_time_input": f"O horário selecionado não está disponível. Horários disponíveis: {available_times_local}"
+                }
             )
 
-        data["schedule_time"] = submitted_datetime
+        data["schedule_time"] = matching_slot
         return data
 
     def create(self, validated_data):

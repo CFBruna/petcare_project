@@ -74,7 +74,7 @@ class AvailableSlotsView(APIView):
 
             sao_paulo_tz = zoneinfo.ZoneInfo("America/Sao_Paulo")
             time_strings = [
-                slot.astimezone(sao_paulo_tz).strftime("%H:%M:%S") for slot in slots
+                slot.astimezone(sao_paulo_tz).strftime("%H:%M") for slot in slots
             ]
             return Response(time_strings)
 

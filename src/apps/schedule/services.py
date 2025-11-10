@@ -63,7 +63,7 @@ class AppointmentService:
 
     @staticmethod
     def get_available_slots(schedule_date: date, service: Service) -> list[datetime]:
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
 
         if schedule_date < now.date():
             return []
