@@ -30,9 +30,9 @@ Password: avaliar123
 
 ## 🎥 Video Demo
 
-Watch a 2-minute overview showcasing the main features, architecture, and CI/CD pipeline:
+[<img src="https://github.com/user-attachments/assets/71919de7-47a8-465b-83a7-05f1efcfced4" width="100%">](https://youtu.be/hD8qak2FAoQ)
 
-[<img src="https://github.com/user-attachments/assets/4a9bc390-a421-40e7-8dbe-efa585e00ebe" width="100%">](https://youtu.be/hD8qak2FAoQ)
+*Click the dashboard cover above to watch demo video.*
 
 ---
 
@@ -75,19 +75,11 @@ This project runs on a modern, scalable cloud infrastructure:
 
 ## 📸 Screenshots
 
+### Dashboard (covers the demo video)
+[<img width="100%" alt="Dashboard" src="https://github.com/user-attachments/assets/71919de7-47a8-465b-83a7-05f1efcfced4" />](https://youtu.be/hD8qak2FAoQ)
+
 ### API Documentation (Swagger UI)
-![Swagger UI](docs/screenshots/swagger-ui.png)
-*Interactive API documentation with 15+ endpoints*
-
-### Dashboard
-![Dashboard](docs/screenshots/dashboard.png)
-*Analytics overview with revenue and appointments metrics*
-
-### Appointment Scheduling
-![Scheduling](docs/screenshots/appointments.png)
-*Smart booking system with availability validation*
-
-> 💡 **Note:** Screenshots will be added soon. You can test the live application using the credentials above.
+<img width="100%" alt="Swagger" src="https://github.com/user-attachments/assets/434afee3-6c2a-405c-9df5-0c07f593cdba" />
 
 ---
 
@@ -131,30 +123,40 @@ This project runs on a modern, scalable cloud infrastructure:
 
 1. **Clone the repository**
 
-   git clone https://github.com/CFBruna/petcare_project.git
-   cd petcare_project
+```
+git clone https://github.com/CFBruna/petcare_project.git
+cd petcare_project
+```
 
 2. **Set up environment variables**
 
-   cp .env.example .env
+```
+cp .env.example .env
+```
 
-   > ⚠️ Edit `.env` and fill in required values (especially `SECRET_KEY`)
+> ⚠️ Edit `.env` and fill in required values (especially `SECRET_KEY`)
 
 3. **Build and start containers**
 
-   docker-compose up --build -d
+```
+docker-compose up --build -d
+```
 
 4. **Run database migrations**
 
-   docker-compose exec web python manage.py migrate
+```
+docker-compose exec web python manage.py migrate
+```
 
 5. **Create superuser**
 
-   docker-compose exec web python manage.py createsuperuser
+```
+docker-compose exec web python manage.py createsuperuser
+```
 
 6. **Access the application**
-   - Admin Panel: `http://127.0.0.1:8000/admin/`
-   - API Docs: `http://127.0.0.1:8000/api/v1/schema/swagger-ui/`
+- Admin Panel: `http://127.0.0.1:8000/admin/`
+- API Docs: `http://127.0.0.1:8000/api/v1/schema/swagger-ui/`
 
 ---
 
@@ -162,17 +164,21 @@ This project runs on a modern, scalable cloud infrastructure:
 
 Execute the complete test suite with coverage report:
 
-Run all tests with coverage
+```
+docker-compose exec web pytest --cov
+```
 
-    docker-compose exec web pytest --cov
+With detailed output:
 
-Run with detailed output
+```
+docker-compose exec web pytest --cov --cov-report=html -v
+```
 
-    docker-compose exec web pytest --cov --cov-report=html -v
+Run specific test file:
 
-Run specific test file
-
-    docker-compose exec web pytest src/apps/pets/tests.py -v
+```
+docker-compose exec web pytest src/apps/pets/tests.py -v
+```
 
 **Coverage Report:** The project maintains **94% test coverage** across all modules.
 
