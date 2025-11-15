@@ -28,11 +28,17 @@ Password: avaliar123
 
 ---
 
-## 🎥 Video Demo
+## 📸 Screenshots
 
-[<img src="https://github.com/user-attachments/assets/71919de7-47a8-465b-83a7-05f1efcfced4" width="100%">](https://youtu.be/hD8qak2FAoQ)
+### Dashboard
+<img alt="Dashboard" src="https://github.com/user-attachments/assets/71919de7-47a8-465b-83a7-05f1efcfced4" />
 
-*Click the dashboard cover above to watch demo video.*
+*Full interactive demo available — test it live using the credentials and admin panel above. Click the image to view it in full resolution on GitHub.*
+
+### API Documentation (Swagger UI)
+<img alt="Swagger" src="https://github.com/user-attachments/assets/434afee3-6c2a-405c-9df5-0c07f593cdba" />
+
+*Click the image to view full Swagger UI in high resolution.*
 
 ---
 
@@ -70,16 +76,6 @@ This project runs on a modern, scalable cloud infrastructure:
 - **Asynchronous Tasks** with Celery + Redis
 - **Type Safety** with MyPy strict mode
 - **Code Quality** enforced by Ruff + pre-commit hooks
-
----
-
-## 📸 Screenshots
-
-### Dashboard (covers the demo video)
-[<img width="100%" alt="Dashboard" src="https://github.com/user-attachments/assets/71919de7-47a8-465b-83a7-05f1efcfced4" />](https://youtu.be/hD8qak2FAoQ)
-
-### API Documentation (Swagger UI)
-<img width="100%" alt="Swagger" src="https://github.com/user-attachments/assets/434afee3-6c2a-405c-9df5-0c07f593cdba" />
 
 ---
 
