@@ -12,6 +12,29 @@
 
 ---
 
+## 📸 Screenshots
+
+### Landing Page
+<img alt="Landing Page" src="https://github.com/user-attachments/assets/aef08a69-3ce3-4bc9-aee6-e7444662da97" />
+
+*Modern landing page with demo credentials and clean UX/UI design.*
+
+---
+
+### Dashboard Analytics
+<img alt="Dashboard" src="https://github.com/user-attachments/assets/8000a5e2-4af9-4c0d-8d05-1a286d445f88" />
+
+*Revenue metrics, daily appointments, and 7-day billing chart with real-time data.*
+
+---
+
+### API Documentation (Swagger UI)
+<img alt="Swagger" src="https://github.com/user-attachments/assets/1ebe7466-65bd-402a-be10-0acc83dd742e" />
+
+*RESTful API with 15+ endpoints documented following OpenAPI 3.0 specification.*
+
+---
+
 ## 🎯 Quick Start
 
 Test the live application deployed on AWS production infrastructure:
@@ -25,20 +48,6 @@ Password: avaliar123
 - 🌐 Main Application: [petcare.brunadev.com](http://petcare.brunadev.com)
 - 🛠️ Admin Panel: [petcare.brunadev.com/admin](http://petcare.brunadev.com/admin)
 - 📖 API Documentation: [Swagger UI](http://petcare.brunadev.com/api/v1/schema/swagger-ui/) | [ReDoc](http://petcare.brunadev.com/api/v1/schema/redoc/)
-
----
-
-## 📸 Screenshots
-
-### Dashboard
-<img alt="Dashboard" src="https://github.com/user-attachments/assets/71919de7-47a8-465b-83a7-05f1efcfced4" />
-
-*Full interactive demo available — test it live using the credentials and admin panel above. Click the image to view it in full resolution on GitHub.*
-
-### API Documentation (Swagger UI)
-<img alt="Swagger" src="https://github.com/user-attachments/assets/434afee3-6c2a-405c-9df5-0c07f593cdba" />
-
-*Click the image to view full Swagger UI in high resolution.*
 
 ---
 
