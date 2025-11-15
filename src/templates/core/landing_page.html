@@ -1,589 +1,270 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="pt-br" class="scroll-smooth">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bruna Menezes - Desenvolvedora Backend Python</title>
-
+    <title>PetCare - Pet Shop Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'navy': '#0a192f',
-                        'light-navy': '#112240',
-                        'lightest-navy': '#233554',
-                        'slate': '#8892b0',
-                        'light-slate': '#a8b2d1',
-                        'lightest-slate': '#ccd6f6',
-                        'cyan': '#64ffda',
-                        'cyan-dark': '#4fd8b3',
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate',
-                        'slide-in': 'slide-in 0.6s ease-out',
-                        'fade-in-up': 'fade-in-up 0.6s ease-out',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-15px)' }
-                        },
-                        glow: {
-                            '0%': { boxShadow: '0 0 20px rgba(100, 255, 218, 0.1)' },
-                            '100%': { boxShadow: '0 0 30px rgba(100, 255, 218, 0.3)' }
-                        },
-                        'slide-in': {
-                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' }
-                        },
-                        'fade-in-up': {
-                            '0%': { transform: 'translateY(30px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' }
-                        }
-                    },
-                    boxShadow: {
-                        'glow': '0 0 20px rgba(100, 255, 218, 0.15)',
-                        'glow-lg': '0 0 40px rgba(100, 255, 218, 0.2)',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        ::-webkit-scrollbar {
-            width: 8px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        ::-webkit-scrollbar-track {
-            background: #0a192f;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #233554, #64ffda);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #64ffda, #4fd8b3);
-        }
-
+        .fade-in { animation: fadeIn 0.6s ease-out; }
         .gradient-text {
-            background: linear-gradient(135deg, #64ffda, #a8b2d1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
-        .card-hover:hover {
-            transform: translateY(-8px);
-            transition: all 0.3s ease;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-
-        .skill-card {
-            background: linear-gradient(135deg, #112240 0%, #233554 100%);
-            border: 1px solid rgba(100, 255, 218, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .skill-card:hover {
-            border-color: rgba(100, 255, 218, 0.3);
-            box-shadow: 0 8px 25px rgba(100, 255, 218, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .project-card {
-            background: rgba(17, 34, 64, 0.8);
-            border: 1px solid rgba(100, 255, 218, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .nav-blur {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
 
-<body class="font-inter bg-navy text-slate antialiased selection:bg-cyan selection:text-navy">
+        <!-- Header/Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 512 512">
+    <path d="M256 224c-79.37 0-191.1 122.7-191.1 200.2C64.02 459.1 90.76 480 135.8 480C184.6 480 216.9 454.9 256 454.9C295.5 454.9 327.9 480 376.2 480c44.1 0 71.74-20.88 71.74-55.75C447.1 346.8 335.4 224 256 224zM108.8 211.4c-10.37-34.62-42.5-57.12-71.62-50.12S-7.104 202 3.27 236.6C13.64 271.3 45.77 293.8 74.89 286.8S119.1 246 108.8 211.4zM193.5 190.6c30.87-8.125 46.37-49.1 34.5-93.37s-46.5-71.1-77.49-63.87c-30.87 8.125-46.37 49.1-34.5 93.37C127.9 170.1 162.5 198.8 193.5 190.6zM474.9 161.3c-29.12-6.1-61.25 15.5-71.62 50.12c-10.37 34.63 4.75 68.37 33.87 75.37c29.12 6.1 61.12-15.5 71.62-50.12C519.1 202 503.1 168.3 474.9 161.3zM318.5 190.6c30.1 8.125 65.62-20.5 77.49-63.87c11.87-43.37-3.625-85.25-34.5-93.37c-30.1-8.125-65.62 20.5-77.49 63.87C272.1 140.6 287.6 182.5 318.5 190.6z"/>
+</svg>
 
-    <!-- Background Elements -->
-    <div class="fixed inset-0 pointer-events-none">
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan/5 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-1/3 right-1/4 w-80 h-80 bg-light-navy/30 rounded-full blur-3xl"></div>
+                    <span class="text-2xl font-bold gradient-text">PetCare</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="hidden sm:inline text-sm text-slate-600">Enterprise Pet Shop System</span>
+                    <a href="https://github.com/CFBruna/petcare_project" target="_blank" class="text-slate-600 hover:text-slate-900 transition">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="container mx-auto px-6 pt-16 pb-24">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+            <!-- Left Content -->
+            <div class="fade-in space-y-8">
+                <div class="inline-block">
+                    <span class="bg-indigo-100 text-indigo-700 text-sm font-semibold px-4 py-2 rounded-full">
+                        🚀 Live Demo Available
+                    </span>
+                </div>
+
+                <h1 class="text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+                    Enterprise Pet Shop
+                    <span class="gradient-text">Management System</span>
+                </h1>
+
+                <p class="text-xl text-slate-600 leading-relaxed">
+                    Full-stack Django application with 94% test coverage, deployed on AWS with CI/CD automation. Complete REST API, async tasks, and production-ready infrastructure.
+                </p>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-6 pt-4">
+                    <div>
+                        <div class="text-3xl font-bold text-indigo-600">94%</div>
+                        <div class="text-sm text-slate-600">Test Coverage</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-indigo-600">15+</div>
+                        <div class="text-sm text-slate-600">API Endpoints</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-indigo-600">AWS</div>
+                        <div class="text-sm text-slate-600">Production</div>
+                    </div>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                    <a href="/admin/" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-indigo-600 rounded-xl overflow-hidden transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-500/50 hover:-translate-y-0.5">
+                        <span class="relative flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Admin Panel
+                        </span>
+                    </a>
+
+                    <a href="/api/v1/schema/swagger-ui/" class="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl transition-all hover:border-indigo-600 hover:text-indigo-600 hover:shadow-lg hover:-translate-y-0.5">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            API Documentation
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Content - Credentials Card -->
+            <div class="fade-in">
+                <div class="relative">
+                    <!-- Glow effect -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-25"></div>
+
+                    <!-- Card -->
+                    <div class="relative bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-2xl font-bold text-slate-900">🔑 Demo Access</h3>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full pulse"></div>
+                                <span class="text-xs text-green-600 font-semibold">LIVE</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Email Field -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    Email
+                                </label>
+                                <div class="group relative">
+                                    <input type="text" value="recrutador@petcare.com" readonly
+                                        class="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-4 py-3 font-mono text-sm text-slate-900 focus:outline-none focus:border-indigo-600 transition cursor-text">
+                                    <button onclick="copyToClipboard('recrutador@petcare.com', 'email')"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 transition">
+                                        <svg id="copy-icon-email" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                    </svg>
+                                    Password
+                                </label>
+                                <div class="group relative">
+                                    <input type="text" value="avaliar123" readonly
+                                        class="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-4 py-3 font-mono text-sm text-slate-900 focus:outline-none focus:border-indigo-600 transition cursor-text">
+                                    <button onclick="copyToClipboard('avaliar123', 'password')"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 transition">
+                                        <svg id="copy-icon-password" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-200">
+                            <h4 class="text-sm font-semibold text-slate-700 mb-3">Tech Stack</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Python 3.12</span>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Django 5.2</span>
+                                <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">DRF</span>
+                                <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">PostgreSQL</span>
+                                <span class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">Redis</span>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Celery</span>
+                                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">Docker</span>
+                                <span class="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full">AWS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <header class="fixed top-0 w-full z-50 bg-navy/90 nav-blur shadow-lg transition-all duration-500" id="navbar">
-        <nav class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#home"
-                class="text-2xl font-bold gradient-text hover:scale-110 transition-transform duration-300">BM</a>
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="#about" class="hover:text-cyan transition-all duration-300 relative group">
-                    Sobre
-                    <span
-                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan transition-all duration-300 group-hover:w-full"></span>
-                </a>
-                <a href="#skills" class="hover:text-cyan transition-all duration-300 relative group">
-                    Habilidades
-                    <span
-                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan transition-all duration-300 group-hover:w-full"></span>
-                </a>
-                <a href="#projects" class="hover:text-cyan transition-all duration-300 relative group">
-                    Projetos
-                    <span
-                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan transition-all duration-300 group-hover:w-full"></span>
-                </a>
-                <a href="#contact"
-                    class="border-2 border-cyan text-cyan px-6 py-2 rounded-lg hover:bg-cyan hover:text-navy font-semibold transition-all duration-300 hover:shadow-glow">
-                    Contato
-                </a>
+    <!-- Features Section -->
+    <div class="bg-white py-24">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-slate-900 mb-4">Enterprise Features</h2>
+                <p class="text-xl text-slate-600">Production-ready architecture with best practices</p>
             </div>
 
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-cyan text-2xl" id="mobileMenuBtn">
-                <i class="fas fa-bars"></i>
-            </button>
-        </nav>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-indigo-600 transition-all hover:shadow-lg">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition">
+                        <svg class="w-6 h-6 text-indigo-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">94% Test Coverage</h3>
+                    <p class="text-slate-600">Comprehensive test suite with pytest, factory-boy, and automated CI/CD pipeline with GitHub Actions</p>
+                </div>
 
-        <!-- Mobile Menu -->
-        <div class="md:hidden hidden bg-navy/95 nav-blur" id="mobileMenu">
-            <div class="px-6 py-4 space-y-4">
-                <a href="#about" class="block hover:text-cyan transition-colors">Sobre</a>
-                <a href="#skills" class="block hover:text-cyan transition-colors">Habilidades</a>
-                <a href="#projects" class="block hover:text-cyan transition-colors">Projetos</a>
-                <a href="#contact"
-                    class="block border border-cyan text-cyan px-4 py-2 rounded text-center hover:bg-cyan/10 transition-colors">
-                    Contato
-                </a>
+                <!-- Feature 2 -->
+                <div class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-purple-600 transition-all hover:shadow-lg">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition">
+                        <svg class="w-6 h-6 text-purple-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">AWS Production</h3>
+                    <p class="text-slate-600">Deployed on EC2 with RDS PostgreSQL, ElastiCache Redis, Route 53 DNS, and Nginx reverse proxy</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-green-600 transition-all hover:shadow-lg">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-600 transition">
+                        <svg class="w-6 h-6 text-green-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Clean Architecture</h3>
+                    <p class="text-slate-600">Service Layer Pattern, Repository Pattern, Domain Events, and type-safe code with MyPy strict mode</p>
+                </div>
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-6xl mx-auto px-6 relative">
-
-        <section id="home" class="min-h-screen flex flex-col justify-center py-20" data-aos="fade-up">
-            <div class="space-y-6">
-                <p class="text-cyan font-mono text-lg animate-slide-in">Olá, meu nome é</p>
-                <h1 class="text-5xl sm:text-7xl font-bold text-lightest-slate leading-tight animate-fade-in-up">
-                    Bruna Menezes.
-                </h1>
-                <h2 class="text-4xl sm:text-6xl font-bold text-slate mt-4 animate-fade-in-up"
-                    style="animation-delay: 0.2s;">
-                    Eu construo aplicações para a web.
-                </h2>
-                <p class="mt-8 max-w-2xl text-lg leading-relaxed animate-fade-in-up" style="animation-delay: 0.4s;">
-                    Como Desenvolvedora Backend, meu foco é transformar <strong
-                        class="gradient-text font-semibold">lógica de negócio em sistemas web escaláveis</strong>. Sou
-                    especializada em <strong class="gradient-text font-semibold">Python</strong> e <strong
-                        class="gradient-text font-semibold">Django</strong>, com experiência prática em todo o ciclo de
-                    vida do desenvolvimento, do primeiro commit ao deploy na <strong
-                        class="gradient-text font-semibold">AWS</strong>.
-                </p>
-                <div class="mt-10 flex flex-col sm:flex-row gap-4 animate-fade-in-up" style="animation-delay: 0.6s;">
-                    <a href="#projects"
-                        class="group bg-gradient-to-r from-cyan to-cyan-dark text-navy font-bold py-4 px-8 rounded-lg hover:shadow-glow-lg transition-all duration-300 inline-flex items-center justify-center">
-                        Veja meu trabalho
-                        <i
-                            class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
-                    </a>
-                    <a href="https://www.linkedin.com/in/bruna-c-menezes/" target="_blank"
-                        class="border-2 border-cyan text-cyan font-semibold py-4 px-8 rounded-lg hover:bg-cyan hover:text-navy transition-all duration-300 inline-flex items-center justify-center">
-                        <i class="fab fa-linkedin mr-2"></i>
-                        LinkedIn
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Divider -->
-        <div class="flex items-center justify-center my-24">
-            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
-            <div class="mx-4 w-2 h-2 bg-cyan rounded-full animate-glow"></div>
-            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
-        </div>
-
-        <section id="about" class="mb-32" data-aos="fade-up">
-            <div class="flex items-center mb-12">
-                <span class="text-cyan font-mono text-xl mr-4">01.</span>
-                <h2 class="text-4xl font-bold gradient-text">Sobre Mim</h2>
-                <div class="flex-grow h-px bg-gradient-to-r from-cyan/20 to-transparent ml-6"></div>
-            </div>
-            <div class="grid lg:grid-cols-5 gap-12 items-center">
-                <div class="lg:col-span-3 space-y-6 text-lg leading-relaxed">
-                    <p class="hover:text-light-slate transition-colors duration-300">
-                        Minha jornada na tecnologia é movida pela paixão em resolver problemas e construir soluções
-                        eficientes. Com foco em <strong class="text-lightest-slate font-semibold">arquitetura de
-                            software</strong> e
-                        <strong class="text-lightest-slate font-semibold">qualidade de código</strong>, dedico-me a
-                        criar aplicações
-                        que não apenas funcionam, mas são fáceis de manter e escalar.
-                    </p>
-                    <p class="hover:text-light-slate transition-colors duration-300">
-                        Recentemente, concluí o deploy de uma aplicação full-stack na <strong
-                            class="text-lightest-slate font-semibold">AWS</strong>,
-                        orquestrando serviços como <strong class="text-lightest-slate font-semibold">EC2, RDS e
-                            ElastiCache</strong>.
-                        Essa experiência prática solidificou minhas habilidades em <strong
-                            class="text-lightest-slate font-semibold">Docker,
-                            Nginx e CI/CD</strong>, me dando a visão completa do que é necessário para levar um projeto
-                        do
-                        desenvolvimento à produção.
-                    </p>
-                    <p class="hover:text-light-slate transition-colors duration-300">
-                        Estou em busca da minha primeira oportunidade como desenvolvedora, pronta para aplicar
-                        meu conhecimento, aprender rapidamente e contribuir para a construção de produtos incríveis.
-                    </p>
-                </div>
-                <div class="lg:col-span-2 flex justify-center">
-                    <div class="relative w-72 h-72 group">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-r from-cyan to-cyan-dark rounded-2xl transform rotate-6 group-hover:rotate-3 transition-transform duration-500 animate-glow">
-                        </div>
-                        <div
-                            class="absolute inset-0 bg-light-navy rounded-2xl flex items-center justify-center shadow-2xl group-hover:shadow-glow-lg transition-all duration-500 overflow-hidden">
-                            <img src="https://media.licdn.com/dms/image/v2/D4D03AQFuF2-3UJRSdw/profile-displayphoto-crop_800_800/B4DZkWW6SEGQAI-/0/1757016735473?e=1761177600&v=beta&t=vTzNaKWK2DDc7vP9c03RPAIgq8KHuYt1mqlZLsjJFko"
-                                alt="Foto de Bruna Menezes"
-                                class="w-full h-full object-cover rounded-2xl transform group-hover:scale-105 transition-transform duration-500">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Divider -->
-        <div class="flex items-center justify-center my-24">
-            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
-            <div class="mx-4 w-2 h-2 bg-cyan rounded-full animate-glow"></div>
-            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
-        </div>
-
-        <section id="skills" class="mb-32" data-aos="fade-up">
-            <div class="flex items-center mb-12">
-                <span class="text-cyan font-mono text-xl mr-4">02.</span>
-                <h2 class="text-4xl font-bold gradient-text">Habilidades Técnicas</h2>
-                <div class="flex-grow h-px bg-gradient-to-r from-cyan/20 to-transparent ml-6"></div>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fab fa-python text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Python</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-code text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Django & DRF</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-database text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">PostgreSQL</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-tasks text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Celery & Redis</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fab fa-docker text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Docker</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-server text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Nginx</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fab fa-aws text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">AWS (EC2, RDS, S3)</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-cogs text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">CI/CD com GitHub Actions</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-vial text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Pytest</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-layer-group text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Arquitetura Limpa</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fas fa-exchange-alt text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">APIs REST</div>
-                </div>
-                <div class="skill-card p-5 rounded-xl card-hover">
-                    <i class="fab fa-git-alt text-cyan text-2xl mb-3"></i>
-                    <div class="font-semibold text-lightest-slate">Git</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Divider -->
-        <div class="flex items-center justify-center my-24">
-            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
-            <div class="mx-4 w-2 h-2 bg-cyan rounded-full animate-glow"></div>
-            <div class="flex-grow h-px bg-gradient-to-r from-transparent via-lightest-navy/40 to-transparent"></div>
-        </div>
-
-        <section id="projects" class="mb-32" data-aos="fade-up">
-            <div class="flex items-center mb-12">
-                <span class="text-cyan font-mono text-xl mr-4">03.</span>
-                <h2 class="text-4xl font-bold gradient-text">Projetos em Destaque</h2>
-                <div class="flex-grow h-px bg-gradient-to-r from-cyan/20 to-transparent ml-6"></div>
-            </div>
-            <div class="space-y-20">
-                <!-- Projeto PetCare -->
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div class="relative group overflow-hidden rounded-xl">
-                        <a href="https://petcare.brunadev.com/admin" target="_blank">
-                            <div
-                                class="w-full h-64 bg-gradient-to-br from-light-navy via-lightest-navy to-light-navy rounded-xl flex items-center justify-center group-hover:from-lightest-navy group-hover:to-light-navy transition-all duration-500">
-                                <div class="text-center space-y-4">
-                                    <div class="relative">
-                                        <i
-                                            class="fas fa-paw text-6xl text-cyan opacity-70 group-hover:opacity-100 transition-opacity duration-500"></i>
-                                        <i
-                                            class="fas fa-heart text-2xl text-pink-400 absolute -top-2 -right-2 animate-pulse"></i>
-                                    </div>
-                                    <p
-                                        class="text-slate group-hover:text-light-slate transition-colors duration-500 font-semibold">
-                                        PetCare System</p>
-                                    <div class="flex justify-center space-x-2">
-                                        <i class="fas fa-calendar-alt text-cyan text-sm opacity-60"></i>
-                                        <i class="fas fa-clipboard-list text-cyan text-sm opacity-60"></i>
-                                        <i class="fas fa-user-md text-cyan text-sm opacity-60"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                class="absolute inset-0 bg-gradient-to-t from-navy/80 via-transparent to-transparent group-hover:from-navy/50 transition-all duration-500 rounded-xl flex items-end p-6">
-                                <div
-                                    class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                    <i class="fas fa-external-link-alt text-2xl"></i>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="text-left lg:text-right space-y-4">
-                        <p class="text-cyan font-mono">Projeto em Produção</p>
-                        <h3 class="text-3xl font-bold gradient-text">PetCare System</h3>
-                        <div class="project-card p-6 rounded-xl shadow-xl">
-                            <p class="text-lg leading-relaxed">
-                                Sistema de gestão completo para Pet Shops com deploy na AWS. Inclui API REST,
-                                agendamentos, controle de estoque e tarefas assíncronas com Celery.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap justify-start lg:justify-end gap-3 text-sm font-mono">
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Django</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">DRF</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Celery</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Docker</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Nginx</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">AWS</span>
-                        </div>
-                        <div class="flex justify-start lg:justify-end space-x-4">
-                            <a href="https://github.com/CFBruna/petcare_project" target="_blank"
-                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
-                                <i class="fab fa-github"></i>
-                            </a>
-                            <a href="https://petcare.brunadev.com/admin/" target="_blank"
-                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Projeto Parking Service -->
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div class="text-left space-y-4 lg:order-1">
-                        <p class="text-cyan font-mono">Projeto Backend</p>
-                        <h3 class="text-3xl font-bold gradient-text">Parking Service</h3>
-                        <div class="project-card p-6 rounded-xl shadow-xl">
-                            <p class="text-lg leading-relaxed">
-                                API RESTful robusta para gerenciamento de estacionamentos, com 96% de cobertura de
-                                testes
-                                e lógica de negócio refatorada para uma camada de serviço desacoplada.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap gap-3 text-sm font-mono">
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Django</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">DRF</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Pytest</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Service Layer</span>
-                        </div>
-                        <div class="flex space-x-4">
-                            <a href="https://github.com/CFBruna/parking_service" target="_blank"
-                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
-                                <i class="fab fa-github"></i>
-                            </a>
-                            <span class="text-gray-600 text-3xl cursor-not-allowed opacity-50" title="Deploy em breve">
-                                <i class="fas fa-external-link-alt"></i>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="relative group overflow-hidden rounded-xl lg:order-2">
-                        <a href="https://github.com/CFBruna/parking_service" target="_blank">
-                            <div
-                                class="w-full h-64 bg-gradient-to-br from-light-navy via-lightest-navy to-light-navy rounded-xl flex items-center justify-center group-hover:from-lightest-navy group-hover:to-light-navy transition-all duration-500">
-                                <div class="text-center space-y-4">
-                                    <div class="relative">
-                                        <i
-                                            class="fas fa-car text-6xl text-cyan opacity-70 group-hover:opacity-100 transition-opacity duration-500"></i>
-                                        <i class="fas fa-cog text-2xl text-blue-400 absolute -top-2 -right-2 animate-spin"
-                                            style="animation-duration: 3s;"></i>
-                                    </div>
-                                    <p
-                                        class="text-slate group-hover:text-light-slate transition-colors duration-500 font-semibold">
-                                        Parking Service API</p>
-                                    <div class="flex justify-center space-x-2">
-                                        <i class="fas fa-map-marker-alt text-cyan text-sm opacity-60"></i>
-                                        <i class="fas fa-credit-card text-cyan text-sm opacity-60"></i>
-                                        <i class="fas fa-shield-alt text-cyan text-sm opacity-60"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Projeto Library Management -->
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div class="relative group overflow-hidden rounded-xl">
-                        <a href="https://github.com/CFBruna/library_management" target="_blank">
-                            <div
-                                class="w-full h-64 bg-gradient-to-br from-light-navy via-lightest-navy to-light-navy rounded-xl flex items-center justify-center group-hover:from-lightest-navy group-hover:to-light-navy transition-all duration-500">
-                                <div class="text-center space-y-4">
-                                    <div class="relative">
-                                        <i
-                                            class="fas fa-book-open text-6xl text-cyan opacity-70 group-hover:opacity-100 transition-opacity duration-500"></i>
-                                        <i
-                                            class="fas fa-bookmark text-2xl text-yellow-400 absolute -top-1 -right-1 animate-bounce"></i>
-                                    </div>
-                                    <p
-                                        class="text-slate group-hover:text-light-slate transition-colors duration-500 font-semibold">
-                                        Library Management</p>
-                                    <div class="flex justify-center space-x-2">
-                                        <i class="fas fa-users text-cyan text-sm opacity-60"></i>
-                                        <i class="fas fa-exchange-alt text-cyan text-sm opacity-60"></i>
-                                        <i class="fas fa-calendar-check text-cyan text-sm opacity-60"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="text-left lg:text-right space-y-4">
-                        <p class="text-cyan font-mono">Projeto Backend</p>
-                        <h3 class="text-3xl font-bold gradient-text">Library Management</h3>
-                        <div class="project-card p-6 rounded-xl shadow-xl">
-                            <p class="text-lg leading-relaxed">
-                                Sistema de gestão para bibliotecas com controle de empréstimos, devoluções e transações
-                                atômicas para garantir a integridade dos dados de estoque.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap justify-start lg:justify-end gap-3 text-sm font-mono">
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Django</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">PostgreSQL</span>
-                            <span class="px-3 py-1 bg-lightest-navy/50 text-cyan rounded-full">Docker</span>
-                        </div>
-                        <div class="flex justify-start lg:justify-end space-x-4">
-                            <a href="https://github.com/CFBruna/library_management" target="_blank"
-                                class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-110 transform">
-                                <i class="fab fa-github"></i>
-                            </a>
-                            <span class="text-gray-600 text-3xl cursor-not-allowed opacity-50" title="Deploy em breve">
-                                <i class="fas fa-external-link-alt"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <footer id="contact" class="relative mt-20 py-16" data-aos="fade-up">
-        <div class="text-center space-y-8">
-            <h2 class="text-3xl font-bold gradient-text mb-8">Vamos conversar?</h2>
-            <p class="text-lg text-light-slate max-w-md mx-auto mb-8">
-                Estou sempre aberta a novas oportunidades e projetos interessantes. Entre em contato!
-            </p>
-            <div class="flex justify-center space-x-6">
-                <a href="https://github.com/CFBruna" target="_blank"
-                    class="text-light-slate hover:text-cyan text-3xl transition-all duration-300 hover:scale-125 transform">
-                    <i class="fab fa-github"></i>
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white py-12">
+        <div class="container mx-auto px-6 text-center space-y-4">
+            <p class="text-slate-400">Built with Django, DRF, PostgreSQL, Redis, Celery, Docker & AWS</p>
+            <div class="flex justify-center items-center gap-6">
+                <a href="https://github.com/CFBruna/petcare_project" class="text-slate-400 hover:text-white transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
                 </a>
-                <a href="https://www.linkedin.com/in/bruna-c-menezes/" target="_blank"
-                    class="text-light-slate hover:text-cyan text-3xl transition-all duration-300 hover:scale-125 transform">
-                    <i class="fab fa-linkedin"></i>
+                <span class="text-slate-600">•</span>
+                <a href="https://www.linkedin.com/in/bruna-c-menezes/" class="text-slate-400 hover:text-white transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    LinkedIn
                 </a>
-                <a href="mailto:brunaads.ti@gmail.com"
-                    class="text-light-slate hover:text-cyan text-3xl transition-colors duration-300 hover:scale-125 transform">
-                    <i class="fas fa-envelope"></i>
-                </a>
+                <span class="text-slate-600">•</span>
+                <a href="/api/v1/schema/redoc/" class="text-slate-400 hover:text-white transition">ReDoc</a>
             </div>
-            <div class="space-y-2 mt-12">
-                <p class="text-slate">Desenvolvido com <i class="fas fa-heart text-red-500 animate-pulse"></i> por <span
-                        class="gradient-text font-semibold">Bruna Menezes</span></p>
-                <p class="text-xs text-lightest-navy/70">Inspirado no design de Brittany Chiang</p>
-            </div>
+            <p class="text-sm text-slate-500 pt-4">© 2025 Bruna Menezes. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 50,
-        });
+        function copyToClipboard(text, field) {
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = document.getElementById('copy-icon-' + field);
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+                icon.classList.add('text-green-600');
 
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('shadow-lg');
-            } else {
-                navbar.classList.remove('shadow-lg');
-            }
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+                setTimeout(() => {
+                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+                    icon.classList.remove('text-green-600');
+                }, 1500);
             });
-        });
+        }
     </script>
 </body>
-
 </html>
