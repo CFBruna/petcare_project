@@ -31,6 +31,7 @@ dev = [
     "pytest",
     "pytest-django",
     "pytest-cov",
+    "pytest-mock",
     "factory-boy",
     "faker",
     "ruff",
@@ -103,6 +104,7 @@ omit = [
 ]
 
 [tool.bandit]
+exclude_dirs = [".venv", "tests", ".git", "dist"]
 skips = ["B101", "B106", "B311"]
 
 [tool.bandit.sideload]
