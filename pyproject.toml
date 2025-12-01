@@ -1,3 +1,52 @@
+[project]
+name = "petcare"
+version = "0.1.0"
+description = "Sistema de Gestão para Pet Shops"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0",
+    "djangorestframework",
+    "django-cors-headers",
+    "django-filter",
+    "dj-database-url",
+    "psycopg2-binary",
+    "gunicorn",
+    "whitenoise",
+    "python-decouple",
+    "structlog",
+    "celery",
+    "redis",
+    "django-celery-beat",
+    "drf-spectacular",
+    "django-allauth",
+    "dj-rest-auth",
+    "pillow",
+    "requests",
+    "requests-oauthlib",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
+    "pytest-mock",
+    "factory-boy",
+    "faker",
+    "ruff",
+    "mypy",
+    "django-stubs",
+    "djangorestframework-stubs",
+    "bandit",
+    "safety",
+    "pre-commit"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.ruff]
 line-length = 88
 indent-width = 4
@@ -55,5 +104,7 @@ omit = [
 ]
 
 [tool.bandit]
+exclude_dirs = [".venv", "tests", ".git", "dist"]
 skips = ["B101", "B106", "B311"]
+
 [tool.bandit.sideload]

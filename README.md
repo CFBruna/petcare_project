@@ -41,7 +41,7 @@ Test the live application deployed on AWS production infrastructure:
 
 ### 🔐 Demo Credentials
 
-Email: recrutador@petcare.com  
+Email: recrutador@petcare.com
 Password: avaliar123
 
 **Access Points:**
