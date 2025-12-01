@@ -7,6 +7,9 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
+ENV UV_CONCURRENT_DOWNLOADS=4
+ENV UV_CONCURRENT_BUILDS=1
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libpq-dev \
     && rm -rf /var/lib/apt/lists/*

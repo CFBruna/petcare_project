@@ -29,23 +29,32 @@ fi
 log "📥 Fetching latest changes..."
 git pull origin main
 
+log "🏗️  Building new images (Safety Check)..."
+
+if ! docker compose -f docker-compose.prod.yml build; then
+    error "Build failed! Aborting deployment to keep current version online."
+    exit 1
+fi
+success "Build successful."
+
+# Deployment
+log "🔄 Restarting containers..."
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml up -d
+
 # Preparation
+log "⏳ Waiting for container to be ready for commands..."
+sleep 5
+
 log "📋 Running database migrations..."
 docker compose -f docker-compose.prod.yml exec web python manage.py migrate --noinput
 
 log "📦 Collecting static files..."
 docker compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput --clear
 
-# Deployment
-log "🔄 Restarting containers..."
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d --build
-
 # Verification
-log "⏳ Waiting for application to initialize..."
-sleep 15
-
 log "✅ Verifying container status..."
+sleep 10
 EXPECTED_CONTAINERS=$(docker compose -f docker-compose.prod.yml config --services | wc -l)
 RUNNING_CONTAINERS=$(docker compose -f docker-compose.prod.yml ps --filter "status=running" --quiet | wc -l)
 
