@@ -1,26 +1,30 @@
-FROM python:3.12-slim as builder
+FROM python:3.12-slim-bookworm AS builder
 
-WORKDIR /usr/src/app
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+WORKDIR /app
 
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/prod-wheels -r requirements.txt
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
 
-COPY requirements-dev.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/dev-wheels -r requirements-dev.txt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
+COPY pyproject.toml uv.lock ./
 
-FROM python:3.12-slim
+RUN uv sync --frozen --no-dev --no-install-project
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+FROM python:3.12-slim-bookworm
 
-RUN apt-get update && apt-get install -y git sudo zsh curl && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /bin/uv /bin/uv
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev curl git sudo zsh \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g ${GROUP_ID} appuser && \
     useradd -u ${USER_ID} -g appuser -m -s /bin/zsh appuser && \
@@ -28,24 +32,15 @@ RUN groupadd -g ${GROUP_ID} appuser && \
 
 WORKDIR /usr/src/app
 
-ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app/src"
-ENV PATH="/home/appuser/.local/bin:${PATH}"
-
-ARG INSTALL_DEV=false
-
-COPY --from=builder /usr/src/app/prod-wheels /prod-wheels
-COPY --from=builder /usr/src/app/dev-wheels /dev-wheels
-
-RUN if [ "$INSTALL_DEV" = "true" ]; then pip install --no-cache /dev-wheels/*; \
-    else pip install --no-cache /prod-wheels/*; fi
+COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 
 COPY --chown=appuser:appuser . .
 
-COPY entrypoint.sh /entrypoint.sh
+COPY --chown=appuser:appuser entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN mkdir -p logs && \
-    chown -R appuser:appuser logs
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="${PYTHONPATH}:/usr/src/app/src"
 
 USER appuser
 
