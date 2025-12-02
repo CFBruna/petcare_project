@@ -9,7 +9,6 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import F, Sum
 from django.utils import timezone
-from faker import Faker
 
 from src.apps.accounts.models import Customer
 from src.apps.accounts.tests.factories import CustomerFactory
@@ -34,7 +33,6 @@ from src.apps.store.tests.factories import (
 )
 
 logger = structlog.get_logger(__name__)
-fake = Faker("pt_BR")
 
 
 REALISTIC_PRODUCT_NAMES = [
@@ -97,8 +95,11 @@ def simulate_daily_activity(
 ) -> str:
     """
     Simulates daily activity in the PetCare system by creating random data.
-    This includes new customers, products, lots, sales, appointments, promotions, and health records.
     """
+    from faker import Faker  # noqa: F401
+
+    fake = Faker("pt_BR")
+
     results = []
     today: date = timezone.now().date()
 
