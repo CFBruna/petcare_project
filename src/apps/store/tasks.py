@@ -11,12 +11,9 @@ from django.db.models import F, Sum
 from django.utils import timezone
 
 from src.apps.accounts.models import Customer
-from src.apps.accounts.tests.factories import CustomerFactory
 from src.apps.pets.models import Pet
-from src.apps.pets.tests.factories import PetFactory
 from src.apps.schedule.models import Appointment, Service, TimeSlot
 from src.apps.schedule.services import AppointmentService
-from src.apps.schedule.tests.factories import AppointmentFactory, ServiceFactory
 from src.apps.store.models import (
     Brand,
     Category,
@@ -26,10 +23,6 @@ from src.apps.store.models import (
     PromotionRule,
     Sale,
     SaleItem,
-)
-from src.apps.store.tests.factories import (
-    BrandFactory,
-    CategoryFactory,
 )
 
 logger = structlog.get_logger(__name__)
@@ -99,6 +92,13 @@ def simulate_daily_activity(
     from faker import Faker  # noqa: F401
 
     fake = Faker("pt_BR")
+    from src.apps.accounts.tests.factories import CustomerFactory
+    from src.apps.pets.tests.factories import PetFactory
+    from src.apps.schedule.tests.factories import AppointmentFactory, ServiceFactory
+    from src.apps.store.tests.factories import (
+        BrandFactory,
+        CategoryFactory,
+    )
 
     results = []
     today: date = timezone.now().date()
