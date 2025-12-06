@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev --no-install-project \
+    && uv cache clean
 
 FROM python:3.12-slim-bookworm
 
@@ -34,6 +35,8 @@ RUN groupadd -g ${GROUP_ID} appuser && \
     echo "appuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/vscode-appuser
 
 WORKDIR /usr/src/app
+
+RUN mkdir -p /usr/src/app/logs && chown -R appuser:appuser /usr/src/app/logs
 
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 
