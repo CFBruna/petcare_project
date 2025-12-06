@@ -3,7 +3,7 @@
 .gitignore
 .gitattributes
 
-# Ambiente Virtual
+# Virtual Environment
 .venv
 venv
 env
@@ -11,8 +11,10 @@ env
 # Python caches
 __pycache__
 *.pyc
+.mypy_cache
+.pytest_cache
 
-# Arquivos de ambiente
+# Environment files
 .env
 .env.docker
 
@@ -21,3 +23,33 @@ __pycache__
 
 # VSCode
 .vscode/
+
+# Tests and Coverage
+tests/
+*/tests/
+**/tests/
+pytest.ini
+conftest.py
+**/conftest.py
+.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+**/*_test.py
+**/test_*.py
+
+# Build and development
+*.egg-info
+dist/
+build/
+.tox/
+
+# Documentation and CI
+docs/
+.github/
+.pre-commit-config.yaml
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
