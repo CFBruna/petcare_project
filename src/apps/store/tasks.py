@@ -89,309 +89,346 @@ def simulate_daily_activity(
     """
     Simulates daily activity in the PetCare system by creating random data.
     """
-    from faker import Faker  # noqa: F401
-
-    fake = Faker("pt_BR")
-    from src.apps.accounts.tests.factories import CustomerFactory
-    from src.apps.pets.tests.factories import PetFactory
-    from src.apps.schedule.tests.factories import AppointmentFactory, ServiceFactory
-    from src.apps.store.tests.factories import (
-        BrandFactory,
-        CategoryFactory,
-    )
-
-    results = []
-    today: date = timezone.now().date()
-
-    for day in range(5):
-        TimeSlot.objects.get_or_create(
-            day_of_week=day,
-            start_time=time(8, 0),
-            defaults={"end_time": time(20, 0)},
+    try:
+        logger.info(
+            "simulate_daily_activity_started",
+            num_customers=num_customers,
+            num_products=num_products,
+            num_sales=num_sales,
+            num_appointments=num_appointments,
+            num_promotions=num_manual_promotions,
+            num_health_records=num_health_records,
         )
-    results.append("Horários de funcionamento (Seg-Sex, 08h-20h) garantidos.")
 
-    yesterday = timezone.now() - timedelta(days=1)
+        from faker import Faker  # noqa: F401
 
-    new_customers = CustomerFactory.create_batch(num_customers)
-    results.append(f"Created {len(new_customers)} new customers.")
+        fake = Faker("pt_BR")
+        from src.apps.accounts.factories import CustomerFactory
+        from src.apps.pets.factories import PetFactory
+        from src.apps.schedule.factories import AppointmentFactory, ServiceFactory
+        from src.apps.store.factories import (
+            BrandFactory,
+            CategoryFactory,
+        )
 
-    new_products = []
-    if not Category.objects.exists():
-        CategoryFactory.create_batch(3)
-    if not Brand.objects.exists():
-        BrandFactory.create_batch(3)
+        results = []
+        today: date = timezone.now().date()
 
-    used_product_names = set(Product.objects.values_list("name", flat=True))
-    created_count = 0
+        for day in range(5):
+            TimeSlot.objects.get_or_create(
+                day_of_week=day,
+                start_time=time(8, 0),
+                defaults={"end_time": time(20, 0)},
+            )
+        results.append("Time slots (Mon-Fri, 08h-20h) ensured.")
 
-    existing_categories = list(Category.objects.all())
-    existing_brands = list(Brand.objects.all())
+        yesterday = timezone.now() - timedelta(days=1)
 
-    for _ in range(num_products):
-        for _ in range(10):
-            product_name = random.choice(REALISTIC_PRODUCT_NAMES)
+        new_customers = CustomerFactory.create_batch(num_customers)
+        results.append(f"Created {len(new_customers)} new customers.")
 
-            if product_name not in used_product_names:
-                product = Product.objects.create(
-                    name=product_name,
-                    sku=fake.ean8(),
-                    barcode=fake.ean13(),
-                    brand=random.choice(existing_brands),
-                    category=random.choice(existing_categories),
-                    description=fake.paragraph(),
-                    price=Decimal(random.uniform(10.00, 300.00)).quantize(
-                        Decimal("0.01")
-                    ),
-                )
+        new_products = []
+        if not Category.objects.exists():
+            CategoryFactory.create_batch(3)
+        if not Brand.objects.exists():
+            BrandFactory.create_batch(3)
 
-                used_product_names.add(product_name)
-                new_products.append(product)
-                created_count += 1
+        used_product_names = set(Product.objects.values_list("name", flat=True))
+        created_count = 0
 
-                for _ in range(num_lots_per_product):
-                    expiration_delta = random.randint(1, 180)
-                    lot = ProductLot.objects.create(
-                        product=product,
-                        lot_number=fake.bothify(text="???-####").upper(),
-                        quantity=random.randint(10, 50),
-                        expiration_date=today + timedelta(days=expiration_delta),
+        existing_categories = list(Category.objects.all())
+        existing_brands = list(Brand.objects.all())
+
+        for _ in range(num_products):
+            for _ in range(10):
+                product_name = random.choice(REALISTIC_PRODUCT_NAMES)
+
+                if product_name not in used_product_names:
+                    product = Product.objects.create(
+                        name=product_name,
+                        sku=fake.ean8(),
+                        barcode=fake.ean13(),
+                        brand=random.choice(existing_brands),
+                        category=random.choice(existing_categories),
+                        description=fake.paragraph(),
+                        price=Decimal(random.uniform(10.00, 300.00)).quantize(
+                            Decimal("0.01")
+                        ),
                     )
 
-                    if random.random() < 0.3:
-                        lot.expiration_date = today + timedelta(
-                            days=random.randint(1, 30)
-                        )
-                        lot.save()
+                    used_product_names.add(product_name)
+                    new_products.append(product)
+                    created_count += 1
 
-                results.append(
-                    f"Created product '{product.name}' with {num_lots_per_product} lots."
+                    for _ in range(num_lots_per_product):
+                        expiration_delta = random.randint(1, 180)
+                        lot = ProductLot.objects.create(
+                            product=product,
+                            lot_number=fake.bothify(text="???-####").upper(),
+                            quantity=random.randint(10, 50),
+                            expiration_date=today + timedelta(days=expiration_delta),
+                        )
+
+                        if random.random() < 0.3:
+                            lot.expiration_date = today + timedelta(
+                                days=random.randint(1, 30)
+                            )
+                            lot.save()
+
+                    results.append(
+                        f"Created product '{product.name}' with {num_lots_per_product} lots."
+                    )
+                    break
+
+        existing_customers = list(Customer.objects.all())
+        existing_lots = list(ProductLot.objects.filter(quantity__gt=0))
+
+        if not existing_customers:
+            existing_customers = CustomerFactory.create_batch(5)
+        if not existing_lots:
+            product = Product.objects.create(
+                name=random.choice(REALISTIC_PRODUCT_NAMES),
+                sku=fake.ean8(),
+                barcode=fake.ean13(),
+                brand=random.choice(existing_brands),
+                category=random.choice(existing_categories),
+                description=fake.paragraph(),
+                price=Decimal(random.uniform(10.00, 300.00)).quantize(Decimal("0.01")),
+            )
+            existing_lots = [
+                ProductLot.objects.create(
+                    product=product,
+                    lot_number=fake.bothify(text="???-####").upper(),
+                    quantity=random.randint(10, 50),
+                    expiration_date=today + timedelta(days=random.randint(30, 180)),
                 )
+                for _ in range(5)
+            ]
+            logger.info("default_lots_created", count=5)
+
+        created_sales_count = 0
+        for _ in range(num_sales):
+            if not existing_customers or not existing_lots:
                 break
 
-    existing_customers = list(Customer.objects.all())
-    existing_lots = list(ProductLot.objects.filter(quantity__gt=0))
+            customer = random.choice(existing_customers)
+            sale = Sale.objects.create(customer=customer, created_at=yesterday)
+            total_sale_value = Decimal("0.00")
 
-    if not existing_customers:
-        existing_customers = CustomerFactory.create_batch(5)
-    if not existing_lots:
-        product = Product.objects.create(
-            name=random.choice(REALISTIC_PRODUCT_NAMES),
-            sku=fake.ean8(),
-            barcode=fake.ean13(),
-            brand=random.choice(existing_brands),
-            category=random.choice(existing_categories),
-            description=fake.paragraph(),
-            price=Decimal(random.uniform(10.00, 300.00)).quantize(Decimal("0.01")),
+            num_items = random.randint(1, 3)
+            for _ in range(num_items):
+                lot = random.choice(existing_lots)
+                if lot.quantity > 0:
+                    quantity_to_sell = random.randint(1, min(lot.quantity, 3))
+                    unit_price = lot.final_price
+                    SaleItem.objects.create(
+                        sale=sale,
+                        lot=lot,
+                        quantity=quantity_to_sell,
+                        unit_price=unit_price,
+                    )
+
+                    lot.quantity = F("quantity") - quantity_to_sell
+                    lot.save(update_fields=["quantity"])
+                    lot.refresh_from_db(fields=["quantity"])
+
+                    total_sale_value += unit_price * quantity_to_sell
+
+            sale.total_value = total_sale_value
+            sale.save()
+            created_sales_count += 1
+
+        results.append(f"Created {created_sales_count} sales for yesterday.")
+
+        existing_pets = list(Pet.objects.all())
+        existing_services = list(Service.objects.all())
+
+        if not existing_pets:
+            if not Customer.objects.exists():
+                CustomerFactory.create_batch(5)
+            existing_pets = PetFactory.create_batch(5)
+
+        if not existing_services:
+            existing_services.extend(ServiceFactory.create_batch(3))
+
+        all_available_slots = []
+        if existing_services:
+            for day_offset in range(8):
+                appointment_date = today + timedelta(days=day_offset)
+                for service in existing_services:
+                    slots_for_day = AppointmentService.get_available_slots(
+                        appointment_date, service
+                    )
+                    for slot_datetime in slots_for_day:
+                        end_time = slot_datetime + timedelta(
+                            minutes=service.duration_minutes
+                        )
+                        close_time = timezone.make_aware(
+                            datetime.combine(appointment_date, time(20, 0))
+                        )
+                        if end_time <= close_time:
+                            all_available_slots.append((slot_datetime, service))
+
+        occupied_times = set(
+            Appointment.objects.filter(
+                schedule_time__in=[slot[0] for slot in all_available_slots]
+            ).values_list("schedule_time", flat=True)
         )
-        existing_lots = [
-            ProductLot.objects.create(
-                product=product,
-                lot_number=fake.bothify(text="???-####").upper(),
-                quantity=random.randint(10, 50),
-                expiration_date=today + timedelta(days=random.randint(30, 180)),
-            )
-            for _ in range(5)
+
+        available_slots_with_service = [
+            (slot, service)
+            for slot, service in all_available_slots
+            if slot not in occupied_times
         ]
 
-    created_sales_count = 0
-    for _ in range(num_sales):
-        if not existing_customers or not existing_lots:
-            break
+        today_appointments = [
+            (slot, service)
+            for slot, service in available_slots_with_service
+            if slot.date() == today
+        ]
+        other_appointments = [
+            (slot, service)
+            for slot, service in available_slots_with_service
+            if slot.date() != today
+        ]
 
-        customer = random.choice(existing_customers)
-        sale = Sale.objects.create(customer=customer, created_at=yesterday)
-        total_sale_value = Decimal("0.00")
-
-        num_items = random.randint(1, 3)
-        for _ in range(num_items):
-            lot = random.choice(existing_lots)
-            if lot.quantity > 0:
-                quantity_to_sell = random.randint(1, min(lot.quantity, 3))
-                unit_price = lot.final_price
-                SaleItem.objects.create(
-                    sale=sale,
-                    lot=lot,
-                    quantity=quantity_to_sell,
-                    unit_price=unit_price,
-                )
-
-                lot.quantity = F("quantity") - quantity_to_sell
-                lot.save(update_fields=["quantity"])
-                lot.refresh_from_db(fields=["quantity"])
-
-                total_sale_value += unit_price * quantity_to_sell
-
-        sale.total_value = total_sale_value
-        sale.save()
-        created_sales_count += 1
-
-    results.append(f"Created {created_sales_count} sales for yesterday.")
-
-    existing_pets = list(Pet.objects.all())
-    existing_services = list(Service.objects.all())
-
-    if not existing_pets:
-        if not Customer.objects.exists():
-            CustomerFactory.create_batch(5)
-        existing_pets = PetFactory.create_batch(5)
-
-    if not existing_services:
-        existing_services.extend(ServiceFactory.create_batch(3))
-
-    all_available_slots = []
-    if existing_services:
-        for day_offset in range(8):
-            appointment_date = today + timedelta(days=day_offset)
-            for service in existing_services:
-                slots_for_day = AppointmentService.get_available_slots(
-                    appointment_date, service
-                )
-                for slot_datetime in slots_for_day:
-                    end_time = slot_datetime + timedelta(
-                        minutes=service.duration_minutes
-                    )
-                    close_time = timezone.make_aware(
-                        datetime.combine(appointment_date, time(20, 0))
-                    )
-                    if end_time <= close_time:
-                        all_available_slots.append((slot_datetime, service))
-
-    occupied_times = set(
-        Appointment.objects.filter(
-            schedule_time__in=[slot[0] for slot in all_available_slots]
-        ).values_list("schedule_time", flat=True)
-    )
-
-    available_slots_with_service = [
-        (slot, service)
-        for slot, service in all_available_slots
-        if slot not in occupied_times
-    ]
-
-    today_appointments = [
-        (slot, service)
-        for slot, service in available_slots_with_service
-        if slot.date() == today
-    ]
-    other_appointments = [
-        (slot, service)
-        for slot, service in available_slots_with_service
-        if slot.date() != today
-    ]
-
-    created_appointments_count = 0
-    if existing_pets and existing_services:
-        TimeSlot.objects.get_or_create(
-            day_of_week=today.weekday(),
-            start_time=time(8, 0),
-            defaults={"end_time": time(20, 0)},
-        )
-
-        for i in range(2):
-            pet = random.choice(existing_pets)
-            service = random.choice(existing_services)
-            schedule_time = timezone.make_aware(datetime.combine(today, time(9 + i, 0)))
-
-            if not Appointment.objects.filter(schedule_time=schedule_time).exists():
-                AppointmentFactory(
-                    pet=pet,
-                    service=service,
-                    status=Appointment.Status.CONFIRMED,
-                    schedule_time=schedule_time,
-                )
-                created_appointments_count += 1
-
-    remaining_slots_with_service = today_appointments + other_appointments
-    random.shuffle(remaining_slots_with_service)
-
-    for _ in range(num_appointments - created_appointments_count):
-        if (
-            not remaining_slots_with_service
-            or not existing_pets
-            or not existing_services
-        ):
-            break
-
-        schedule_time, service = remaining_slots_with_service.pop()
-        pet = random.choice(existing_pets)
-
-        status = random.choices(
-            [
-                Appointment.Status.PENDING,
-                Appointment.Status.CONFIRMED,
-                Appointment.Status.COMPLETED,
-                Appointment.Status.CANCELED,
-            ],
-            weights=[0.3, 0.4, 0.2, 0.1],
-            k=1,
-        )[0]
-
-        completed_at_time = None
-        if status == Appointment.Status.COMPLETED:
-            close_time = timezone.make_aware(
-                datetime.combine(schedule_time.date(), time(20, 0))
+        created_appointments_count = 0
+        if existing_pets and existing_services:
+            TimeSlot.objects.get_or_create(
+                day_of_week=today.weekday(),
+                start_time=time(8, 0),
+                defaults={"end_time": time(20, 0)},
             )
-            calculated_completion = schedule_time + timedelta(
-                minutes=service.duration_minutes
-            )
-            completed_at_time = min(calculated_completion, close_time)
 
-        AppointmentFactory(
-            pet=pet,
-            service=service,
-            status=status,
-            schedule_time=schedule_time,
-            completed_at=completed_at_time,
-        )
-
-        created_appointments_count += 1
-
-    results.append(f"Created {created_appointments_count} appointments.")
-
-    from src.apps.health.tests.factories import HealthRecordFactory
-
-    created_health_records = 0
-    if existing_pets:
-        for _ in range(num_health_records):
-            pet = random.choice(existing_pets)
-            HealthRecordFactory(pet=pet)
-            created_health_records += 1
-
-    results.append(f"Created {created_health_records} health records.")
-
-    existing_lots_for_promo = list(ProductLot.objects.filter(quantity__gt=0))
-    created_promotions_count = 0
-
-    for _ in range(num_manual_promotions):
-        if not existing_lots_for_promo:
-            break
-
-        promotion = Promotion.objects.create(
-            name=f"Promoção {fake.catch_phrase()}",
-            start_date=timezone.now() - timedelta(days=random.randint(0, 3)),
-            end_date=timezone.now() + timedelta(days=random.randint(7, 20)),
-        )
-
-        num_rules = random.randint(1, 2)
-        for _ in range(num_rules):
-            lot_for_rule = random.choice(existing_lots_for_promo)
-            if lot_for_rule.quantity > 0:
-                PromotionRule.objects.create(
-                    promotion=promotion,
-                    lot=lot_for_rule,
-                    discount_percentage=Decimal(random.choice([15, 25, 35])),
-                    promotional_stock=random.randint(1, min(lot_for_rule.quantity, 10)),
+            for i in range(2):
+                pet = random.choice(existing_pets)
+                service = random.choice(existing_services)
+                schedule_time = timezone.make_aware(
+                    datetime.combine(today, time(9 + i, 0))
                 )
 
-        created_promotions_count += 1
+                if not Appointment.objects.filter(schedule_time=schedule_time).exists():
+                    AppointmentFactory(
+                        pet=pet,
+                        service=service,
+                        status=Appointment.Status.CONFIRMED,
+                        schedule_time=schedule_time,
+                    )
+                    created_appointments_count += 1
 
-    results.append(f"Created {created_promotions_count} manual promotions.")
+        remaining_slots_with_service = today_appointments + other_appointments
+        random.shuffle(remaining_slots_with_service)
 
-    apply_expiration_discounts.delay()
-    results.append("Triggered automatic expiration discounts task.")
+        for _ in range(num_appointments - created_appointments_count):
+            if (
+                not remaining_slots_with_service
+                or not existing_pets
+                or not existing_services
+            ):
+                break
 
-    return "\n".join(results)
+            schedule_time, service = remaining_slots_with_service.pop()
+            pet = random.choice(existing_pets)
+
+            status = random.choices(
+                [
+                    Appointment.Status.PENDING,
+                    Appointment.Status.CONFIRMED,
+                    Appointment.Status.COMPLETED,
+                    Appointment.Status.CANCELED,
+                ],
+                weights=[0.3, 0.4, 0.2, 0.1],
+                k=1,
+            )[0]
+
+            completed_at_time = None
+            if status == Appointment.Status.COMPLETED:
+                close_time = timezone.make_aware(
+                    datetime.combine(schedule_time.date(), time(20, 0))
+                )
+                calculated_completion = schedule_time + timedelta(
+                    minutes=service.duration_minutes
+                )
+                completed_at_time = min(calculated_completion, close_time)
+
+            AppointmentFactory(
+                pet=pet,
+                service=service,
+                status=status,
+                schedule_time=schedule_time,
+                completed_at=completed_at_time,
+            )
+
+            created_appointments_count += 1
+
+        results.append(f"Created {created_appointments_count} appointments.")
+
+        from src.apps.health.factories import HealthRecordFactory
+
+        created_health_records = 0
+        if existing_pets:
+            for _ in range(num_health_records):
+                pet = random.choice(existing_pets)
+                HealthRecordFactory(pet=pet)
+                created_health_records += 1
+
+        results.append(f"Created {created_health_records} health records.")
+
+        existing_lots_for_promo = list(ProductLot.objects.filter(quantity__gt=0))
+        created_promotions_count = 0
+
+        for _ in range(num_manual_promotions):
+            if not existing_lots_for_promo:
+                break
+
+            promotion = Promotion.objects.create(
+                name=f"Promoção {fake.catch_phrase()}",
+                start_date=timezone.now() - timedelta(days=random.randint(0, 3)),
+                end_date=timezone.now() + timedelta(days=random.randint(7, 20)),
+            )
+
+            num_rules = random.randint(1, 2)
+            for _ in range(num_rules):
+                lot_for_rule = random.choice(existing_lots_for_promo)
+                if lot_for_rule.quantity > 0:
+                    PromotionRule.objects.create(
+                        promotion=promotion,
+                        lot=lot_for_rule,
+                        discount_percentage=Decimal(random.choice([15, 25, 35])),
+                        promotional_stock=random.randint(
+                            1, min(lot_for_rule.quantity, 10)
+                        ),
+                    )
+
+            created_promotions_count += 1
+
+        results.append(f"Created {created_promotions_count} manual promotions.")
+
+        apply_expiration_discounts.delay()
+        results.append("Triggered automatic expiration discounts task.")
+
+        return "\n".join(results)
+
+        logger.info(
+            "simulate_daily_activity_completed",
+            customers_created=len(new_customers),
+            products_created=created_count,
+            sales_created=created_sales_count,
+            appointments_created=created_appointments_count,
+            health_records_created=created_health_records,
+            promotions_created=created_promotions_count,
+        )
+
+        return "\n".join(results)
+
+    except Exception as e:
+        logger.error(
+            "simulate_daily_activity_failed",
+            error=str(e),
+            error_type=type(e).__name__,
+            exc_info=True,
+        )
+        raise
 
 
 @shared_task
@@ -437,7 +474,7 @@ def apply_expiration_discounts() -> str:
             lot.save(update_fields=["auto_discount_percentage"])
             updated_count += 1
 
-    return f"{updated_count} lotes tiveram seu desconto por validade atualizado."
+    return f"{updated_count} lots had their expiration discount updated."
 
 
 @shared_task
@@ -452,17 +489,17 @@ def generate_daily_sales_report() -> str:
     total_revenue = sales.aggregate(total=Sum("total_value"))["total"] or 0
 
     if not sales.exists():
-        subject = f"Relatório Diário de Vendas - {yesterday.strftime('%d/%m/%Y')}"
-        message = "Nenhuma venda foi realizada nesta data."
+        subject = f"Daily Sales Report - {yesterday.strftime('%d/%m/%Y')}"
+        message = "No sales were made on this date."
     else:
-        subject = f"Relatório Diário de Vendas - {yesterday.strftime('%d/%m/%Y')} ({sales.count()} vendas)"
+        subject = f"Daily Sales Report - {yesterday.strftime('%d/%m/%Y')} ({sales.count()} sales)"
         report_lines = [
-            f"Relatório de vendas realizadas em {yesterday.strftime('%d/%m/%Y')}",
+            f"Sales report for {yesterday.strftime('%d/%m/%Y')}",
             "-" * 40,
         ]
 
         for sale in sales:
-            customer_name = "Cliente Anônimo"
+            customer_name = "Anonymous Customer"
             if sale.customer:
                 customer_name = sale.customer.full_name or sale.customer.user.username
             sale_time = timezone.localtime(sale.created_at).strftime("%H:%M")
@@ -471,7 +508,7 @@ def generate_daily_sales_report() -> str:
             )
 
         report_lines.append("-" * 40)
-        report_lines.append(f"Faturamento Total do Dia: R$ {total_revenue:.2f}")
+        report_lines.append(f"Total Daily Revenue: R$ {total_revenue:.2f}")
         message = "\n".join(report_lines)
 
     send_mail(
@@ -482,7 +519,7 @@ def generate_daily_sales_report() -> str:
         fail_silently=False,
     )
 
-    return f"Relatório de vendas para {yesterday.strftime('%d/%m/%Y')} enviado com sucesso."
+    return f"Sales report for {yesterday.strftime('%d/%m/%Y')} sent successfully."
 
 
 @shared_task
@@ -499,25 +536,25 @@ def generate_daily_promotions_report() -> str:
     ).prefetch_related("rules__lot__product")
 
     if not active_promotions.exists():
-        subject = f"Relatório Diário de Promoções - {yesterday.strftime('%d/%m/%Y')}"
-        message = "Nenhuma promoção ativa nesta data."
+        subject = f"Daily Promotions Report - {yesterday.strftime('%d/%m/%Y')}"
+        message = "No active promotions on this date."
     else:
-        subject = f"Relatório Diário de Promoções - {yesterday.strftime('%d/%m/%Y')} ({active_promotions.count()} promoções)"
+        subject = f"Daily Promotions Report - {yesterday.strftime('%d/%m/%Y')} ({active_promotions.count()} promotions)"
         report_lines = [
-            f"Relatório de promoções ativas em {yesterday.strftime('%d/%m/%Y')}",
+            f"Active promotions report for {yesterday.strftime('%d/%m/%Y')}",
             "-" * 40,
         ]
 
         for promo in active_promotions:
-            report_lines.append(f"Promoção: {promo.name}")
-            report_lines.append(f"  Vigência: {promo.start_date} até {promo.end_date}")
+            report_lines.append(f"Promotion: {promo.name}")
+            report_lines.append(f"  Validity: {promo.start_date} to {promo.end_date}")
 
             for rule in promo.rules.all():
                 product_name = rule.lot.product.name
                 discount = rule.discount_percentage
                 stock = rule.promotional_stock
                 report_lines.append(
-                    f"  - {product_name}: {discount}% desconto | Estoque promocional: {stock} unidades"
+                    f"  - {product_name}: {discount}% discount | Promotional stock: {stock} units"
                 )
 
             report_lines.append("-" * 40)
@@ -532,4 +569,4 @@ def generate_daily_promotions_report() -> str:
         fail_silently=False,
     )
 
-    return f"Relatório de promoções para {yesterday.strftime('%d/%m/%Y')} enviado com sucesso."
+    return f"Promotions report for {yesterday.strftime('%d/%m/%Y')} sent successfully."

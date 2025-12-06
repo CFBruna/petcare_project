@@ -3,7 +3,7 @@ from django.contrib.auth.models import Permission
 from django.test import Client
 from rest_framework.test import APIClient
 
-from src.apps.accounts.tests.factories import UserFactory
+from src.apps.accounts.factories import UserFactory
 
 
 @pytest.fixture

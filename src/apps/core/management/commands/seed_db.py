@@ -9,20 +9,20 @@ from django.db import transaction
 from django.utils import timezone
 from faker import Faker
 
+from src.apps.accounts.factories import CustomerFactory
 from src.apps.accounts.models import Customer
-from src.apps.accounts.tests.factories import CustomerFactory
-from src.apps.health.tests.factories import HealthRecordFactory
+from src.apps.health.factories import HealthRecordFactory
+from src.apps.pets.factories import BreedFactory, PetFactory
 from src.apps.pets.models import Breed, Pet
-from src.apps.pets.tests.factories import BreedFactory, PetFactory
+from src.apps.schedule.factories import AppointmentFactory
 from src.apps.schedule.models import Appointment, Service, TimeSlot
-from src.apps.schedule.tests.factories import AppointmentFactory
-from src.apps.store.models import Brand, Category, Product, ProductLot, Sale
-from src.apps.store.services import SaleService
-from src.apps.store.tests.factories import (
+from src.apps.store.factories import (
     BrandFactory,
     CategoryFactory,
     ProductFactory,
 )
+from src.apps.store.models import Brand, Category, Product, ProductLot, Sale
+from src.apps.store.services import SaleService
 
 logger = structlog.get_logger(__name__)
 User = get_user_model()

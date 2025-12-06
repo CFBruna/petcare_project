@@ -51,7 +51,7 @@ class TestExpirationDiscountTask:
         assert lot_expired.auto_discount_percentage == Decimal("0")
         assert lot_no_expiration.auto_discount_percentage == Decimal("0")
 
-        assert "3 lotes tiveram seu desconto por validade atualizado." in result
+        assert "3 lots had their expiration discount updated." in result
 
 
 @pytest.mark.django_db
@@ -76,11 +76,9 @@ class TestStoreReportTasks:
         subject = send_mail_mock.call_args[0][0]
         message = send_mail_mock.call_args[0][1]
 
-        assert (
-            f"Relatório Diário de Vendas - {yesterday.strftime('%d/%m/%Y')}" in subject
-        )
-        assert "Faturamento Total do Dia" in message
-        assert "enviado com sucesso" in result
+        assert f"Daily Sales Report - {yesterday.strftime('%d/%m/%Y')}" in subject
+        assert "Total Daily Revenue" in message
+        assert "sent successfully" in result
 
     def test_generate_daily_sales_report_no_data(self, mocker):
         mocked_now = timezone.make_aware(timezone.datetime(2025, 8, 26, 10, 0))
@@ -91,7 +89,7 @@ class TestStoreReportTasks:
 
         send_mail_mock.assert_called_once()
         message = send_mail_mock.call_args[0][1]
-        assert "Nenhuma venda foi realizada nesta data." in message
+        assert "No sales were made on this date." in message
 
     def test_promotion_report_detects_newly_promoted_and_unpromoted(self, mocker):
         mocked_now = timezone.make_aware(timezone.datetime(2025, 8, 26, 10, 0))
@@ -111,7 +109,7 @@ class TestStoreReportTasks:
         send_mail_mock.assert_called_once()
         message = send_mail_mock.call_args[0][1]
 
-        assert "Relatório de promoções ativas" in message
+        assert "Active promotions report" in message
 
 
 @pytest.mark.django_db
