@@ -25,6 +25,12 @@ __pycache__/
 # AI Assistant Configuration
 .antigravity/
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+
 # C extensions
 *.so
 
