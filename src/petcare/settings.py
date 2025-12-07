@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "src.apps.core",
     "src.apps.accounts",
+    "src.apps.analytics",
     "src.apps.health",
     "src.apps.pets",
     "src.apps.schedule",
