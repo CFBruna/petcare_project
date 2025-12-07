@@ -18,8 +18,12 @@ staticfiles/
 
 ### Django.Python Stack ###
 # Byte-compiled / optimized / DLL files
+__pycache__/
 *.py[cod]
 *$py.class
+
+# AI Assistant Configuration
+.antigravity/
 
 # C extensions
 *.so
