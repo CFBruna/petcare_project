@@ -219,6 +219,32 @@ docker compose exec web python manage.py seed_db
 - Admin Panel: `http://127.0.0.1:8000/admin/`
 - API Docs: `http://127.0.0.1:8000/api/v1/schema/swagger-ui/`
 
+### 📊 Running the Analytics Dashboard (Frontend)
+
+The analytics dashboard is a separate TypeScript frontend that consumes the Django API.
+
+```bash
+# Install Node.js dependencies
+cd frontend
+npm install
+
+# Run development server (with hot reload)
+npm run dev
+
+# Access dashboard
+# http://localhost:5173
+```
+
+The Vite dev server automatically proxies API requests to Django backend (`localhost:8000`).
+
+**For Production Build:**
+```bash
+# Build frontend to Django static
+./scripts/build-frontend.sh
+
+# Output: src/static/dashboard/
+```
+
 ---
 
 ## 🧪 Running Tests
@@ -280,7 +306,16 @@ The system uses Celery Beat for automated scheduled tasks. All tasks are configu
 | `simulate_daily_activity` | **02:00 AM BRT** | Generates realistic demo data (customers, sales, appointments) to keep the demo environment active |
 | `generate_daily_sales_report` | **01:05 AM BRT** | Emails daily sales summary to admin with revenue metrics |
 | `generate_daily_promotions_report` | **01:10 AM BRT** | Reports active promotions and promotional stock levels |
-| `apply_expiration_discounts` | **01:30 AM BRT** | **Business Rule:** Automatically applies progressive discounts based on days to expiration:<br>• < 7 days: 30% discount<br>• 7-15 days: 20% discount<br>• 15-30 days: 10% discount |
+| `apply_expiration_discounts` | **01:30 AM BRT** | **Business Rule:- **Scheduled Discounts:** Expired products don't sit—they auto-discount:<br>• **30 days before** expiration: 10%<br>• **15 days before**: 20%<br>• **7 days before**: 30% |
+
+### 📊 Analytics Dashboard (TypeScript)
+- **Interactive Dashboard:** Real-time business metrics visualization
+- **TypeScript + React:** Modern frontend with strict type safety
+- **Recharts Integration:** Professional charts for revenue and appointments trends
+- **Responsive Design:** Tailwind CSS with mobile-first approach
+- **API Integration:** Type-safe Axios service consuming Django REST endpoints
+- **Period Filtering:** Dynamic data for 7/30/90 days
+- **Portuguese UI:** Localized interface for Brazilian market
 
 ### Manual Task Execution
 
