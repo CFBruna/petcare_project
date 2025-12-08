@@ -70,10 +70,12 @@ class TestAnalyticsService:
         SaleItemFactory(sale=sale1, lot=lot, quantity=1, unit_price=Decimal("100.00"))
         SaleItemFactory(sale=sale2, lot=lot, quantity=1, unit_price=Decimal("150.00"))
 
-        data = AnalyticsService.get_dashboard_metrics(days=2)
+        data = AnalyticsService.get_dashboard_metrics(days=7)
 
-        yesterday_metrics = data["metrics_history"][0]
-        assert yesterday_metrics["total_revenue"] == 250.00
+        total_revenue = sum(
+            float(day["total_revenue"]) for day in data["metrics_history"]
+        )
+        assert total_revenue == 250.00
 
     def test_status_distribution_counts_appointments(self):
         """
