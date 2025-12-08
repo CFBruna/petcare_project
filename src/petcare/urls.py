@@ -14,6 +14,9 @@ urlpatterns = [
     path("api/v1/auth/", include("dj_rest_auth.urls")),
     path("api/v1/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("api/v1/accounts/", include("src.apps.accounts.urls")),
+    path(
+        "api/v1/analytics/", include("src.apps.analytics.urls", namespace="analytics")
+    ),
     path("api/v1/pets/", include("src.apps.pets.urls")),
     path("api/v1/health/", include("src.apps.health.urls")),
     path("api/v1/schedule/", include("src.apps.schedule.urls", namespace="schedule")),
