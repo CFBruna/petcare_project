@@ -21,10 +21,10 @@
 
 ---
 
-### Dashboard Analytics
-<img alt="Dashboard" src="https://github.com/user-attachments/assets/8000a5e2-4af9-4c0d-8d05-1a286d445f88" />
+### Analytics Dashboard (TypeScript)
+<img width="1325" alt="Analytics Dashboard" src="https://github.com/user-attachments/assets/7feedd35-a543-4a25-9eac-f430a4c4b189" />
 
-*Revenue metrics, daily appointments, and 7-day billing chart with real-time data.*
+*Real-time analytics dashboard built with React + TypeScript showing revenue metrics, appointment trends, and top products.*
 
 ---
 
@@ -373,6 +373,13 @@ petcare_project/
 │   │   │   ├── services.py
 │   │   │   ├── api/
 │   │   │   └── tests/
+│   │   ├── analytics/           # Dashboard metrics & business intelligence
+│   │   │   ├── serializers.py   # API response schemas
+│   │   │   ├── services.py      # Optimized analytics queries (5 queries)
+│   │   │   ├── views.py         # Dashboard endpoint with OpenAPI docs
+│   │   │   └── tests/
+│   │   │       ├── test_api.py       # API endpoint tests
+│   │   │       └── test_services.py  # Service layer tests
 │   │   ├── pets/                    # Pet registration
 │   │   │   ├── factories.py         # ✨ Production factories
 │   │   │   └── ...
@@ -396,6 +403,21 @@ petcare_project/
 │   │   ├── urls.py                  # Main URL configuration
 │   │   └── celery.py                # Celery config
 │   └── conftest.py                  # Pytest fixtures
+├── frontend/                         # Analytics Dashboard (TypeScript)
+│   ├── src/
+│   │   ├── components/              # React components
+│   │   │   ├── MetricsCard.tsx      # KPI display cards
+│   │   │   ├── RevenueChart.tsx     # Recharts line chart
+│   │   │   └── TopProductsTable.tsx # Product ranking table
+│   │   ├── services/
+│   │   │   └── api.ts               # Type-safe Axios client
+│   │   ├── types/
+│   │   │   └── dashboard.ts         # TypeScript interfaces
+│   │   ├── App.tsx                  # Main dashboard component
+│   │   └── main.tsx                 # React entry point
+│   ├── vite.config.ts               # Vite build config (/dashboard/ base)
+│   ├── tailwind.config.js           # Tailwind CSS config
+│   └── package.json                 # Frontend dependencies
 ├── .github/workflows/               # CI/CD pipelines
 │   └── ci.yml
 ├── docker-compose.yml               # Local development
