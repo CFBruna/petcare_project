@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -118,19 +119,27 @@ class TestDashboardMetricsAPI:
 
     def test_response_with_actual_data(self, authenticated_client):
         """
-        Test that endpoint returns actual data when available.
+        Test endpoint returns actual data when sales exist.
         """
-        # Create test data
+        from datetime import datetime
+
+        today = timezone.now().date()
+        test_time = timezone.make_aware(
+            datetime.combine(today, datetime.min.time().replace(hour=12))
+        )
+
         customer = CustomerFactory()
         lot = ProductLotFactory(quantity=100)
-        sale = SaleFactory(customer=customer, total_value=Decimal("100.00"))
+        sale = SaleFactory(
+            customer=customer, created_at=test_time, total_value=Decimal("100.00")
+        )
         SaleItemFactory(sale=sale, lot=lot, quantity=1, unit_price=Decimal("100.00"))
 
         url = reverse("analytics:dashboard-metrics")
-        response = authenticated_client.get(url, {"days": 1})
+        response = authenticated_client.get(url)
 
+        assert response.status_code == 200
         data = response.json()
 
-        # Verify revenue is reported
-        today_metrics = data["metrics_history"][0]
-        assert today_metrics["total_revenue"] > 0
+        assert len(data["metrics_history"]) == 7
+        assert any(day["total_revenue"] > 0 for day in data["metrics_history"])

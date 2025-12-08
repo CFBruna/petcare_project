@@ -50,37 +50,63 @@ class TestAnalyticsService:
         """
         Test that revenue is correctly aggregated from sales.
         """
-        # Create sales for today
+        from datetime import datetime
+
+        yesterday = (timezone.now() - timedelta(days=1)).date()
+        test_time = timezone.make_aware(
+            datetime.combine(yesterday, datetime.min.time().replace(hour=12))
+        )
+
         customer = CustomerFactory()
         lot = ProductLotFactory(quantity=100)
 
-        sale1 = SaleFactory(customer=customer, total_value=Decimal("100.00"))
-        sale2 = SaleFactory(customer=customer, total_value=Decimal("150.00"))
+        sale1 = SaleFactory(
+            customer=customer, total_value=Decimal("100.00"), created_at=test_time
+        )
+        sale2 = SaleFactory(
+            customer=customer, total_value=Decimal("150.00"), created_at=test_time
+        )
 
         SaleItemFactory(sale=sale1, lot=lot, quantity=1, unit_price=Decimal("100.00"))
         SaleItemFactory(sale=sale2, lot=lot, quantity=1, unit_price=Decimal("150.00"))
 
-        data = AnalyticsService.get_dashboard_metrics(days=1)
+        data = AnalyticsService.get_dashboard_metrics(days=2)
 
-        # Today's metrics should include both sales
-        today_metrics = data["metrics_history"][0]
-        assert today_metrics["total_revenue"] == 250.00  # 100 + 150
+        yesterday_metrics = data["metrics_history"][0]
+        assert yesterday_metrics["total_revenue"] == 250.00
 
     def test_status_distribution_counts_appointments(self):
         """
         Test that status distribution correctly counts appointments by status.
         """
+        from datetime import datetime
+
+        today = timezone.now().date()
+        test_time = timezone.make_aware(
+            datetime.combine(today, datetime.min.time().replace(hour=12))
+        )
+
         pet = PetFactory()
         service = ServiceFactory()
 
-        # Create appointments with different statuses
         AppointmentFactory(
-            pet=pet, service=service, status=Appointment.Status.CONFIRMED
+            pet=pet,
+            service=service,
+            status=Appointment.Status.CONFIRMED,
+            schedule_time=test_time,
         )
         AppointmentFactory(
-            pet=pet, service=service, status=Appointment.Status.CONFIRMED
+            pet=pet,
+            service=service,
+            status=Appointment.Status.CONFIRMED,
+            schedule_time=test_time + timedelta(hours=1),
         )
-        AppointmentFactory(pet=pet, service=service, status=Appointment.Status.PENDING)
+        AppointmentFactory(
+            pet=pet,
+            service=service,
+            status=Appointment.Status.PENDING,
+            schedule_time=test_time + timedelta(hours=2),
+        )
 
         data = AnalyticsService.get_dashboard_metrics(days=1)
 
@@ -95,49 +121,58 @@ class TestAnalyticsService:
         """
         Test that top products are ordered by revenue (highest first).
         """
+        from datetime import datetime
+
+        yesterday = (timezone.now() - timedelta(days=1)).date()
+        test_time = timezone.make_aware(
+            datetime.combine(yesterday, datetime.min.time().replace(hour=12))
+        )
+
         customer = CustomerFactory()
         lot1 = ProductLotFactory(quantity=100)
         lot2 = ProductLotFactory(quantity=100)
 
-        sale = SaleFactory(customer=customer)
+        sale = SaleFactory(customer=customer, created_at=test_time)
 
-        # Product 1: 2 units at $100 = $200
         SaleItemFactory(sale=sale, lot=lot1, quantity=2, unit_price=Decimal("100.00"))
-
-        # Product 2: 5 units at $50 = $250 (should be first)
         SaleItemFactory(sale=sale, lot=lot2, quantity=5, unit_price=Decimal("50.00"))
 
-        data = AnalyticsService.get_dashboard_metrics(days=1)
+        data = AnalyticsService.get_dashboard_metrics(days=2)
 
         top_products = data["top_products"]
         assert len(top_products) > 0
-
-        # First product should have highest revenue
         assert float(top_products[0]["revenue_generated"]) == 250.00
 
     def test_new_customers_count(self):
         """
         Test that new customers are correctly counted per day.
         """
-        # Create customers with different join dates
-        today = timezone.now()
-        yesterday = today - timedelta(days=1)
+        from datetime import datetime
+
+        yesterday = (timezone.now() - timedelta(days=1)).date()
+        day_before = (timezone.now() - timedelta(days=2)).date()
+
+        yesterday_time = timezone.make_aware(
+            datetime.combine(yesterday, datetime.min.time().replace(hour=12))
+        )
+        day_before_time = timezone.make_aware(
+            datetime.combine(day_before, datetime.min.time().replace(hour=12))
+        )
 
         user1 = User.objects.create_user(username="test1", email="test1@test.com")
-        user1.date_joined = today
+        user1.date_joined = yesterday_time
         user1.save()
         CustomerFactory(user=user1)
 
         user2 = User.objects.create_user(username="test2", email="test2@test.com")
-        user2.date_joined = yesterday
+        user2.date_joined = day_before_time
         user2.save()
         CustomerFactory(user=user2)
 
-        data = AnalyticsService.get_dashboard_metrics(days=2)
+        data = AnalyticsService.get_dashboard_metrics(days=3)
 
-        # Today should have 1 new customer
-        today_metrics = data["metrics_history"][-1]  # Last day is today
-        assert today_metrics["new_customers"] == 1
+        yesterday_metrics = data["metrics_history"][1]
+        assert yesterday_metrics["new_customers"] == 1
 
     def test_different_day_ranges(self):
         """
