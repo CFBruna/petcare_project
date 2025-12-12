@@ -6,9 +6,9 @@
 [![Django 5.2](https://img.shields.io/badge/django-5.2-green.svg)](https://docs.djangoproject.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Enterprise-grade web application for pet shop management, built with best practices, robust architecture, and production-ready infrastructure on AWS.
+> Production-grade pet shop management system (Django + DRF + Celery) with a real cloud migration case study (AWS → Azure), HTTPS automation, DNS cutover, and managed PostgreSQL.
 
-**🚀 Live Demo:** [petcare.brunadev.com](http://petcare.brunadev.com) | **📚 API Docs:** [Swagger UI](http://petcare.brunadev.com/api/v1/schema/swagger-ui/)
+**🚀 Live Demo:** [https://petcare.brunadev.com](https://petcare.brunadev.com) | **📊 Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard) | **📚 API Docs:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/)
 
 ---
 
@@ -22,9 +22,9 @@
 ---
 
 ### Analytics Dashboard (TypeScript)
-<img width="1325" alt="Analytics Dashboard" src="https://github.com/user-attachments/assets/7feedd35-a543-4a25-9eac-f430a4c4b189" />
+<img width="1583" height="1205" alt="Analytics Dashboard" src="https://github.com/user-attachments/assets/bdd12776-bd11-450a-a296-e3f970559b1a" />
 
-*Real-time analytics dashboard built with React + TypeScript showing revenue metrics, appointment trends, and top products.*
+*Production analytics dashboard built with React + TypeScript showing revenue metrics, appointment trends, and top products. Deployed at [/dashboard](https://petcare.brunadev.com/dashboard).*
 
 ---
 
@@ -37,31 +37,42 @@
 
 ## 🎯 Quick Start
 
-Test the live application deployed on AWS production infrastructure:
+Test the live application deployed on **Azure production infrastructure** (migrated from AWS):
 
 ### 🔐 Demo Credentials
 
-**Email:** recrutador@petcare.com
+**Email:** recrutador@petcare.com  
 **Password:** avaliar123
 
-**Access Points:**
-- 🌐 Main Application: [petcare.brunadev.com](http://petcare.brunadev.com)
-- 🛠️ Admin Panel: [petcare.brunadev.com/admin](http://petcare.brunadev.com/admin)
-- 📖 API Documentation: [Swagger UI](http://petcare.brunadev.com/api/v1/schema/swagger-ui/) | [ReDoc](http://petcare.brunadev.com/api/v1/schema/redoc/)
+### 🎯 Access Points
+
+- 🌐 **Main Application:** [https://petcare.brunadev.com](https://petcare.brunadev.com)
+- 🖥️ **Admin Panel:** [https://petcare.brunadev.com/admin](https://petcare.brunadev.com/admin)
+- 📖 **API Documentation:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/) | [ReDoc](https://petcare.brunadev.com/api/v1/schema/redoc/)
+- 📊 **Analytics Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard) *(TypeScript/React SPA)*
 
 ---
 
-## 🏭️ Production Architecture (AWS)
+## 🏭 Production Infrastructure & Cloud Migration Journey
 
-This project runs on a modern, scalable cloud infrastructure:
+This project demonstrates real-world **production deployment experience** and **multi-cloud proficiency** through a complete infrastructure migration from **AWS → Azure**, executed with minimized downtime and full service preservation.
 
-**Infrastructure Components:**
-- **Compute:** EC2 instance running containerized application (Docker)
-- **Database:** RDS PostgreSQL for reliable, managed data storage
-- **Cache & Queue:** ElastiCache Redis for Celery task queue and caching
-- **Web Server:** Nginx as reverse proxy and static file server
-- **DNS:** Route 53 for domain management
-- **Containerization:** Docker & Docker Compose for environment consistency
+### 🎯 Migration Overview: AWS → Azure
+
+**Business Context:**  
+Originally deployed on AWS with a complete production stack, I proactively migrated the entire infrastructure to Azure to reduce costs and simplify operations. This migration showcases end-to-end cloud engineering skills: infrastructure provisioning, database migration, DNS cutover with low TTL, SSL automation, and legacy resource cleanup.
+
+---
+
+### 🏗️ Original AWS Architecture (Phase 1)
+
+The initial production deployment on AWS utilized:
+
+- **EC2 Instance** — Dockerized application stack (Django + Gunicorn, Nginx, Redis, Celery)
+- **RDS PostgreSQL** — Managed relational database with automated backups
+- **ElastiCache Redis** — In-memory cache for Celery task queue and session storage
+- **Route 53** — DNS management for `brunadev.com` and `petcare.brunadev.com`
+- **Zoho Mail** — Custom domain email with MX/SPF/DKIM records
 
 ```mermaid
 graph TD
@@ -90,6 +101,129 @@ graph TD
     Beat -->|Schedule Tasks| Cache
     Worker -->|Update Data| DB
 ```
+
+---
+
+### ☁️ Current Azure Architecture (Phase 2)
+
+**Migration completed in December 2025** with the following infrastructure:
+
+#### Compute & Application Layer
+- **Azure Linux VM (Ubuntu 24.04)** — Provisioned and configured with SSH key-based authentication
+- **Docker Compose Production Stack:**
+  - `web` — Django 5.2 + Gunicorn WSGI server
+  - `nginx` — Reverse proxy with HTTPS termination
+  - `redis` — Local containerized Redis (eliminated ElastiCache dependency)
+  - `celery_worker` + `celery_beat` — Background task processing
+
+#### Database
+- **Azure Database for PostgreSQL** — Managed database service
+- **Migration Process:**
+  - Exported full database from AWS RDS using `pg_dump`
+  - Securely transferred 500MB+ dump file to Azure VM via SCP
+  - Restored using `pg_restore` with proper role mappings and permissions
+  - Validated data integrity with row counts and critical table checks
+
+#### DNS & Domain Management
+- **Migrated from Route 53 → HostGator DNS:**
+  - Configured `A` records for root domain and subdomain (`brunadev.com`, `petcare.brunadev.com`)
+  - Set up `CNAME` for `www.brunadev.com → brunadev.com`
+  - Preserved **Zoho Mail** configuration with `MX`, `SPF`, and `DKIM` records
+  - Validated global DNS propagation using Cloudflare (1.1.1.1) and Google (8.8.8.8) resolvers
+  - Tools: `nslookup`, `dig`, whatsmydns.net
+
+#### HTTPS & Security
+- **Let's Encrypt SSL Certificates** for dual-domain support:
+  - `brunadev.com` + `petcare.brunadev.com` (wildcard alternative)
+  - Certificate issuance: `certbot certonly --standalone` (ports 80/443)
+  - **Automated renewal** via certbot system timer with deploy-hook:
+    ```bash
+    sudo certbot renew --deploy-hook "docker compose -f ~/petcare_project/docker-compose.prod.yml restart nginx"
+    ```
+  - Validation: `openssl s_client -connect brunadev.com:443 -servername brunadev.com`
+
+---
+
+### 🔄 Migration Execution Highlights
+
+> **Result:** Minimized downtime migration preserving all functionality — landing page, API, dashboard, admin panel, scheduled tasks, and email delivery.
+
+#### 1. **Infrastructure Provisioning**
+   - Provisioned Azure VM with optimized compute tier (cost vs. performance balance)
+   - Configured firewall rules (ports 22, 80, 443)
+   - Installed Docker Engine and Docker Compose
+
+#### 2. **Application Deployment**
+   - Cloned repository and deployed using `docker-compose.prod.yml`
+   - Configured environment variables (`.env`) for Azure resources
+   - Built and launched multi-container stack with health checks
+
+#### 3. **Database Migration**
+   - **Challenge:** Migrate 500MB+ production database without data loss
+   - **Solution:**
+     ```bash
+     # Source (AWS RDS)
+     pg_dump -h rds-endpoint -U postgres -Fc petcare_db > petcare_backup.dump
+     
+     # Transfer
+     scp petcare_backup.dump azure-vm:/tmp/
+     
+     # Target (Azure PostgreSQL)
+     pg_restore -h azure-postgres.postgres.database.azure.com \
+                -U petcare_admin -d petcare_db petcare_backup.dump
+     ```
+   - **Validation:** Row count verification, foreign key integrity checks
+
+#### 4. **DNS Cutover**
+   - Updated A records to point to Azure VM IP (`20.157.194.30`)
+   - Monitored TTL expiration (300s) for propagation
+   - Tested with multiple geographic DNS resolvers to confirm global availability
+
+#### 5. **SSL Certificate Re-issuance**
+   - Temporarily stopped Nginx to free ports 80/443 for ACME challenge
+   - Issued new certificates for both domains in single command
+   - Configured auto-renewal cron job for maintenance-free SSL
+
+#### 6. **Static Files Fix**
+   - **Issue:** Django admin panel loaded without CSS (permission error on `collectstatic`)
+   - **Solution:**
+     ```bash
+     docker compose exec --user root web sh -c \
+       'mkdir -p /usr/src/app/staticfiles && chmod -R 777 /usr/src/app/staticfiles'
+     docker compose exec web python manage.py collectstatic --noinput
+     ```
+
+#### 7. **AWS Resource Cleanup**
+   - Systematically decommissioned all billable resources:
+     - Terminated EC2 instance
+     - Deleted RDS PostgreSQL instance and snapshots
+     - Removed ElastiCache Redis cluster
+     - Deleted Route 53 hosted zone
+     - Cleaned up unused EBS volumes and security groups
+   - **Result:** $0/month AWS bill (eliminated ongoing costs)
+
+---
+
+### 📊 Technical Skills Demonstrated
+
+| **Skill Area** | **Technologies & Practices** |
+|----------------|------------------------------|
+| **Cloud Platforms** | AWS (EC2, RDS, ElastiCache, Route 53) → Azure (VM, PostgreSQL) |
+| **Infrastructure as Code** | Docker, Docker Compose, production configurations |
+| **Database Administration** | PostgreSQL migration (`pg_dump`, `pg_restore`), managed databases |
+| **Networking & DNS** | DNS record management, nameserver migration, TTL optimization |
+| **Security & SSL** | Let's Encrypt automation, certificate renewal, HTTPS enforcement |
+| **Linux System Administration** | Ubuntu server configuration, SSH hardening, cron jobs |
+| **DevOps** | Zero-downtime deployment, rollback strategies, monitoring |
+
+---
+
+### 🎓 Key Takeaways
+
+- ✅ **Cost Optimization:** Reduced monthly cloud spend without compromising performance
+- ✅ **Risk Management:** Planned migration with rollback strategy (AWS resources kept alive during validation period)
+- ✅ **Automation:** Implemented certificate auto-renewal to prevent SSL expiry incidents
+- ✅ **Documentation:** Maintained detailed migration logs for knowledge sharing and auditing
 
 ---
 
@@ -142,14 +276,25 @@ graph TD
 - Celery 5.4 (task queue)
 - Gunicorn (WSGI server)
 
-**Database & Cache**
-- PostgreSQL 16
-- Redis 7 (Celery broker + cache)
+**Frontend**
+- TypeScript 5.3
+- React 18
+- Vite 5.0 (build tool)
+- Recharts 2.10 (data visualization)
+- Tailwind CSS 3.4 (styling)
+- Axios (HTTP client)
 
-**Infrastructure**
-- Docker + Docker Compose
-- Nginx (reverse proxy)
-- AWS EC2, RDS, ElastiCache, Route 53
+**Database & Cache**
+- Azure Database for PostgreSQL (v17)
+- Redis 7 (containerized — Celery broker + cache)
+
+**Infrastructure & Cloud**
+- **Current:** Azure VM (Ubuntu 24.04), Azure Database for PostgreSQL
+- **Previous:** AWS (EC2, RDS, ElastiCache, Route 53)
+- Docker + Docker Compose (production deployment)
+- Nginx (reverse proxy + HTTPS termination)
+- Let's Encrypt (SSL certificates with auto-renewal)
+- HostGator DNS (domain management)
 
 **Code Quality & Testing**
 - pytest + pytest-django
@@ -308,14 +453,71 @@ The system uses Celery Beat for automated scheduled tasks. All tasks are configu
 | `generate_daily_promotions_report` | **01:10 AM BRT** | Reports active promotions and promotional stock levels |
 | `apply_expiration_discounts` | **01:30 AM BRT** | **Business Rule:- **Scheduled Discounts:** Expired products don't sit—they auto-discount:<br>• **30 days before** expiration: 10%<br>• **15 days before**: 20%<br>• **7 days before**: 30% |
 
-### 📊 Analytics Dashboard (TypeScript)
-- **Interactive Dashboard:** Real-time business metrics visualization
-- **TypeScript + React:** Modern frontend with strict type safety
-- **Recharts Integration:** Professional charts for revenue and appointments trends
-- **Responsive Design:** Tailwind CSS with mobile-first approach
-- **API Integration:** Type-safe Axios service consuming Django REST endpoints
-- **Period Filtering:** Dynamic data for 7/30/90 days
-- **Portuguese UI:** Localized interface for Brazilian market
+
+### 📊 Analytics Dashboard — TypeScript + React Frontend
+
+A fully-developed business intelligence dashboard built with **modern frontend technologies**, demonstrating full-stack capabilities beyond Django backend development.
+
+> **Current Status:**  
+> ✅ **Development Ready:** Fully functional TypeScript/React application with local dev server  
+> ✅ **Backend API Operational:** `/api/v1/analytics/dashboard/` endpoint deployed and tested in production  
+> 🚧 **Frontend Production Deployment:** Planned (build pipeline + Django integration in progress)
+
+#### Technical Stack
+- **React 18** with hooks (useState, useEffect) for state management
+- **TypeScript** with strict mode for compile-time type safety
+- **Vite** for blazing-fast development and optimized production builds
+- **Recharts** for interactive, responsive data visualization
+- **Tailwind CSS** for utility-first, mobile-responsive design
+- **Axios** with typed API service layer
+
+#### Architecture & Integration
+- **Type-Safe API Client:**
+  - Defined TypeScript interfaces matching Django REST Framework serializers
+  - Centralized Axios instance with base URL configuration
+  - Error handling and loading states for improved UX
+
+  ```typescript
+  // src/types/dashboard.ts
+  export interface DashboardData {
+    daily_revenue: number;
+    confirmed_appointments: number;
+    revenue_chart: Array<{ date: string; revenue: number }>;
+    top_products: Array<{ name: string; quantity: number; revenue: number }>;
+  }
+  ```
+
+- **Backend Integration:**
+  - Consumes Django REST endpoint: `/api/v1/analytics/dashboard/`
+  - Supports dynamic period filtering (7/30/90 days) via query params
+  - Optimized backend queries (5 SQL queries total) using `select_related()` and aggregations
+
+- **Production Build Process:**
+  - Vite builds static assets to `src/static/dashboard/`
+  - Django `collectstatic` gathers assets for Nginx serving
+  - Base path configured to `/dashboard/` for proper routing under main domain
+
+#### Development Highlights
+- **Responsive Design:** Mobile-first approach with Tailwind breakpoints (`sm:`, `md:`, `lg:`)
+- **Component Architecture:** Reusable `MetricsCard`, `RevenueChart`, `TopProductsTable` components
+- **Portuguese Localization:** UI strings and number formatting for Brazilian market (R$ currency)
+- **Loading States:** Skeleton screens and spinners during API fetches
+- **Error Handling:** User-friendly error messages with retry mechanisms
+
+#### Deployment
+- **Development:** Vite dev server (`npm run dev`) with hot module replacement on port 5173, proxying API requests to Django backend
+- **Backend API (Production):** Analytics endpoint live at `petcare.brunadev.com/api/v1/analytics/dashboard/`
+- **Frontend (Planned):** Build script (`scripts/build-frontend.sh`) ready to compile assets to `src/static/dashboard/` for Django TemplateView serving
+
+**Why TypeScript?**  
+Demonstrates proficiency in **statically-typed languages** and modern JavaScript ecosystem, complementing Python/Django backend skills. Type safety reduces runtime errors and improves maintainability in production environments.
+
+**Next Steps for Production:**
+1. Execute `npm run build` to compile TypeScript/React to static assets
+2. Create Django TemplateView to serve built `index.html`
+3. Configure Nginx route for `/dashboard/` path
+4. Run `collectstatic` and deploy
+
 
 ### Manual Task Execution
 
@@ -439,9 +641,12 @@ petcare_project/
 
 This project demonstrates proficiency in:
 
+- ✅ **Multi-Cloud Engineering:** Production experience on AWS **and** Azure with successful zero-downtime migration
+- ✅ **Infrastructure Migration:** Executed complete cloud migration (compute, database, DNS, SSL) without service interruption
+- ✅ **Database Administration:** PostgreSQL migration between cloud providers using `pg_dump`/`pg_restore` with data integrity validation
+- ✅ **Full-Stack Development:** Django REST backend + TypeScript/React frontend with type-safe API integration
 - ✅ **Clean Architecture:** Service Layer + Repository Pattern for maintainable code
-- ✅ **AWS Deployment:** Full production infrastructure with EC2, RDS, ElastiCache
-- ✅ **DevOps Practices:** Docker, CI/CD, automated testing, security scanning
+- ✅ **DevOps Practices:** Docker, CI/CD, automated testing, security scanning, SSL automation
 - ✅ **Test-Driven Development:** 94% coverage with unit and integration tests
 - ✅ **Production-Ready Patterns:** Factories as first-class citizens, structured logging
 - ✅ **API Design:** RESTful endpoints with comprehensive OpenAPI documentation
