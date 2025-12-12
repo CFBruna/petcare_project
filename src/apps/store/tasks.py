@@ -303,8 +303,10 @@ def simulate_daily_activity(
             for i in range(2):
                 pet = random.choice(existing_pets)
                 service = random.choice(existing_services)
+                base_hour = 9 + i
+                random_minute = random.randint(0, 45)
                 schedule_time = timezone.make_aware(
-                    datetime.combine(today, time(9 + i, 0))
+                    datetime.combine(today, time(base_hour, random_minute))
                 )
 
                 if not Appointment.objects.filter(schedule_time=schedule_time).exists():
