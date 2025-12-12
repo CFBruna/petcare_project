@@ -22,14 +22,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# AI Assistant Configuration
-.antigravity/
-
 # Frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 frontend/.env
+
+# Frontend build artifacts (generated during deployment)
+src/static/dashboard/
 
 # C extensions
 *.so
@@ -284,3 +284,4 @@ pyrightconfig.json
 
 # Log files
 /logs/*.log
+.private/
