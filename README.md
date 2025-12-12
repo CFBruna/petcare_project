@@ -6,9 +6,9 @@
 [![Django 5.2](https://img.shields.io/badge/django-5.2-green.svg)](https://docs.djangoproject.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Enterprise-grade web application for pet shop management, built with best practices, robust architecture, and production-ready infrastructure on AWS.
+> Production-grade pet shop management system (Django + DRF + Celery) with a real cloud migration case study (AWS → Azure), HTTPS automation, DNS cutover, and managed PostgreSQL.
 
-**🚀 Live Demo:** [petcare.brunadev.com](http://petcare.brunadev.com) | **📚 API Docs:** [Swagger UI](http://petcare.brunadev.com/api/v1/schema/swagger-ui/)
+**🚀 Live Demo:** [https://petcare.brunadev.com](https://petcare.brunadev.com) | **� Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard) | **�📚 API Docs:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/)
 
 ---
 
@@ -31,13 +31,13 @@
 ### API Documentation (Swagger UI)
 <img alt="Swagger" src="https://github.com/user-attachments/assets/1ebe7466-65bd-402a-be10-0acc83dd742e" />
 
-*RESTful API with 15+ endpoints documented following OpenAPI 3.0 specification.*
+*RESTful API with multiple endpoints across accounts, pets, health, schedule, store, and analytics modules, documented following OpenAPI 3.0 specification.*
 
 ---
 
 ## 🎯 Quick Start
 
-Test the live application deployed on AWS production infrastructure:
+Test the live application deployed on **Azure production infrastructure** (migrated from AWS):
 
 ### 🔐 Demo Credentials
 
@@ -45,13 +45,16 @@ Test the live application deployed on AWS production infrastructure:
 **Password:** avaliar123
 
 **Access Points:**
-- 🌐 Main Application: [petcare.brunadev.com](http://petcare.brunadev.com)
-- 🛠️ Admin Panel: [petcare.brunadev.com/admin](http://petcare.brunadev.com/admin)
-- 📖 API Documentation: [Swagger UI](http://petcare.brunadev.com/api/v1/schema/swagger-ui/) | [ReDoc](http://petcare.brunadev.com/api/v1/schema/redoc/)
+- 🌐 **Main Application:** [https://petcare.brunadev.com](https://petcare.brunadev.com)
+- 📊 **Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard)
+- ⚙️ **Admin Panel:** [https://petcare.brunadev.com/admin](https://petcare.brunadev.com/admin)
+- 📖 **API Documentation:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/) | [ReDoc](https://petcare.brunadev.com/api/v1/schema/redoc/)
 
 ---
 
-## 🏭️ Production Architecture (AWS)
+## 🏭️ Production Architecture (Current – Azure)
+
+> **Note:** The diagram below represents the original AWS architecture before migration (Dec 2025). Current production runs on Azure with equivalent services.
 
 This project runs on a modern, scalable cloud infrastructure:
 
@@ -93,9 +96,37 @@ graph TD
 
 ---
 
+## 🔄 Cloud Migration: AWS → Azure (Real Production Case)
+
+This project includes a **real-world cloud migration**, executed end-to-end in production.
+
+### Migration Scope
+- **Compute:** AWS EC2 → Azure Linux VM
+- **Database:** AWS RDS PostgreSQL → Azure Database for PostgreSQL
+- **Cache/Queue:** AWS ElastiCache → Containerized Redis
+- **DNS:** Route 53 → HostGator DNS
+- **SSL:** Re-issued with Let's Encrypt (Certbot)
+- **Static files:** Rebuilt and collected post-migration
+
+### Key Migration Steps
+1. Provisioned Azure VM and PostgreSQL
+2. Migrated database using `pg_dump` / `pg_restore`
+3. Rebuilt Docker production stack
+4. Reconfigured DNS with low TTL for safe cutover
+5. Reissued SSL certificates and automated renewal
+6. Decommissioned all AWS resources to eliminate costs
+
+### Result
+- ✅ Minimized downtime
+- ✅ No data loss
+- ✅ HTTPS preserved
+- ✅ Emails (Zoho) unaffected
+
+---
+
 ## ✨ Key Features
 
-### � Smart Scheduling System
+### 🧠 Smart Scheduling System
 - **Automatic Availability Calculation:** Time slots calculated based on service duration and operating hours (8 AM - 8 PM)
 - **Status Workflow:** Track appointments through lifecycle: Pending → Confirmed → Completed/Canceled
 - **Service Management:** Configure specific durations and pricing for each service type
@@ -147,9 +178,12 @@ graph TD
 - Redis 7 (Celery broker + cache)
 
 **Infrastructure**
+- Azure Linux VM (Ubuntu 24.04)
+- Azure Database for PostgreSQL
 - Docker + Docker Compose
-- Nginx (reverse proxy)
-- AWS EC2, RDS, ElastiCache, Route 53
+- Nginx (reverse proxy + HTTPS termination)
+- Let's Encrypt (Certbot with auto-renewal)
+- HostGator DNS
 
 **Code Quality & Testing**
 - pytest + pytest-django
@@ -280,8 +314,8 @@ The API follows OpenAPI 3.0 specification and provides interactive documentation
 - ReDoc: `http://127.0.0.1:8000/api/v1/schema/redoc/`
 
 **Production:**
-- Swagger UI: `http://petcare.brunadev.com/api/v1/schema/swagger-ui/`
-- ReDoc: `http://petcare.brunadev.com/api/v1/schema/redoc/`
+- Swagger UI: `https://petcare.brunadev.com/api/v1/schema/swagger-ui/`
+- ReDoc: `https://petcare.brunadev.com/api/v1/schema/redoc/`
 
 ### API Endpoints Overview
 
