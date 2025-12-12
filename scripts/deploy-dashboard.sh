@@ -6,7 +6,7 @@ echo "================================================"
 echo ""
 
 # Step 1: Build Frontend
-echo "📦 Step 1/4: Building frontend with Vite..."
+echo "📦 Step 1/5: Building frontend with Vite..."
 cd frontend
 npm install --quiet
 npm run build
@@ -14,20 +14,26 @@ cd ..
 echo "✅ Frontend built successfully to src/static/dashboard/"
 echo ""
 
-# Step 2: Collect Static Files
-echo "📂 Step 2/4: Collecting static files..."
+# Step 2: Copy build to container
+echo "📋 Step 2/5: Copying dashboard files to container..."
+docker compose -f docker-compose.prod.yml cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
+echo "✅ Dashboard files copied to container"
+echo ""
+
+# Step 3: Collect Static Files
+echo "📂 Step 3/5: Collecting static files..."
 docker compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput
 echo "✅ Static files collected"
 echo ""
 
-# Step 3: Restart Nginx
-echo "🔄 Step 3/4: Restarting Nginx..."
+# Step 4: Restart Nginx
+echo "🔄 Step 4/5: Restarting Nginx..."
 docker compose -f docker-compose.prod.yml restart nginx
 echo "✅ Nginx restarted"
 echo ""
 
-# Step 4: Health Check
-echo "🏥 Step 4/4: Running health check..."
+# Step 5: Health Check
+echo "🏥 Step 5/5: Running health check..."
 sleep 3
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://petcare.brunadev.com/dashboard/)
 
