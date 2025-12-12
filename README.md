@@ -46,12 +46,15 @@ Test the live application deployed on **Azure production infrastructure** (migra
 
 **Access Points:**
 - 🌐 **Main Application:** [https://petcare.brunadev.com](https://petcare.brunadev.com)
-- �️ **Admin Panel:** [https://petcare.brunadev.com/admin](https://petcare.brunadev.com/admin)
+- 📊 **Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard)
+- ⚙️ **Admin Panel:** [https://petcare.brunadev.com/admin](https://petcare.brunadev.com/admin)
 - 📖 **API Documentation:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/) | [ReDoc](https://petcare.brunadev.com/api/v1/schema/redoc/)
 
 ---
 
-## 🏭️ Production Architecture (AWS)
+## 🏭️ Production Architecture (Current – Azure)
+
+> **Note:** The diagram below represents the original AWS architecture before migration (Dec 2025). Current production runs on Azure with equivalent services.
 
 This project runs on a modern, scalable cloud infrastructure:
 
@@ -90,6 +93,34 @@ graph TD
     Beat -->|Schedule Tasks| Cache
     Worker -->|Update Data| DB
 ```
+
+---
+
+## 🔄 Cloud Migration: AWS → Azure (Real Production Case)
+
+This project includes a **real-world cloud migration**, executed end-to-end in production.
+
+### Migration Scope
+- **Compute:** AWS EC2 → Azure Linux VM
+- **Database:** AWS RDS PostgreSQL → Azure Database for PostgreSQL
+- **Cache/Queue:** AWS ElastiCache → Containerized Redis
+- **DNS:** Route 53 → HostGator DNS
+- **SSL:** Re-issued with Let's Encrypt (Certbot)
+- **Static files:** Rebuilt and collected post-migration
+
+### Key Migration Steps
+1. Provisioned Azure VM and PostgreSQL
+2. Migrated database using `pg_dump` / `pg_restore`
+3. Rebuilt Docker production stack
+4. Reconfigured DNS with low TTL for safe cutover
+5. Reissued SSL certificates and automated renewal
+6. Decommissioned all AWS resources to eliminate costs
+
+### Result
+- ✅ Minimized downtime
+- ✅ No data loss
+- ✅ HTTPS preserved
+- ✅ Emails (Zoho) unaffected
 
 ---
 
@@ -147,9 +178,12 @@ graph TD
 - Redis 7 (Celery broker + cache)
 
 **Infrastructure**
+- Azure Linux VM (Ubuntu 24.04)
+- Azure Database for PostgreSQL
 - Docker + Docker Compose
-- Nginx (reverse proxy)
-- AWS EC2, RDS, ElastiCache, Route 53
+- Nginx (reverse proxy + HTTPS termination)
+- Let's Encrypt (Certbot with auto-renewal)
+- HostGator DNS
 
 **Code Quality & Testing**
 - pytest + pytest-django
