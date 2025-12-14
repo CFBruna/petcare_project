@@ -4,39 +4,51 @@ services:
     command: gunicorn petcare.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - staticfiles:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
     expose:
       - 8000
     env_file:
       - .env
     depends_on:
       - redis
+    networks:
+      - default
 
   nginx:
     image: nginx:1.25-alpine
-    ports:
-      - "80:80"
-      - "443:443"
+    container_name: petcare_nginx
+    expose:
+      - "80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - staticfiles:/usr/src/app/staticfiles
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - media_volume:/usr/src/app/media
     depends_on:
       - web
+    networks:
+      - default
+    restart: always
 
   redis:
     image: "redis:7-alpine"
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - default
 
   celery_worker:
     build: .
     command: celery -A petcare worker -l info
+    volumes:
+      - staticfiles:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
     env_file:
       - .env
     depends_on:
       - redis
+
+    networks:
+      - default
 
   celery_beat:
     build: .
@@ -46,6 +58,16 @@ services:
     depends_on:
       - redis
 
+    networks:
+      - default
+
 volumes:
   redis_data:
+
   staticfiles:
+  media_volume:
+
+networks:
+  default:
+    name: gateway_net
+    external: true

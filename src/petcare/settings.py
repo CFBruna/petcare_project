@@ -21,7 +21,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="127.0.0.1",
-    cast=lambda v: [s.strip() for s in v.split(",")],
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
 )
 
 
@@ -29,23 +29,29 @@ ALLOWED_HOSTS = config(
 # SECURITY SETTINGS FOR PRODUCTION (HTTPS)
 # ==============================================================================
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://brunadev.com",
-    "https://petcare.brunadev.com",
-]
-
+# Prefer environment-driven config so infra changes don't require code deploy.
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="https://petcare.brunadev.com",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
 
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+
+    # Required when running behind a reverse proxy (Gateway -> Nginx -> Django).
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+
+    # If your gateway already redirects HTTP -> HTTPS, keep this False to avoid redirect loops.
+    SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=False, cast=bool)
 
 
 # ==============================================================================
 # APPLICATION DEFINITION
 # ==============================================================================
 
-# Application definition
 DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -213,7 +219,7 @@ REST_FRAMEWORK: dict[str, Any] = {
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
     default="http://localhost:5173,http://localhost:3000",
-    cast=lambda v: [s.strip() for s in v.split(",")],
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
 )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -222,6 +228,7 @@ if DEBUG:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
         "rest_framework.renderers.BrowsableAPIRenderer"
     )
+
 
 # ==============================================================================
 # CELERY SETTINGS
@@ -260,6 +267,7 @@ else:
     EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
     DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
     ADMIN_EMAIL = config("ADMIN_EMAIL")
+
 
 # ==============================================================================
 # CELERY BEAT SETTINGS
