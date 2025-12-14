@@ -14,8 +14,6 @@ services:
     networks:
       - default
 
-
-
   nginx:
     image: nginx:1.25-alpine
     container_name: petcare_nginx
@@ -48,7 +46,7 @@ services:
       - .env
     depends_on:
       - redis
-      - redis
+
     networks:
       - default
 
@@ -59,7 +57,7 @@ services:
       - .env
     depends_on:
       - redis
-      - redis
+
     networks:
       - default
 
