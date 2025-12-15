@@ -171,10 +171,115 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ["name", "sku", "barcode", "brand__name", "category__name"]
     list_filter = ["brand", "category"]
     readonly_fields = ["total_stock"]
+    actions = ["generate_technical_description", "generate_creative_description"]
 
     @admin.display(description="Preço Final")
     def final_price_display(self, obj):
         return f"R$ {obj.final_price or obj.price}"
+
+    @admin.action(description="🤖 Gerar Descrição Técnica (IA)")
+    def generate_technical_description(self, request, queryset):
+        """Generate technical product descriptions using AI."""
+        from src.apps.ai.services import (
+            ProductDescriptionRequest,
+            ProductIntelligenceService,
+        )
+
+        service = ProductIntelligenceService()
+        success_count = 0
+        error_count = 0
+
+        for product in queryset:
+            try:
+                request_dto = ProductDescriptionRequest(
+                    product_name=product.name,
+                    category=product.category.name if product.category else None,
+                    brand=product.brand.name if product.brand else None,
+                    price=float(product.price),
+                    mode="technical",
+                )
+
+                result = service.generate_description(request_dto, user=request.user)
+
+                # Update product description
+                product.description = result.description
+                product.save()
+
+                success_count += 1
+
+            except Exception as e:
+                error_count += 1
+                self.message_user(
+                    request,
+                    f"Erro ao gerar descrição para {product.name}: {str(e)}",
+                    messages.ERROR,
+                )
+
+        if success_count > 0:
+            self.message_user(
+                request,
+                f"✅ {success_count} descrição(ões) técnica(s) gerada(s) com sucesso!",
+                messages.SUCCESS,
+            )
+
+        if error_count > 0:
+            self.message_user(
+                request,
+                f"❌ {error_count} erro(s) ao gerar descrições.",
+                messages.WARNING,
+            )
+
+    @admin.action(description="✨ Gerar Descrição Criativa (IA)")
+    def generate_creative_description(self, request, queryset):
+        """Generate creative product descriptions using AI."""
+        from src.apps.ai.services import (
+            ProductDescriptionRequest,
+            ProductIntelligenceService,
+        )
+
+        service = ProductIntelligenceService()
+        success_count = 0
+        error_count = 0
+
+        for product in queryset:
+            try:
+                request_dto = ProductDescriptionRequest(
+                    product_name=product.name,
+                    category=product.category.name if product.category else None,
+                    brand=product.brand.name if product.brand else None,
+                    price=float(product.price),
+                    mode="creative",
+                )
+
+                result = service.generate_description(request_dto, user=request.user)
+
+                # Update product description
+                product.description = result.description
+                product.save()
+
+                success_count += 1
+
+            except Exception as e:
+                error_count += 1
+                self.message_user(
+                    request,
+                    f"Erro ao gerar descrição para {product.name}: {str(e)}",
+                    messages.ERROR,
+                )
+
+        if success_count > 0:
+            self.message_user(
+                request,
+                f"✨ {success_count} descrição(ões) criativa(s) gerada(s) com sucesso!",
+                messages.SUCCESS,
+            )
+
+        if error_count > 0:
+            self.message_user(
+                request,
+                f"❌ {error_count} erro(s) ao gerar descrições.",
+                messages.WARNING,
+            )
 
 
 class PromotionRuleInline(admin.TabularInline):
