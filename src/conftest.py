@@ -12,6 +12,15 @@ def api_client():
 
 
 @pytest.fixture
+def regular_user_client():
+    """Client authenticated as a regular (non-staff) user."""
+    user = UserFactory(is_staff=False)
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client, user
+
+
+@pytest.fixture
 def authenticated_client():
     user = UserFactory(is_staff=True)
     client = APIClient()
