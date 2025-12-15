@@ -285,3 +285,6 @@ pyrightconfig.json
 # Log files
 /logs/*.log
 .private/
+
+# AI/ML - Vector databases (generated at runtime)
+chroma_db/
