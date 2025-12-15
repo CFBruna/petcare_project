@@ -116,12 +116,34 @@ class TimeSlotViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 class AppointmentViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsOwnerOrStaff]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_staff:
+            return Appointment.objects.select_related("pet", "service").all()
         return Appointment.objects.filter(pet__owner__user=user).select_related(
             "pet", "service"
         )
+
+    def get_object(self):
+        """
+        Override get_object to ensure proper 404 when object is not in queryset.
+        This prevents users from accessing appointments that don't belong to them.
+        """
+        from rest_framework.exceptions import NotFound
+
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+
+        try:
+            obj = queryset.get(**filter_kwargs)
+        except Appointment.DoesNotExist:
+            raise NotFound() from None
+
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def perform_create(self, serializer):
         appointment = serializer.save()

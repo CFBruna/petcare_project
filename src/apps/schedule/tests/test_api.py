@@ -67,14 +67,14 @@ class TestAppointmentAPI:
         response = api_client.get(self.url)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_user_can_list_only_their_appointments(self, authenticated_client):
-        client, user = authenticated_client
+    def test_user_can_list_only_their_appointments(self, regular_user_client):
+        client, user = regular_user_client
         my_pet = PetFactory(owner__user=user)
         AppointmentFactory.create_batch(2, pet=my_pet)
         AppointmentFactory()
         response = client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["count"] == 2
+        assert len(response.json()) == 2
 
     def test_user_can_create_appointment_for_their_pet(self, authenticated_client):
         client, user = authenticated_client
@@ -84,7 +84,7 @@ class TestAppointmentAPI:
         available_slots = AppointmentService.get_available_slots(
             self.future_date, service
         )
-        assert len(available_slots) > 0, "No available slots found for test setup"
+        assert len(available_slots) > 0
 
         valid_slot = available_slots[0]
 
@@ -100,9 +100,9 @@ class TestAppointmentAPI:
         assert Appointment.objects.filter(pet__owner__user=user).count() == 1
 
     def test_user_cannot_access_other_users_appointment_detail(
-        self, authenticated_client
+        self, regular_user_client
     ):
-        client, _ = authenticated_client
+        client, _ = regular_user_client
         other_appointment = AppointmentFactory()
         detail_url = reverse(
             "schedule:appointment-detail", kwargs={"pk": other_appointment.id}
@@ -110,8 +110,8 @@ class TestAppointmentAPI:
         response = client.get(detail_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_user_cannot_delete_other_users_appointment(self, authenticated_client):
-        client, _ = authenticated_client
+    def test_user_cannot_delete_other_users_appointment(self, regular_user_client):
+        client, _ = regular_user_client
         other_appointment = AppointmentFactory()
         detail_url = reverse(
             "schedule:appointment-detail", kwargs={"pk": other_appointment.id}

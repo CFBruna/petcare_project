@@ -39,17 +39,17 @@ warning() {
 # Cleanup and rollback function
 cleanup_and_rollback() {
     error "Deployment failed! Initiating rollback..."
-    
+
     if [ -d "$BACKUP_DIR" ]; then
         log "Restoring from backup: $BACKUP_DIR"
-        
+
         # Restore dashboard if exists
         if [ -d "$BACKUP_DIR/dashboard" ]; then
             rm -rf src/static/dashboard
             cp -r "$BACKUP_DIR/dashboard" src/static/dashboard
             docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/ 2>/dev/null || true
         fi
-        
+
         # Restore containers
         if [ -f "$BACKUP_DIR/docker-compose.yml" ]; then
             log "Rolling back containers..."
@@ -57,16 +57,16 @@ cleanup_and_rollback() {
             docker compose -f $COMPOSE_FILE up -d
             sleep 10
         fi
-        
+
         # Restore static files
         docker compose -f $COMPOSE_FILE exec web python manage.py collectstatic --noinput 2>/dev/null || true
         docker compose -f $COMPOSE_FILE exec nginx nginx -s reload 2>/dev/null || true
-        
+
         success "Rollback completed - application should be stable"
     else
         error "No backup found - manual intervention required"
     fi
-    
+
     exit 1
 }
 
@@ -106,11 +106,12 @@ docker compose -f $COMPOSE_FILE config > "$BACKUP_DIR/docker-compose.yml" 2>/dev
 success "Backup created: $BACKUP_DIR"
 echo ""
 
-# Build dashboard
-log "📦 Step 3/10: Building TypeScript dashboard..."
+# Build dashboard and admin calendar
+log "📦 Step 3/10: Building TypeScript dashboard and admin calendar..."
 cd frontend
 npm install --quiet
 npm run build
+npx vite build --config vite.admin.config.ts
 cd ..
 
 # Validate dashboard build
@@ -118,8 +119,17 @@ if [ ! -f "src/static/dashboard/index.html" ]; then
     error "Dashboard build failed - index.html not found"
     exit 1
 fi
+
+# Validate admin calendar build
+if [ ! -f "src/static/admin_calendar/assets/admin-calendar.js" ]; then
+    error "Admin calendar build failed - admin-calendar.js not found"
+    exit 1
+fi
+
 BUILD_SIZE=$(du -sh src/static/dashboard 2>/dev/null | cut -f1 || echo "unknown")
+CALENDAR_SIZE=$(du -sh src/static/admin_calendar 2>/dev/null | cut -f1 || echo "unknown")
 success "Dashboard built - Size: $BUILD_SIZE"
+success "Admin calendar built - Size: $CALENDAR_SIZE"
 echo ""
 
 # Build Docker images

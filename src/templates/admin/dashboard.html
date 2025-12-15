@@ -4,6 +4,29 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
+    #content-main {
+        position: relative;
+    }
+
+    .analytics-dashboard-btn {
+        display: inline-block;
+        background-color: #417690;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: background-color 0.2s ease;
+        position: absolute;
+        top: -50px;
+        right: 20px;
+    }
+
+    .analytics-dashboard-btn:hover {
+        background-color: #2e5569;
+        color: white;
+    }
+
     .dashboard-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -55,6 +78,7 @@
 
 {% block content %}
 <div id="content-main">
+    <a href="/dashboard/" class="analytics-dashboard-btn">📊 Dashboard de Métricas</a>
 
     <div class="dashboard-grid">
         <div class="dashboard-card">

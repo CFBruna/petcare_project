@@ -4,6 +4,7 @@ from .forms import AppointmentAdminForm, ServiceAdminForm
 
 
 class AppointmentAdmin(admin.ModelAdmin):
+    change_list_template = "admin/schedule/appointment/change_list.html"
     form = AppointmentAdminForm
     list_display = ["pet", "service", "schedule_time", "status", "completed_at"]
     list_select_related = ["pet", "service", "pet__owner__user"]

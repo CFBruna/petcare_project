@@ -1,0 +1,20 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin_calendar/assets/admin-calendar.css' %}">
+{% endblock %}
+
+{% block result_list %}
+<div
+    style="margin-bottom: 30px; background: #fff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div id="admin-calendar-root"></div>
+</div>
+{{ block.super }}
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<script src="{% static 'admin_calendar/assets/admin-calendar.js' %}"></script>
+{% endblock %}
