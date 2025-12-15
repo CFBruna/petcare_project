@@ -116,9 +116,12 @@ class TimeSlotViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 class AppointmentViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsOwnerOrStaff]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_staff:
+            return Appointment.objects.select_related("pet", "service").all()
         return Appointment.objects.filter(pet__owner__user=user).select_related(
             "pet", "service"
         )

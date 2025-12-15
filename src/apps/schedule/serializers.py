@@ -21,6 +21,9 @@ class TimeSlotSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     pet_name = serializers.CharField(source="pet.name", read_only=True)
     service_name = serializers.CharField(source="service.name", read_only=True)
+    service_duration = serializers.IntegerField(
+        source="service.duration_minutes", read_only=True
+    )
 
     schedule_date = serializers.DateField(write_only=True)
     schedule_time_input = serializers.TimeField(write_only=True, source="schedule_time")
@@ -33,6 +36,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "pet_name",
             "service",
             "service_name",
+            "service_duration",
             "status",
             "notes",
             "schedule_date",
