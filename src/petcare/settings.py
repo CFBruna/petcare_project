@@ -76,6 +76,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "src.apps.core",
     "src.apps.accounts",
+    "src.apps.ai",  # AI Intelligence
     "src.apps.analytics",
     "src.apps.health",
     "src.apps.pets",
@@ -365,3 +366,17 @@ LOGGING = {
         },
     },
 }
+
+
+# ==============================================================================
+# AI INTELLIGENCE SETTINGS
+# ==============================================================================
+
+# Google Gemini API Key (with billing enabled - higher quotas)
+GOOGLE_API_KEY = config("GOOGLE_API_KEY", default="")
+GEMINI_MODEL_NAME = (
+    "gemini-2.5-flash"  # Best model with billing enabled (higher quotas than free tier)
+)
+
+# ChromaDB settings
+CHROMA_DB_PATH = BASE_DIR / "chroma_db"
