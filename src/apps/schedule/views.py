@@ -126,6 +126,25 @@ class AppointmentViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
             "pet", "service"
         )
 
+    def get_object(self):
+        """
+        Override get_object to ensure proper 404 when object is not in queryset.
+        This prevents users from accessing appointments that don't belong to them.
+        """
+        from rest_framework.exceptions import NotFound
+
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+
+        try:
+            obj = queryset.get(**filter_kwargs)
+        except Appointment.DoesNotExist:
+            raise NotFound() from None
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def perform_create(self, serializer):
         appointment = serializer.save()
         logger.info(
