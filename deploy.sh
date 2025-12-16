@@ -306,7 +306,7 @@ echo ""
 
 # Test phase - deploy to staging
 log "🧪 Step 6/10: Testing new build (staging)..."
-if dc ps --quiet web >/dev/null 2>&1; then
+if [ -n "$(dc ps --quiet web 2>/dev/null)" ]; then
     log "Copying dashboard to staging location..."
     dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
 else
