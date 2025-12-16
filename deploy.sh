@@ -178,49 +178,53 @@ else
         success "On branch $TARGET_BRANCH"
     fi
 
+    # Detect public IP for CSRF trust
+    PUBLIC_IP=$(curl -s ifconfig.me || echo "localhost")
+
     # Create staging override (Force regeneration)
     rm -f "$COMPOSE_OVERRIDE"
 
     if [ ! -f "$COMPOSE_OVERRIDE" ]; then
         warning "Creating $COMPOSE_OVERRIDE..."
-        cat > "$COMPOSE_OVERRIDE" <<'EOF'
+        cat > "$COMPOSE_OVERRIDE" <<EOF
 # Auto-generated staging override
 services:
   web:
-    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-web
+    container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-web
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
+      - DATABASE_URL=postgres://\${POSTGRES_USER:-postgres}:\${POSTGRES_PASSWORD:-postgres}@db:5432/\${POSTGRES_DB:-petcare}
+      - CSRF_TRUSTED_ORIGINS=http://localhost:8001,http://${PUBLIC_IP}:8001,https://${PUBLIC_IP}:8001
     depends_on:
       - db
   db:
     image: postgres:15
-    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-db
+    container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-db
     volumes:
       - postgres_data_staging:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-petcare}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: \${POSTGRES_DB:-petcare}
+      POSTGRES_USER: \${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD:-postgres}
     expose:
       - 5432
   redis:
-    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-redis
+    container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-redis
   celery_worker:
-    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_worker
+    container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_worker
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
+      - DATABASE_URL=postgres://\${POSTGRES_USER:-postgres}:\${POSTGRES_PASSWORD:-postgres}@db:5432/\${POSTGRES_DB:-petcare}
     depends_on:
       - db
   celery_beat:
-    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_beat
+    container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_beat
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
+      - DATABASE_URL=postgres://\${POSTGRES_USER:-postgres}:\${POSTGRES_PASSWORD:-postgres}@db:5432/\${POSTGRES_DB:-petcare}
     depends_on:
       - db
   nginx:
-    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-nginx
+    container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-nginx
     ports:
-      - "${STAGING_WEB_PORT:-8001}:80"
+      - "\${STAGING_WEB_PORT:-8001}:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - staticfiles:/usr/src/app/staticfiles
