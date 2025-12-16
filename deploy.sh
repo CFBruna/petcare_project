@@ -193,9 +193,8 @@ services:
     container_name: \${COMPOSE_PROJECT_NAME:-petcare-staging}-web
     environment:
       - DATABASE_URL=postgres://\${POSTGRES_USER:-postgres}:\${POSTGRES_PASSWORD:-postgres}@db:5432/\${POSTGRES_DB:-petcare}
-      - CSRF_TRUSTED_ORIGINS=http://localhost:8001,http://${PUBLIC_IP}:8001,https://${PUBLIC_IP}:8001
-      - CSRF_COOKIE_SECURE=False
-      - SESSION_COOKIE_SECURE=False
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
     depends_on:
       - db
   db:
