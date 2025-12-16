@@ -103,7 +103,8 @@ class EmbeddingsService:
 
     def _get_cache_key(self, text: str) -> str:
         """Generate cache key for text embedding."""
-        text_hash = hashlib.md5(text.encode()).hexdigest()
+        # MD5 used only for cache key, not security (Bandit B324)
+        text_hash = hashlib.md5(text.encode(), usedforsecurity=False).hexdigest()
         return f"embedding:{self.model_name}:{text_hash}"
 
 

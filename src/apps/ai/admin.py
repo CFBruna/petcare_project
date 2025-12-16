@@ -1,8 +1,7 @@
 """Django Admin integration for AI Intelligence."""
 
 from django.contrib import admin
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 
 from src.apps.ai.models import AIGeneratedContent, HealthPattern, ProductEmbedding
 
@@ -177,10 +176,11 @@ class HealthPatternAdmin(admin.ModelAdmin):
         if not obj.recommendations:
             return "-"
 
-        items = "".join([f"<li>{rec}</li>" for rec in obj.recommendations])
-        return format_html(
-            '<ul style="margin: 0; padding-left: 20px;">{}</ul>', mark_safe(items)
+        # Use format_html_join for safe HTML rendering (Bandit B703/B308)
+        items = format_html_join(
+            "", "<li>{}</li>", ((rec,) for rec in obj.recommendations)
         )
+        return format_html('<ul style="margin: 0; padding-left: 20px;">{}</ul>', items)
 
 
 @admin.register(ProductEmbedding)
