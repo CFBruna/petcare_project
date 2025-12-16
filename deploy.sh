@@ -187,8 +187,6 @@ else
 # Auto-generated staging override
 services:
   web:
-    ports:
-      - "${STAGING_WEB_PORT:-8001}:8000"
     container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-web
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
@@ -219,6 +217,16 @@ services:
       - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
     depends_on:
       - db
+  nginx:
+    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-nginx
+    ports:
+      - "${STAGING_WEB_PORT:-8001}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - staticfiles:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
+    depends_on:
+      - web
 volumes:
   postgres_data_staging:
 EOF
