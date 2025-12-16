@@ -306,8 +306,12 @@ echo ""
 
 # Test phase - deploy to staging
 log "🧪 Step 6/10: Testing new build (staging)..."
-log "Copying dashboard to staging location..."
-dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
+if dc ps --quiet web >/dev/null 2>&1; then
+    log "Copying dashboard to staging location..."
+    dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
+else
+    warning "Web container not running (first deploy?) - skipping pre-deployment asset copy"
+fi
 
 # Quick smoke test on current container
 CURRENT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $API_URL || echo "000")
