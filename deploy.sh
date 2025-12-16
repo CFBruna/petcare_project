@@ -195,6 +195,7 @@ services:
       - DATABASE_URL=postgres://\${POSTGRES_USER:-postgres}:\${POSTGRES_PASSWORD:-postgres}@db:5432/\${POSTGRES_DB:-petcare}
       - DEBUG=True
       - ALLOWED_HOSTS=*
+      - CSRF_TRUSTED_ORIGINS=http://localhost:8001,http://${PUBLIC_IP}:8001
     depends_on:
       - db
   db:
