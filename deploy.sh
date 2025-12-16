@@ -91,8 +91,35 @@ git pull origin main
 success "Code updated"
 echo ""
 
+# Verify AI configuration
+log "🤖 Step 2/10: Verifying AI environment variables..."
+if [ ! -f ".env" ]; then
+    error ".env file not found! AI features require configuration."
+    exit 1
+fi
+
+if ! grep -q "^GOOGLE_API_KEY=" .env 2>/dev/null || [ -z "$(grep '^GOOGLE_API_KEY=' .env | cut -d= -f2)" ]; then
+    warning "⚠️  GOOGLE_API_KEY not configured in .env"
+    warning "AI features (product descriptions, health analysis) will fail without this!"
+    echo ""
+    echo "To fix:"
+    echo "  1. Get API key from: https://aistudio.google.com/app/apikey"
+    echo "  2. Add to .env: GOOGLE_API_KEY=your-key-here"
+    echo ""
+    read -p "Continue deployment without AI? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        error "Deployment aborted - please configure GOOGLE_API_KEY first"
+        exit 1
+    fi
+    warning "Proceeding without AI configuration - AI features will not work!"
+else
+    success "AI configuration verified (GOOGLE_API_KEY present)"
+fi
+echo ""
+
 # Create backup
-log "💾 Step 2/10: Creating full system backup..."
+log "💾 Step 3/10: Creating full system backup..."
 mkdir -p backups
 mkdir -p "$BACKUP_DIR"
 
@@ -107,7 +134,7 @@ success "Backup created: $BACKUP_DIR"
 echo ""
 
 # Build dashboard and admin calendar
-log "📦 Step 3/10: Building TypeScript dashboard and admin calendar..."
+log "📦 Step 4/10: Building TypeScript dashboard and admin calendar..."
 cd frontend
 npm install --quiet
 npm run build
@@ -133,7 +160,7 @@ success "Admin calendar built - Size: $CALENDAR_SIZE"
 echo ""
 
 # Build Docker images
-log "🏗️  Step 4/10: Building Docker images (no deployment yet)..."
+log "🏗️  Step 5/10: Building Docker images (no deployment yet)..."
 if ! docker compose -f $COMPOSE_FILE build; then
     error "Docker build failed! Keeping current version online."
     exit 1
@@ -142,7 +169,7 @@ success "Docker images built successfully"
 echo ""
 
 # Test phase - deploy to staging
-log "🧪 Step 5/10: Testing new build (staging)..."
+log "🧪 Step 6/10: Testing new build (staging)..."
 log "Copying dashboard to staging location..."
 docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
 
@@ -155,7 +182,7 @@ success "Pre-deployment tests passed"
 echo ""
 
 # Deploy phase - zero downtime
-log "🚀 Step 6/10: Deploying new version with zero downtime..."
+log "🚀 Step 7/10: Deploying new version with zero downtime..."
 log "Note: Containers will restart but with rolling strategy"
 
 # Apply new images with minimal downtime
@@ -167,13 +194,13 @@ success "Containers restarted"
 echo ""
 
 # Migrations
-log "📋 Step 7/10: Running database migrations..."
+log "📋 Step 8/10: Running database migrations..."
 docker compose -f $COMPOSE_FILE exec web python manage.py migrate --noinput
 success "Migrations completed"
 echo ""
 
 # Deploy dashboard
-log "📊 Step 8/10: Deploying dashboard assets..."
+log "📊 Step 9/10: Deploying dashboard assets..."
 # Move staged dashboard to live
 docker compose -f $COMPOSE_FILE exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard" 2>/dev/null || \
 docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
@@ -187,7 +214,7 @@ success "Dashboard deployed"
 echo ""
 
 # Verification
-log "✅ Step 9/10: Verifying deployment..."
+log "✅ Step 10/10: Verifying deployment..."
 EXPECTED_CONTAINERS=$(docker compose -f $COMPOSE_FILE config --services | wc -l)
 RUNNING_CONTAINERS=$(docker compose -f $COMPOSE_FILE ps --filter "status=running" --quiet | wc -l)
 
@@ -231,7 +258,7 @@ fi
 echo ""
 
 # Cleanup
-log "🧹 Step 10/10: Cleaning up..."
+log "🧹 Step 11/10: Cleaning up..."
 docker system prune -a -f --volumes > /dev/null 2>&1
 
 # Keep only last 5 backups
