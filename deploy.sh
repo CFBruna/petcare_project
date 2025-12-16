@@ -239,6 +239,11 @@ echo ""
 log "📋 Step 8/11: Running database migrations..."
 docker compose -f $COMPOSE_FILE exec web python manage.py migrate --noinput
 success "Migrations completed"
+
+# Initialize chroma_db for AI features
+log "🤖 Initializing AI vector database..."
+docker compose -f $COMPOSE_FILE exec -u root web bash -c "mkdir -p /usr/src/app/chroma_db && chown -R appuser:appuser /usr/src/app/chroma_db"
+success "ChromaDB directory ready"
 echo ""
 
 # Deploy dashboard
