@@ -26,6 +26,8 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/usr/src/app/
+      - ~/.ssh:/home/appuser/.ssh:ro
+      - ~/.gitconfig:/home/appuser/.gitconfig:ro
     ports:
       - "8000:8000"
     env_file:
