@@ -122,3 +122,78 @@ class TestAutoPromotionAdmin:
         display_html = self.admin.price_with_discount(lot)
         assert 'style="text-decoration: line-through;">R$ 100.00</span>' in display_html
         assert 'style="color: #4CAF50;">R$ 80.00 (-20%)</strong>' in display_html
+
+
+# Fix the patch path - service is imported inside the admin action function
+
+
+@pytest.mark.django_db
+class TestProductAdminActions:
+    """Test ProductAdmin AI description actions."""
+
+    def test_generate_technical_description(self, admin_client: Any) -> None:
+        """Should generate technical descriptions."""
+        from unittest.mock import MagicMock, patch
+
+        from src.apps.ai.services import ProductDescriptionResponse
+        from src.apps.store.tests.factories import ProductFactory
+
+        product = ProductFactory(name="Test Product")
+
+        # Patch where it's imported (inside the function)
+        with patch("src.apps.ai.services.ProductIntelligenceService") as MockService:
+            mock_service = MagicMock()
+            MockService.return_value = mock_service
+            mock_service.generate_description.return_value = ProductDescriptionResponse(
+                description="AI generated description",
+                confidence_score=0.9,
+                is_known_product=True,
+                similar_products=[],
+                suggestions={},
+            )
+
+            changelist_url = reverse("petcare_admin:store_product_changelist")
+            response = admin_client.post(
+                changelist_url,
+                {
+                    "action": "generate_technical_description",
+                    "_selected_action": [str(product.id)],
+                },
+                follow=True,
+            )
+
+            assert response.status_code == 200
+            product.refresh_from_db()
+            assert product.description == "AI generated description"
+
+    def test_generate_creative_description(self, admin_client: Any) -> None:
+        """Should generate creative descriptions."""
+        from unittest.mock import MagicMock, patch
+
+        from src.apps.ai.services import ProductDescriptionResponse
+        from src.apps.store.tests.factories import ProductFactory
+
+        product = ProductFactory(name="Test Product")
+
+        with patch("src.apps.ai.services.ProductIntelligenceService") as MockService:
+            mock_service = MagicMock()
+            MockService.return_value = mock_service
+            mock_service.generate_description.return_value = ProductDescriptionResponse(
+                description="Creative AI description",
+                confidence_score=0.8,
+                is_known_product=False,
+                similar_products=[],
+                suggestions={},
+            )
+
+            changelist_url = reverse("petcare_admin:store_product_changelist")
+            response = admin_client.post(
+                changelist_url,
+                {
+                    "action": "generate_creative_description",
+                    "_selected_action": [str(product.id)],
+                },
+                follow=True,
+            )
+
+            assert response.status_code == 200
