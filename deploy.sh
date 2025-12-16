@@ -178,7 +178,9 @@ else
         success "On branch $TARGET_BRANCH"
     fi
 
-    # Create staging override if doesn't exist
+    # Create staging override (Force regeneration)
+    rm -f "$COMPOSE_OVERRIDE"
+
     if [ ! -f "$COMPOSE_OVERRIDE" ]; then
         warning "Creating $COMPOSE_OVERRIDE..."
         cat > "$COMPOSE_OVERRIDE" <<'EOF'
@@ -188,16 +190,35 @@ services:
     ports:
       - "${STAGING_WEB_PORT:-8001}:8000"
     container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-web
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
+    depends_on:
+      - db
   db:
+    image: postgres:15
     container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-db
     volumes:
       - postgres_data_staging:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-petcare}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    expose:
+      - 5432
   redis:
     container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-redis
   celery_worker:
     container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_worker
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
+    depends_on:
+      - db
   celery_beat:
     container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_beat
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-petcare}
+    depends_on:
+      - db
 volumes:
   postgres_data_staging:
 EOF
