@@ -1,13 +1,19 @@
 #!/bin/bash
 set -e
 
-# Production-Grade Blue-Green Deployment Script
+# Production-Grade Deployment Script with Staging Support
 # Features:
+# - Unified deployment process for production AND staging
 # - Automatic backup before deployment
 # - Build and test new version before applying
 # - Zero-downtime deployment
 # - Automatic rollback on failure
 # - Includes application + dashboard deployment
+#
+# Usage:
+#   ./deploy.sh                           # Deploy main to PRODUCTION
+#   ./deploy.sh --staging                 # Deploy current branch to STAGING
+#   ./deploy.sh --staging feature/xyz     # Deploy specific branch to STAGING
 
 # Color codes
 RED='\033[0;31m'
@@ -16,11 +22,65 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Configuration
-BACKUP_DIR="backups/deployment-$(date +%Y%m%d-%H%M%S)"
-COMPOSE_FILE="docker-compose.prod.yml"
-DASHBOARD_URL="https://petcare.brunadev.com/dashboard/"
-API_URL="https://petcare.brunadev.com/api/v1/status/"
+# Parse arguments
+STAGING_MODE=false
+DEPLOY_BRANCH=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --staging)
+            STAGING_MODE=true
+            shift
+            if [[ $# -gt 0 ]] && [[ ! $1 =~ ^-- ]]; then
+                DEPLOY_BRANCH="$1"
+                shift
+            fi
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            echo "Usage: $0 [--staging [branch-name]]"
+            exit 1
+            ;;
+    esac
+done
+
+# Configuration based on environment
+if [ "$STAGING_MODE" = true ]; then
+    ENVIRONMENT="STAGING"
+    COMPOSE_FILE="docker-compose.prod.yml"
+    COMPOSE_OVERRIDE="docker-compose.staging-override.yml"
+    BACKUP_DIR="backups/staging-$(date +%Y%m%d-%H%M%S)"
+
+    export COMPOSE_PROJECT_NAME="petcare-staging"
+    export STAGING_WEB_PORT="8001"
+
+    DASHBOARD_URL="http://localhost:${STAGING_WEB_PORT}/dashboard/"
+    API_URL="http://localhost:${STAGING_WEB_PORT}/api/v1/status/"
+
+    if [ -n "$DEPLOY_BRANCH" ]; then
+        TARGET_BRANCH="$DEPLOY_BRANCH"
+    else
+        TARGET_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    fi
+else
+    ENVIRONMENT="PRODUCTION"
+    COMPOSE_FILE="docker-compose.prod.yml"
+    COMPOSE_OVERRIDE=""
+    BACKUP_DIR="backups/deployment-$(date +%Y%m%d-%H%M%S)"
+    TARGET_BRANCH="main"
+
+    DASHBOARD_URL="https://petcare.brunadev.com/dashboard/"
+    API_URL="https://petcare.brunadev.com/api/v1/status/"
+fi
+
+# Helper function for docker compose commands
+dc() {
+    if [ -n "$COMPOSE_OVERRIDE" ]; then
+        docker compose -f "$COMPOSE_FILE" -f "$COMPOSE_OVERRIDE" "$@"
+    else
+        docker compose -f "$COMPOSE_FILE" "$@"
+    fi
+}
 
 # Logging functions
 log() {
@@ -47,20 +107,20 @@ cleanup_and_rollback() {
         if [ -d "$BACKUP_DIR/dashboard" ]; then
             rm -rf src/static/dashboard
             cp -r "$BACKUP_DIR/dashboard" src/static/dashboard
-            docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/ 2>/dev/null || true
+            dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/ 2>/dev/null || true
         fi
 
         # Restore containers
         if [ -f "$BACKUP_DIR/docker-compose.yml" ]; then
             log "Rolling back containers..."
-            docker compose -f $COMPOSE_FILE down
-            docker compose -f $COMPOSE_FILE up -d
+            dc down
+            dc up -d
             sleep 10
         fi
 
         # Restore static files
-        docker compose -f $COMPOSE_FILE exec web python manage.py collectstatic --noinput 2>/dev/null || true
-        docker compose -f $COMPOSE_FILE exec nginx nginx -s reload 2>/dev/null || true
+        dc exec web python manage.py collectstatic --noinput 2>/dev/null || true
+        dc exec nginx nginx -s reload 2>/dev/null || true
 
         success "Rollback completed - application should be stable"
     else
@@ -73,22 +133,77 @@ cleanup_and_rollback() {
 # Set trap for errors
 trap cleanup_and_rollback ERR
 
-echo "🛡️  Production-Grade Deployment with Blue-Green Strategy"
+echo "🛡️  ${ENVIRONMENT} Deployment with Blue-Green Strategy"
 echo "========================================================="
 echo ""
 
-# Pre-flight checks
-log "🔍 Step 1/10: Pre-deployment checks..."
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$CURRENT_BRANCH" != "main" ]; then
-    error "Deployment aborted. Current branch: $CURRENT_BRANCH (must be 'main')"
-    exit 1
+if [ "$STAGING_MODE" = true ]; then
+    warning "🧪 STAGING MODE - Testing branch before production"
+    echo "   Branch: $TARGET_BRANCH"
+    echo "   Port: ${STAGING_WEB_PORT}"
+    echo "   URL: http://localhost:${STAGING_WEB_PORT}"
+else
+    echo "🚀 PRODUCTION MODE - Deploying to live environment"
+    echo "   Branch: $TARGET_BRANCH"
+    echo "   URL: https://petcare.brunadev.com"
 fi
-success "On main branch"
+echo ""
 
-log "📥 Fetching latest changes..."
-git pull origin main
-success "Code updated"
+# Pre-flight checks
+log "🔍 Step 1/11: Pre-deployment checks..."
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$STAGING_MODE" = false ]; then
+    # Production: must be on main
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        error "Deployment aborted. Current branch: $CURRENT_BRANCH (must be 'main')"
+        exit 1
+    fi
+    success "On main branch"
+
+    log "📥 Fetching latest changes..."
+    git pull origin main
+    success "Code updated"
+else
+    # Staging: checkout target branch if different
+    if [ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]; then
+        log "📥 Switching to branch $TARGET_BRANCH..."
+        git fetch origin "$TARGET_BRANCH" || true
+        git checkout "$TARGET_BRANCH"
+        git pull origin "$TARGET_BRANCH"
+        success "On branch $TARGET_BRANCH"
+    else
+        log "📥 Fetching latest changes for $TARGET_BRANCH..."
+        git pull origin "$TARGET_BRANCH" || warning "Could not pull from remote - using local version"
+        success "On branch $TARGET_BRANCH"
+    fi
+
+    # Create staging override if doesn't exist
+    if [ ! -f "$COMPOSE_OVERRIDE" ]; then
+        warning "Creating $COMPOSE_OVERRIDE..."
+        cat > "$COMPOSE_OVERRIDE" <<'EOF'
+# Auto-generated staging override
+services:
+  web:
+    ports:
+      - "${STAGING_WEB_PORT:-8001}:8000"
+    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-web
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-db
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data/
+  redis:
+    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-redis
+  celery_worker:
+    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_worker
+  celery_beat:
+    container_name: ${COMPOSE_PROJECT_NAME:-petcare-staging}-celery_beat
+volumes:
+  postgres_data_staging:
+EOF
+        success "Created $COMPOSE_OVERRIDE"
+    fi
+fi
 echo ""
 
 # Verify AI configuration
@@ -129,7 +244,7 @@ if [ -d "src/static/dashboard" ]; then
 fi
 
 # Backup current docker-compose state
-docker compose -f $COMPOSE_FILE config > "$BACKUP_DIR/docker-compose.yml" 2>/dev/null || true
+dc config > "$BACKUP_DIR/docker-compose.yml" 2>/dev/null || true
 success "Backup created: $BACKUP_DIR"
 echo ""
 
@@ -161,7 +276,7 @@ echo ""
 
 # Build Docker images
 log "🏗️  Step 5/10: Building Docker images (no deployment yet)..."
-if ! docker compose -f $COMPOSE_FILE build; then
+if ! dc build; then
     error "Docker build failed! Keeping current version online."
     exit 1
 fi
@@ -171,7 +286,7 @@ echo ""
 # Test phase - deploy to staging
 log "🧪 Step 6/10: Testing new build (staging)..."
 log "Copying dashboard to staging location..."
-docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
+dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
 
 # Quick smoke test on current container
 CURRENT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $API_URL || echo "000")
@@ -186,7 +301,7 @@ log "🚀 Step 7/10: Deploying new version with zero downtime..."
 log "Note: Containers will restart but with rolling strategy"
 
 # Apply new images with minimal downtime
-docker compose -f $COMPOSE_FILE up -d --no-deps --build
+dc up -d --no-deps --build
 
 log "⏳ Waiting for containers to stabilize..."
 sleep 10
@@ -195,32 +310,32 @@ echo ""
 
 # Migrations
 log "📋 Step 8/10: Running database migrations..."
-docker compose -f $COMPOSE_FILE exec web python manage.py migrate --noinput
+dc exec web python manage.py migrate --noinput
 success "Migrations completed"
 echo ""
 
 # Deploy dashboard
 log "📊 Step 9/10: Deploying dashboard assets..."
 # Move staged dashboard to live
-docker compose -f $COMPOSE_FILE exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard" 2>/dev/null || \
-docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
+dc exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard" 2>/dev/null || \
+dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
 
 # Collect all static files
-docker compose -f $COMPOSE_FILE exec web python manage.py collectstatic --noinput --clear
+dc exec web python manage.py collectstatic --noinput --clear
 
 # Hot reload nginx
-docker compose -f $COMPOSE_FILE exec nginx nginx -s reload
+dc exec nginx nginx -s reload
 success "Dashboard deployed"
 echo ""
 
 # Verification
 log "✅ Step 10/10: Verifying deployment..."
-EXPECTED_CONTAINERS=$(docker compose -f $COMPOSE_FILE config --services | wc -l)
-RUNNING_CONTAINERS=$(docker compose -f $COMPOSE_FILE ps --filter "status=running" --quiet | wc -l)
+EXPECTED_CONTAINERS=$(dc config --services | wc -l)
+RUNNING_CONTAINERS=$(dc ps --filter "status=running" --quiet | wc -l)
 
 if [ "$RUNNING_CONTAINERS" -ne "$EXPECTED_CONTAINERS" ]; then
     error "Container verification failed! Expected: $EXPECTED_CONTAINERS, Running: $RUNNING_CONTAINERS"
-    docker compose -f $COMPOSE_FILE ps
+    dc ps
     exit 1
 fi
 success "All $RUNNING_CONTAINERS containers are running"
@@ -244,7 +359,7 @@ done
 
 if [ $RETRIES -ge $MAX_RETRIES ]; then
     error "API health check failed after $MAX_RETRIES attempts"
-    docker compose -f $COMPOSE_FILE logs --tail=50 web
+    dc logs --tail=50 web
     exit 1
 fi
 
@@ -289,4 +404,4 @@ echo "🔧 Rollback if needed:"
 echo "   ./rollback.sh $BACKUP_DIR"
 echo ""
 
-docker compose -f $COMPOSE_FILE ps
+dc ps
