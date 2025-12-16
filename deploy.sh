@@ -349,11 +349,20 @@ echo ""
 
 # Deploy dashboard
 log "📊 Step 9/10: Deploying dashboard assets..."
-# Move staged dashboard to live
-dc exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard" 2>/dev/null || \
-dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
 
-# Collect all static files
+# Check if we have staged assets inside container
+if dc exec web [ -d "/usr/src/app/src/static/dashboard-staging" ] 2>/dev/null; then
+    log "Promoting staged dashboard to live..."
+    dc exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard"
+else
+    log "Copying dashboard directly from host..."
+    dc cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
+fi
+
+# Fix permissions and collect static files
+log "Collecting static files..."
+# Ensure staticfiles directory is writable
+dc exec -u root web chown -R appuser:appuser /usr/src/app/staticfiles
 dc exec web python manage.py collectstatic --noinput --clear
 
 # Hot reload nginx
