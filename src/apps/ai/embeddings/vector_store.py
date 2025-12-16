@@ -31,7 +31,7 @@ class VectorStore:
         """Add embeddings to the collection."""
         self.collection.add(
             ids=ids,
-            embeddings=embeddings,
+            embeddings=embeddings,  # type: ignore[arg-type]
             documents=documents,
             metadatas=metadatas,  # type: ignore[arg-type]
         )
@@ -39,8 +39,8 @@ class VectorStore:
     def query(self, query_embeddings: list[list[float]], n_results: int = 5) -> dict:  # type: ignore[return]
         """Query similar embeddings."""
         return self.collection.query(  # type: ignore[return-value]
-            query_embeddings=query_embeddings,
-            n_results=n_results,  # type: ignore[arg-type]
+            query_embeddings=query_embeddings,  # type: ignore[arg-type]
+            n_results=n_results,
         )
 
     def update(
@@ -53,7 +53,7 @@ class VectorStore:
         """Update existing embeddings."""
         self.collection.update(
             ids=ids,
-            embeddings=embeddings,
+            embeddings=embeddings,  # type: ignore[arg-type]
             documents=documents,
             metadatas=metadatas,  # type: ignore[arg-type]
         )

@@ -136,8 +136,8 @@ class TestProductAdminActions:
         from unittest.mock import MagicMock, patch
 
         from src.apps.ai.services import ProductDescriptionResponse
-        from src.apps.store.tests.factories import ProductFactory
         from src.apps.store.models import Product
+        from src.apps.store.tests.factories import ProductFactory
 
         product: Product = ProductFactory(name="Test Product")  # type: ignore[assignment]
 
@@ -172,8 +172,8 @@ class TestProductAdminActions:
         from unittest.mock import MagicMock, patch
 
         from src.apps.ai.services import ProductDescriptionResponse
-        from src.apps.store.tests.factories import ProductFactory
         from src.apps.store.models import Product
+        from src.apps.store.tests.factories import ProductFactory
 
         product: Product = ProductFactory(name="Test Product")  # type: ignore[assignment]
 
