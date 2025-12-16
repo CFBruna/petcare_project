@@ -51,6 +51,7 @@ class AIGeneratedContentAdmin(admin.ModelAdmin):
         ("Audit", {"fields": ("created_by", "created_at")}),
     )
 
+    @admin.display(description="Related Item")
     def related_item_link(self, obj):
         """Display link to related product or pet."""
         if obj.product:
@@ -65,8 +66,7 @@ class AIGeneratedContentAdmin(admin.ModelAdmin):
             )
         return "-"
 
-    related_item_link.short_description = "Related Item"
-
+    @admin.display(description="Confidence")
     def confidence_badge(self, obj):
         """Display confidence score with color coding."""
         if obj.confidence_score is None:
@@ -86,8 +86,7 @@ class AIGeneratedContentAdmin(admin.ModelAdmin):
             obj.confidence_score,
         )
 
-    confidence_badge.short_description = "Confidence"
-
+    @admin.display(description="Status")
     def acceptance_status(self, obj):
         """Display acceptance status with icon."""
         if obj.was_accepted:
@@ -98,8 +97,7 @@ class AIGeneratedContentAdmin(admin.ModelAdmin):
             '<span style="color: orange; font-size: 16px;">⏳ Pendente</span>'
         )
 
-    acceptance_status.short_description = "Status"
-
+    @admin.display(description="Generated Content")
     def generated_content_display(self, obj):
         """Display generated content with formatting."""
         return format_html(
@@ -109,8 +107,6 @@ class AIGeneratedContentAdmin(admin.ModelAdmin):
             "</div>",
             obj.generated_content,
         )
-
-    generated_content_display.short_description = "Generated Content"
 
 
 @admin.register(HealthPattern)
@@ -151,14 +147,14 @@ class HealthPatternAdmin(admin.ModelAdmin):
         ("Metadata", {"fields": ("related_records", "first_detected", "last_updated")}),
     )
 
+    @admin.display(description="Pet")
     def pet_link(self, obj):
         """Display link to pet."""
         return format_html(
             '<a href="/admin/pets/pet/{}/change/">{}</a>', obj.pet.id, obj.pet.name
         )
 
-    pet_link.short_description = "Pet"
-
+    @admin.display(description="Confidence")
     def confidence_badge(self, obj):
         """Display confidence score with color coding."""
         if obj.confidence_score > 0.8:
@@ -175,8 +171,7 @@ class HealthPatternAdmin(admin.ModelAdmin):
             obj.confidence_score,
         )
 
-    confidence_badge.short_description = "Confidence"
-
+    @admin.display(description="Recommendations")
     def recommendations_display(self, obj):
         """Display recommendations as formatted list."""
         if not obj.recommendations:
@@ -186,8 +181,6 @@ class HealthPatternAdmin(admin.ModelAdmin):
         return format_html(
             '<ul style="margin: 0; padding-left: 20px;">{}</ul>', mark_safe(items)
         )
-
-    recommendations_display.short_description = "Recommendations"
 
 
 @admin.register(ProductEmbedding)
@@ -199,6 +192,7 @@ class ProductEmbeddingAdmin(admin.ModelAdmin):
     search_fields = ["product__name"]
     readonly_fields = ["product", "embedding_vector", "model_version", "updated_at"]
 
+    @admin.display(description="Product")
     def product_link(self, obj):
         """Display link to product."""
         return format_html(
@@ -206,8 +200,6 @@ class ProductEmbeddingAdmin(admin.ModelAdmin):
             obj.product.id,
             obj.product.name,
         )
-
-    product_link.short_description = "Product"
 
     def has_add_permission(self, request):
         """Disable manual creation (auto-generated)."""
@@ -240,13 +232,12 @@ class AIGeneratedContentInline(admin.TabularInline):
         "created_at",
     ]
 
+    @admin.display(description="Content Preview")
     def generated_content_preview(self, obj):
         """Show preview of generated content."""
         if len(obj.generated_content) > 100:
             return obj.generated_content[:100] + "..."
         return obj.generated_content
-
-    generated_content_preview.short_description = "Content Preview"
 
     def has_add_permission(self, request, obj=None):
         """Disable manual creation."""

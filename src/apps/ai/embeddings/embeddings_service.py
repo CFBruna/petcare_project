@@ -27,7 +27,7 @@ class EmbeddingsService:
         """
         self.model_name = model_name
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            model=model_name, google_api_key=settings.GOOGLE_API_KEY
+            model=model_name, api_key=settings.GOOGLE_API_KEY
         )
 
     def encode(self, text: str, use_cache: bool = True) -> list[float]:

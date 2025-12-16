@@ -137,8 +137,9 @@ class TestProductAdminActions:
 
         from src.apps.ai.services import ProductDescriptionResponse
         from src.apps.store.tests.factories import ProductFactory
+        from src.apps.store.models import Product
 
-        product = ProductFactory(name="Test Product")
+        product: Product = ProductFactory(name="Test Product")  # type: ignore[assignment]
 
         # Patch where it's imported (inside the function)
         with patch("src.apps.ai.services.ProductIntelligenceService") as MockService:
@@ -172,8 +173,9 @@ class TestProductAdminActions:
 
         from src.apps.ai.services import ProductDescriptionResponse
         from src.apps.store.tests.factories import ProductFactory
+        from src.apps.store.models import Product
 
-        product = ProductFactory(name="Test Product")
+        product: Product = ProductFactory(name="Test Product")  # type: ignore[assignment]
 
         with patch("src.apps.ai.services.ProductIntelligenceService") as MockService:
             mock_service = MagicMock()
