@@ -1,7 +1,10 @@
+from unittest.mock import mock_open, patch
+
 import pytest
 from django.db import models
+from django.test import RequestFactory
 
-from src.apps.core.views import AutoSchemaModelNameMixin
+from src.apps.core.views import AutoSchemaModelNameMixin, DashboardView
 
 
 class DummyModel(models.Model):
@@ -33,3 +36,52 @@ class TestAutoSchemaModelNameMixin:
 
         mixin = NoQuerySetViewSet()
         assert mixin._get_model_name() == ""
+
+
+@pytest.mark.django_db
+class TestDashboardView:
+    """Test DashboardView."""
+
+    @pytest.fixture
+    def factory(self):
+        """Create request factory."""
+        return RequestFactory()
+
+    def test_dashboard_serves_file(self, factory):
+        """Should serve dashboard HTML file."""
+        request = factory.get("/dashboard/")
+        view = DashboardView()
+
+        mock_html = "<html><body>Dashboard</body></html>"
+
+        with patch("builtins.open", mock_open(read_data=mock_html)):
+            response = view.get(request)
+
+            assert response.status_code == 200
+            assert response.content.decode() == mock_html
+            assert response["Content-Type"] == "text/html"
+
+    def test_dashboard_file_not_found(self, factory):
+        """Should return 404 when dashboard not built."""
+        request = factory.get("/dashboard/")
+        view = DashboardView()
+
+        with patch("builtins.open", side_effect=FileNotFoundError()):
+            response = view.get(request)
+
+            assert response.status_code == 404
+            assert "not built" in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestHealthCheckView:
+    """Test HealthCheckView."""
+
+    def test_health_check_returns_ok(self, client):
+        """Should return OK status."""
+        response = client.get("/api/v1/status/")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ok"
+        assert data["service"] == "petcare"

@@ -1,0 +1,181 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block after_field_sets %}
+{{ block.super }}
+
+<style>
+    #ai-results-content,
+    #ai-results-content * {
+        color: #000 !important;
+    }
+
+    #ai-results-content strong {
+        font-weight: bold !important;
+        color: #000 !important;
+    }
+
+    #ai-results-content ul {
+        padding-left: 20px !important;
+        list-style-type: disc !important;
+    }
+
+    #ai-results-content li {
+        margin-bottom: 5px !important;
+        color: #000 !important;
+    }
+
+    #ai-results-content h4 {
+        color: #000 !important;
+        margin-top: 15px !important;
+        margin-bottom: 5px !important;
+        font-weight: bold !important;
+    }
+</style>
+
+{% if original %}
+<div class="module" style="margin-top: 20px;">
+    <h2>🩺 Análise de Saúde com IA</h2>
+    <div style="padding: 15px; background-color: #f8f9fa; border-radius: 5px; color: #333;">
+        <p style="margin-bottom: 15px; color: #333;">
+            <strong>Analisar padrões de saúde do pet:</strong>
+        </p>
+
+        <button type="button" id="analyze-health-btn" class="button default"
+            style="background-color: #ff9800; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; width: 100%;">
+            🩺 Analisar Padrões de Saúde
+        </button>
+
+        <!-- Status Box -->
+        <div id="ai-status" style="margin-top: 10px; padding: 10px; display: none; border-radius: 3px;"></div>
+
+        <!-- Results Container -->
+        <div id="ai-results" style="margin-top: 15px; display: none;">
+            <h3
+                style="color: #000 !important; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+                Resultados da Análise:</h3>
+            <div id="ai-results-content"
+                style="padding: 15px; background: white; border: 1px solid #ddd; border-radius: 4px;">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Pet Health AI Script loaded v2');
+
+        const rawPetId = "{{ original.id }}";
+        const petId = parseInt(rawPetId);
+
+        const analyzeBtn = document.getElementById('analyze-health-btn');
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('ai-status');
+            if (!statusDiv) return;
+
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = message;
+
+            if (type === 'loading') {
+                statusDiv.style.backgroundColor = '#fff3cd';
+                statusDiv.style.color = '#856404';
+            } else if (type === 'success') {
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+            } else if (type === 'error') {
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('ai-results');
+            const contentDiv = document.getElementById('ai-results-content');
+
+            if (!resultsDiv || !contentDiv) return;
+
+            resultsDiv.style.display = 'block';
+
+            let html = '';
+
+            const score = Math.round(data.health_score);
+            let scoreColor = score > 80 ? '#2e7d32' : score > 60 ? '#f57c00' : '#d32f2f'; // Darker green/orange/red for contract
+
+            html += `<div style="font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #000;">
+                        Score de Saúde: <span style="color: ${scoreColor}">${score}/100</span>
+                     </div>`;
+
+            if (data.patterns && data.patterns.length > 0) {
+                html += '<h4>📊 Padrões Detectados:</h4><ul>';
+                data.patterns.forEach(pattern => {
+                    html += `<li><strong>${pattern.pattern_type}:</strong> ${pattern.description}</li>`;
+                });
+                html += '</ul>';
+            }
+
+            if (data.alerts && data.alerts.length > 0) {
+                html += '<h4>⚠️ Alertas Importantes:</h4><ul>';
+                data.alerts.forEach(alert => {
+                    html += `<li style="color: #b71c1c !important;"><strong>${alert.title}:</strong> ${alert.message}</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p style="color: #2e7d32; margin-top: 10px;">✅ Nenhum alerta crítico detectado.</p>';
+            }
+
+
+            if (data.recommendations && data.recommendations.length > 0) {
+                html += '<h4>💡 Recomendações Veterinárias:</h4><ul>';
+                data.recommendations.forEach(rec => {
+                    html += `<li>${rec}</li>`;
+                });
+                html += '</ul>';
+            }
+
+            contentDiv.innerHTML = html;
+        }
+
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const btn = this;
+                btn.disabled = true;
+
+
+                document.getElementById('ai-results').style.display = 'none';
+
+                showStatus('⏳ Consultando IA Veterinária... Pode levar alguns segundos.', 'loading');
+
+                fetch('/admin/ai/analyze-pet-health/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ pet_id: petId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showStatus('✅ Análise Finalizada!', 'success');
+                            displayResults(data);
+                        } else {
+                            showStatus('❌ Erro: ' + data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        showStatus('❌ Erro de conexão: ' + error, 'error');
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                    });
+            });
+        }
+    });
+</script>
+{% endif %}
+
+{% endblock %}

@@ -8,6 +8,7 @@ set -e
 # - Zero-downtime deployment
 # - Automatic rollback on failure
 # - Includes application + dashboard deployment
+# - Test branch deployment with --test-branch flag
 
 # Color codes
 RED='\033[0;31m'
@@ -15,6 +16,22 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
+
+# Parse arguments
+TEST_BRANCH=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --test-branch)
+            TEST_BRANCH="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            echo "Usage: $0 [--test-branch branch-name]"
+            exit 1
+            ;;
+    esac
+done
 
 # Configuration
 BACKUP_DIR="backups/deployment-$(date +%Y%m%d-%H%M%S)"
@@ -78,21 +95,69 @@ echo "========================================================="
 echo ""
 
 # Pre-flight checks
-log "🔍 Step 1/10: Pre-deployment checks..."
+log "🔍 Step 1/11: Pre-deployment checks..."
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$CURRENT_BRANCH" != "main" ]; then
-    error "Deployment aborted. Current branch: $CURRENT_BRANCH (must be 'main')"
-    exit 1
-fi
-success "On main branch"
 
-log "📥 Fetching latest changes..."
-git pull origin main
+if [ -z "$TEST_BRANCH" ]; then
+    # Normal production deploy - must be on main
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        error "Deployment aborted. Current branch: $CURRENT_BRANCH (must be 'main')"
+        exit 1
+    fi
+    success "On main branch"
+    log "📥 Fetching latest changes..."
+    git pull origin main
+else
+    # Test branch deploy
+    warning "🧪 TEST MODE: Deploying branch '$TEST_BRANCH' to PRODUCTION"
+    warning "This will temporarily replace the production code for testing"
+    echo ""
+    read -p "Deploy '$TEST_BRANCH' to PRODUCTION environment? Type 'yes' to confirm: " -r
+    echo
+    if [[ ! $REPLY =~ ^yes$ ]]; then
+        error "Deployment cancelled by user"
+        exit 1
+    fi
+
+    log "📥 Fetching and checking out test branch..."
+    git fetch origin "$TEST_BRANCH" || error "Failed to fetch branch '$TEST_BRANCH'"
+    git checkout "$TEST_BRANCH"
+    git pull origin "$TEST_BRANCH"
+    success "On test branch: $TEST_BRANCH"
+fi
+
 success "Code updated"
 echo ""
 
+# Verify AI configuration
+log "🤖 Step 2/11: Verifying AI environment variables..."
+if [ ! -f ".env" ]; then
+    error ".env file not found! AI features require configuration."
+    exit 1
+fi
+
+if ! grep -q "^GOOGLE_API_KEY=" .env 2>/dev/null || [ -z "$(grep '^GOOGLE_API_KEY=' .env | cut -d= -f2)" ]; then
+    warning "⚠️  GOOGLE_API_KEY not configured in .env"
+    warning "AI features (product descriptions, health analysis) will fail without this!"
+    echo ""
+    echo "To fix:"
+    echo "  1. Get API key from: https://aistudio.google.com/app/apikey"
+    echo "  2. Add to .env: GOOGLE_API_KEY=your-key-here"
+    echo ""
+    read -p "Continue deployment without AI? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        error "Deployment aborted - please configure GOOGLE_API_KEY first"
+        exit 1
+    fi
+    warning "Proceeding without AI configuration - AI features will not work!"
+else
+    success "AI configuration verified (GOOGLE_API_KEY present)"
+fi
+echo ""
+
 # Create backup
-log "💾 Step 2/10: Creating full system backup..."
+log "💾 Step 3/11: Creating full system backup..."
 mkdir -p backups
 mkdir -p "$BACKUP_DIR"
 
@@ -107,7 +172,7 @@ success "Backup created: $BACKUP_DIR"
 echo ""
 
 # Build dashboard and admin calendar
-log "📦 Step 3/10: Building TypeScript dashboard and admin calendar..."
+log "📦 Step 4/11: Building TypeScript dashboard and admin calendar..."
 cd frontend
 npm install --quiet
 npm run build
@@ -133,7 +198,7 @@ success "Admin calendar built - Size: $CALENDAR_SIZE"
 echo ""
 
 # Build Docker images
-log "🏗️  Step 4/10: Building Docker images (no deployment yet)..."
+log "🏗️  Step 5/11: Building Docker images (no deployment yet)..."
 if ! docker compose -f $COMPOSE_FILE build; then
     error "Docker build failed! Keeping current version online."
     exit 1
@@ -142,9 +207,13 @@ success "Docker images built successfully"
 echo ""
 
 # Test phase - deploy to staging
-log "🧪 Step 5/10: Testing new build (staging)..."
-log "Copying dashboard to staging location..."
-docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
+log "🧪 Step 6/11: Testing new build (staging)..."
+if [ -n "$(docker compose -f $COMPOSE_FILE ps --quiet web 2>/dev/null)" ]; then
+    log "Copying dashboard to staging location..."
+    docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard-staging/
+else
+    warning "Web container not running (first deploy?) - skipping pre-deployment asset copy"
+fi
 
 # Quick smoke test on current container
 CURRENT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $API_URL || echo "000")
@@ -155,7 +224,7 @@ success "Pre-deployment tests passed"
 echo ""
 
 # Deploy phase - zero downtime
-log "🚀 Step 6/10: Deploying new version with zero downtime..."
+log "🚀 Step 7/11: Deploying new version with zero downtime..."
 log "Note: Containers will restart but with rolling strategy"
 
 # Apply new images with minimal downtime
@@ -167,18 +236,32 @@ success "Containers restarted"
 echo ""
 
 # Migrations
-log "📋 Step 7/10: Running database migrations..."
+log "📋 Step 8/11: Running database migrations..."
 docker compose -f $COMPOSE_FILE exec web python manage.py migrate --noinput
 success "Migrations completed"
+
+# Initialize chroma_db for AI features
+log "🤖 Initializing AI vector database..."
+docker compose -f $COMPOSE_FILE exec -u root web bash -c "mkdir -p /usr/src/app/chroma_db && chown -R appuser:appuser /usr/src/app/chroma_db"
+success "ChromaDB directory ready"
 echo ""
 
 # Deploy dashboard
-log "📊 Step 8/10: Deploying dashboard assets..."
-# Move staged dashboard to live
-docker compose -f $COMPOSE_FILE exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard" 2>/dev/null || \
-docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
+log "📊 Step 9/11: Deploying dashboard assets..."
 
-# Collect all static files
+# Check if we have staged assets inside container
+if docker compose -f $COMPOSE_FILE exec web [ -d "/usr/src/app/src/static/dashboard-staging" ] 2>/dev/null; then
+    log "Promoting staged dashboard to live..."
+    docker compose -f $COMPOSE_FILE exec web bash -c "rm -rf /usr/src/app/src/static/dashboard && mv /usr/src/app/src/static/dashboard-staging /usr/src/app/src/static/dashboard"
+else
+    log "Copying dashboard directly from host..."
+    docker compose -f $COMPOSE_FILE cp src/static/dashboard/. web:/usr/src/app/src/static/dashboard/
+fi
+
+# Fix permissions and collect static files
+log "Collecting static files..."
+# Ensure staticfiles directory is writable
+docker compose -f $COMPOSE_FILE exec -u root web chown -R appuser:appuser /usr/src/app/staticfiles
 docker compose -f $COMPOSE_FILE exec web python manage.py collectstatic --noinput --clear
 
 # Hot reload nginx
@@ -187,7 +270,7 @@ success "Dashboard deployed"
 echo ""
 
 # Verification
-log "✅ Step 9/10: Verifying deployment..."
+log "✅ Step 10/11: Verifying deployment..."
 EXPECTED_CONTAINERS=$(docker compose -f $COMPOSE_FILE config --services | wc -l)
 RUNNING_CONTAINERS=$(docker compose -f $COMPOSE_FILE ps --filter "status=running" --quiet | wc -l)
 
@@ -231,7 +314,7 @@ fi
 echo ""
 
 # Cleanup
-log "🧹 Step 10/10: Cleaning up..."
+log "🧹 Step 11/11: Cleaning up..."
 docker system prune -a -f --volumes > /dev/null 2>&1
 
 # Keep only last 5 backups
@@ -244,8 +327,21 @@ echo ""
 
 success "🎉 Deployment completed successfully!"
 echo ""
+
+if [ -n "$TEST_BRANCH" ]; then
+    warning "⚠️  REMINDER: You deployed test branch '$TEST_BRANCH' to PRODUCTION"
+    warning "⚠️  This is temporary for testing purposes"
+    echo ""
+    echo "📝 Next steps:"
+    echo "   1. Test your changes at: https://petcare.brunadev.com"
+    echo "   2. If tests pass: merge '$TEST_BRANCH' to main and redeploy"
+    echo "   3. If tests fail: rollback with: ./rollback.sh $BACKUP_DIR"
+    echo "   4. Then checkout main again: git checkout main"
+    echo ""
+fi
+
 echo "📊 Deployment Summary:"
-echo "   ├─ Branch: $CURRENT_BRANCH"
+echo "   ├─ Branch: $(git rev-parse --abbrev-ref HEAD)"
 echo "   ├─ Backup: $BACKUP_DIR"
 echo "   ├─ Dashboard: $BUILD_SIZE"
 echo "   ├─ Containers: $RUNNING_CONTAINERS running"

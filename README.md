@@ -150,7 +150,111 @@ This project includes a **real-world cloud migration**, executed end-to-end in p
 - **Automated Reports:** Daily email summaries for sales, appointments, and promotions (Celery)
 - **Data Visualization:** Interactive charts for revenue trends
 
-### 🛡️ Technical Highlights
+### 🤖 AI Intelligence (Google Gemini Integration)
+
+**Production-ready AI system** powered by Google Gemini 2.5 Flash with multiple intelligent agents:
+
+#### 📝 Product Intelligence Agent
+**AI-powered product description generation** with two specialized modes:
+
+- **Technical Mode:**
+  - Generates detailed, spec-focused descriptions for informed buyers
+  - Uses RAG (Retrieval Augmented Generation) to find similar products
+  - Leverages ChromaDB vector database for semantic search
+  - Provides product recommendations based on embeddings similarity
+
+- **Creative Mode:**
+  - Creates engaging, marketing-focused copy
+  - Highlights benefits and emotional appeal
+  - Optimized for conversion and customer engagement
+
+- **SEO Optimization:**
+  - Auto-generates meta descriptions and keywords
+  - Suggests product categorization
+  - Improves search visibility
+
+**Features:**
+- Real-time generation from Django admin (AJAX integration)
+- Bulk actions for multiple products
+- Confidence scoring for AI-generated content
+- Automatic embedding indexing with Gemini Embeddings API
+- Custom admin templates with visual feedback
+
+#### 🩺 Health Analysis Agent
+**Advanced pet health monitoring** with Google Search Grounding:
+
+- **Pattern Detection:**
+  - Analyzes 6-month health history for trends
+  - Identifies potential health issues early
+  - Uses web search to verify medical information
+  - Cites external veterinary sources
+
+- **Smart Alerts:**
+  - Vaccine expiration warnings
+  - Overdue checkup notifications
+  - Medication schedule tracking
+
+- **Health Scoring:**
+  - Calculates 0-100 health score per pet
+  - Factors: recent checkups, vaccines, alerts
+  - Visual dashboard integration
+
+- **AI-Powered Recommendations:**
+  - Context-aware veterinary advice
+  - Breed-specific health tips
+  - Grounded in real-time web search results
+
+**Technical Implementation:**
+- REST API integration with Gemini (bypassing SDK limitations)
+- Google Search Grounding for fact-checking
+- Retry logic with exponential backoff (2s, 4s, 8s)
+- Structured JSON parsing from LLM responses
+- Real-time results in Django admin
+
+#### 🔧 Technical Architecture
+
+**AI Stack:**
+- **LLM:** Google Gemini 2.5 Flash (gemini-2.5-flash)
+- **Embeddings:** Google Gemini Embeddings API (text-embedding-004)
+- **Vector DB:** ChromaDB 1.3+ for similarity search
+- **Orchestration:** LangChain + Custom agents
+- **Function Calling:** Native Gemini tool use (Google Search)
+
+**Key Design Patterns:**
+- Service Layer architecture (no logic in admin/views)
+- DTO pattern for clean API contracts
+- Retry mechanisms for API resilience
+- RAG (Retrieval Augmented Generation) for product intelligence
+- Streaming-ready infrastructure (future enhancement)
+
+**Performance Optimizations:**
+- Embedding caching to reduce API calls
+- Vector store persistence for fast retrieval
+- Batch processing support for admin actions
+- Removed heavy dependencies (sentence-transformers → Gemini API)
+- Docker build time: 9min → 1min (8x faster)
+
+**Cost Efficiency:**
+- Free tier: 1,500 requests/day (with billing enabled)
+- Gemini Embeddings: Free tier for production use
+- Zero local model downloads (cloud-based)
+- Automatic quota management
+
+### � Interactive Admin Calendar (React Big Calendar)
+- **Visual Scheduling:** Drag-and-drop appointment management directly in Django admin
+- **Multiple Views:** Month, week, and day calendar perspectives
+- **Real-Time Sync:** Integrated with Django backend for live updates
+- **Separate Build:** Independent Vite configuration (`vite.admin.config.ts`) for admin assets
+- **Modern UI:** React-powered calendar with date-fns for date manipulation
+
+**Build Admin Calendar:**
+```bash
+cd frontend
+npx vite build --config vite.admin.config.ts
+# Output: src/static/admin_calendar/
+```
+
+### �🛡️ Technical Highlights
 - **94% Test Coverage** with pytest + factory-boy
 - **CI/CD Pipeline** with GitHub Actions (lint, type-check, security scan, test)
 - **Service Layer Architecture** for clean separation of concerns
@@ -158,7 +262,7 @@ This project includes a **real-world cloud migration**, executed end-to-end in p
 - **Structured Logging** with structlog for JSON-formatted production observability
 - **OpenAPI Documentation** with drf-spectacular (Swagger/ReDoc)
 - **Asynchronous Tasks** with Celery + Redis + django-celery-beat
-- **Type Safety** with MyPy strict mode
+- **Type Safety** with MyPy type checking
 - **Code Quality** enforced by Ruff + pre-commit hooks
 - **Modern Dependency Management** with uv (10-100x faster than pip)
 
@@ -177,13 +281,39 @@ This project includes a **real-world cloud migration**, executed end-to-end in p
 - PostgreSQL 16
 - Redis 7 (Celery broker + cache)
 
+**AI/ML Stack**
+- Google Gemini 2.5 Flash (LLM)
+- Google Gemini Embeddings API (text-embedding-004)
+- LangChain 1.1+ (orchestration)
+- LangChain Google GenAI 4.0+ (Gemini integration)
+- ChromaDB 1.3+ (vector database)
+
 **Infrastructure**
 - Azure Linux VM (Ubuntu 24.04)
 - Azure Database for PostgreSQL
-- Docker + Docker Compose
+- Docker + Docker Compose (multi-stage builds)
 - Nginx (reverse proxy + HTTPS termination)
+- **Infra-Gateway:** Multi-domain Nginx architecture
 - Let's Encrypt (Certbot with auto-renewal)
 - HostGator DNS
+
+**Frontend (Dashboard)**
+- React 18 + TypeScript 5
+- Vite 5 (build tool)
+- Recharts (data visualization)
+- Tailwind CSS
+- Axios (HTTP client)
+
+**Frontend (Admin Calendar)**
+- React Big Calendar 1.19.4
+- date-fns 4.1.0 (date utilities)
+- Separate Vite build configuration
+
+**Deployment & Monitoring**
+- Blue-Green Deployment Strategy
+- Automated Backup/Rollback (keeps last 5)
+- Health Check Monitoring
+- Shell Scripting (deploy.sh - 266 lines)
 
 **Code Quality & Testing**
 - pytest + pytest-django
@@ -395,7 +525,64 @@ View workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
 ---
 
-## 📁 Project Structure
+## � Production Deployment
+
+### Blue-Green Deployment Strategy
+
+The project includes a production-grade deployment script (`deploy.sh`) with zero-downtime deployment:
+
+**Features:**
+- ✅ **Automated Backup:** Full system backup before each deployment (keeps last 5)
+- ✅ **Zero-Downtime:** Blue-green strategy with rolling container updates
+- ✅ **Automatic Rollback:** Reverts to previous version on failure
+- ✅ **Health Checks:** API and dashboard verification post-deployment
+- ✅ **Dual Deployment:** Deploys both Django app + TypeScript dashboard
+- ✅ **Safety First:** 10-step process with logging and error handling
+
+**Deploy to Production:**
+```bash
+./deploy.sh
+```
+
+**Deployment Steps:**
+1. Pre-flight checks (branch validation, git pull)
+2. Create full system backup
+3. Build TypeScript dashboard and admin calendar
+4. Build Docker images (no deployment yet)
+5. Test new build in staging
+6. Deploy with zero downtime (rolling updates)
+7. Run database migrations
+8. Deploy dashboard assets
+9. Health checks (API + Dashboard)
+10. Cleanup old backups
+
+**Rollback if Needed:**
+```bash
+./rollback.sh backups/deployment-YYYYMMDD-HHMMSS
+```
+
+### Multi-Domain Architecture (Infra-Gateway)
+
+The application integrates with `infra-gateway` for centralized Nginx management:
+
+- **Main Site:** `brunadev.com` (static portfolio)
+- **PetCare App:** `petcare.brunadev.com` (Django application)
+- **Shared SSL:** Let's Encrypt certificates managed centrally
+- **Reverse Proxy:** Nginx routes traffic to appropriate services
+- **Benefits:** Simplified SSL management, centralized routing, easy multi-service deployment
+
+### Health Monitoring
+
+Production deployment includes automated health checks:
+
+- **API Health:** `/api/v1/status/` endpoint verification (15 retries, 2s interval)
+- **Dashboard Health:** Frontend availability check
+- **Post-Deployment:** Automatic validation after updates
+- **Failure Handling:** Automatic rollback if health checks fail
+
+
+
+## �📁 Project Structure
 
 ```
 petcare_project/
@@ -474,13 +661,17 @@ petcare_project/
 This project demonstrates proficiency in:
 
 - ✅ **Clean Architecture:** Service Layer + Repository Pattern for maintainable code
-- ✅ **AWS Deployment:** Full production infrastructure with EC2, RDS, ElastiCache
-- ✅ **DevOps Practices:** Docker, CI/CD, automated testing, security scanning
+- ✅ **Cloud Migration:** Real-world AWS → Azure migration with zero downtime
+- ✅ **Production Deployment:** Blue-green strategy with automated backup/rollback
+- ✅ **DevOps Practices:** Docker, CI/CD, automated testing, security scanning, health monitoring
+- ✅ **Multi-Domain Architecture:** Infra-gateway integration for centralized Nginx management
 - ✅ **Test-Driven Development:** 94% coverage with unit and integration tests
 - ✅ **Production-Ready Patterns:** Factories as first-class citizens, structured logging
 - ✅ **API Design:** RESTful endpoints with comprehensive OpenAPI documentation
 - ✅ **Asynchronous Processing:** Celery for background tasks with robust error handling
-- ✅ **Type Safety:** MyPy strict mode for better code reliability
+- ✅ **Type Safety:** MyPy type checking for better code reliability
+- ✅ **Modern Frontend:** React + TypeScript dashboard with Recharts visualization
+- ✅ **Admin Enhancement:** Interactive calendar with React Big Calendar integration
 - ✅ **Modern Tooling:** uv for dependency management, Ruff for linting
 
 ---

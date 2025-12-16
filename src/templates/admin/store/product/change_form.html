@@ -1,0 +1,187 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block after_field_sets %}
+{{ block.super }}
+
+<!-- AI Module: Display always (Add and Edit views) -->
+<div class="module" style="margin-top: 20px;">
+    <h2>🤖 Inteligência Artificial</h2>
+    <div style="padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+        <p style="margin-bottom: 15px; color: #333;">
+            <strong>Gerar descrição automática usando IA:</strong>
+        </p>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button type="button" id="generate-technical-btn" class="button default"
+                style="background-color: #4CAF50; color: white;">
+                🤖 Gerar Descrição Técnica
+            </button>
+
+            <button type="button" id="generate-creative-btn" class="button default"
+                style="background-color: #2196F3; color: white;">
+                ✨ Gerar Descrição Criativa
+            </button>
+        </div>
+
+        <div id="ai-status" style="margin-top: 10px; padding: 10px; display: none; border-radius: 3px;"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('AI Script loaded');
+
+        // Variables to hold references
+        const technicalBtn = document.getElementById('generate-technical-btn');
+        const creativeBtn = document.getElementById('generate-creative-btn');
+
+        // Get product ID from hidden input (Django admin creates this automatically)
+        // For existing products, the field "id" exists in the form
+        const productIdField = document.querySelector('input[name="id"]');
+        const currentProductId = productIdField ? productIdField.value : null;
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('ai-status');
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = message;
+
+            if (type === 'loading') {
+                statusDiv.style.backgroundColor = '#fff3cd';
+                statusDiv.style.color = '#856404';
+            } else if (type === 'success') {
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+            } else if (type === 'error') {
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+            }
+        }
+
+        // Helper to get text content from select element
+        function getSelectText(id) {
+            const el = document.getElementById(id);
+            if (el && el.selectedIndex >= 0) {
+                const text = el.options[el.selectedIndex].text;
+                return text.replace(/^-+$/, '').trim(); // Remove "-------"
+            }
+            return '';
+        }
+
+        // Helper to get value from input
+        function getInputValue(id) {
+            const el = document.getElementById(id);
+            return el ? el.value : '';
+        }
+
+        function generateDescription(mode) {
+            console.log('generateDescription called with mode:', mode);
+
+            const btn = mode === 'technical' ? technicalBtn : creativeBtn;
+            if (!btn) return;
+
+            // READ VALUES DYNAMICALLY FROM FORM FIELDS
+            // This ensures it works for "Add Product" and also picks up user changes before saving
+            const productName = getInputValue('id_name');
+            const category = getSelectText('id_category');
+            const brand = getSelectText('id_brand');
+            const rawPrice = getInputValue('id_price');
+
+            // Validation
+            if (!productName) {
+                alert('Por favor, preencha o Nome do Produto antes de gerar a descrição.');
+                return;
+            }
+
+            // Parse price safely
+            const price = parseFloat(rawPrice.replace(',', '.').replace(/[^\d.-]/g, '')) || 0;
+
+            btn.disabled = true;
+            showStatus('⏳ Gerando descrição com IA...', 'loading');
+
+            const requestData = {
+                product_id: currentProductId, // Can be null for new products
+                product_name: productName,
+                category: category,
+                brand: brand,
+                price: price,
+                mode: mode
+            };
+
+            console.log('Request data:', requestData);
+
+            fetch('/admin/ai/generate-product-description/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        // Try to get error message from JSON
+                        return response.json().then(errData => {
+                            throw new Error(errData.error || 'Erro no servidor: ' + response.status);
+                        }).catch(() => {
+                            throw new Error('Erro na requisição: ' + response.status);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        // Find and update description field
+                        let descriptionField = document.querySelector('textarea[name="description"]');
+                        if (!descriptionField) {
+                            descriptionField = document.getElementById('id_description');
+                        }
+
+                        if (descriptionField) {
+                            descriptionField.value = data.description;
+
+                            // Trigger change events
+                            descriptionField.dispatchEvent(new Event('change'));
+                            descriptionField.dispatchEvent(new Event('input'));
+
+                            showStatus('✅ Descrição gerada e preenchida com sucesso!', 'success');
+
+                            // Visual feedback
+                            descriptionField.style.transition = 'background-color 0.5s';
+                            descriptionField.style.backgroundColor = '#d4edda';
+                            setTimeout(() => {
+                                descriptionField.style.backgroundColor = '';
+                            }, 2000);
+                        } else {
+                            showStatus('⚠️ Descrição gerada, mas campo não encontrado.', 'error');
+                        }
+                    } else {
+                        showStatus('❌ Erro da IA: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    showStatus('❌ Erro: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    if (btn) btn.disabled = false;
+                });
+        }
+
+        if (technicalBtn) {
+            technicalBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                generateDescription('technical');
+            });
+        }
+
+        if (creativeBtn) {
+            creativeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                generateDescription('creative');
+            });
+        }
+    });
+</script>
+{% endblock %}
