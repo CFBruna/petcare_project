@@ -1,8 +1,7 @@
-"""URL configuration for AI admin AJAX endpoints."""
-
 from django.urls import path
 
 from src.apps.ai.api.views import (
+    ScheduleIntentView,
     analyze_pet_health_ajax,
     generate_product_description_ajax,
 )
@@ -17,5 +16,10 @@ urlpatterns = [
         "analyze-pet-health/",
         analyze_pet_health_ajax,
         name="analyze_pet_health_ajax",
+    ),
+    path(
+        "schedule-intent/",
+        ScheduleIntentView.as_view(),
+        name="schedule_intent",
     ),
 ]
