@@ -29,3 +29,16 @@ class TestCustomerAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["user"]["username"] == customer.user.username
         assert response.json()["cpf"] == customer.cpf
+
+    def test_user_can_create_customer_for_themselves(self, authenticated_client):
+        client, user = authenticated_client
+        data = {"cpf": "98765432100", "phone": "11987654321", "address": "Test Street"}
+        response = client.post(URL, data=data)
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.json()["user"]["id"] == user.id
+
+    def test_user_can_view_safe_methods(self, authenticated_client):
+        client, user = authenticated_client
+        customer = CustomerFactory()
+        response = client.get(f"{URL}{customer.id}/")
+        assert response.status_code == status.HTTP_200_OK
