@@ -54,16 +54,26 @@ class TestPetAPI:
         PetFactory()
         response = self.client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["count"] == 3
+        assert len(response.json()) == 3
 
     def test_user_can_create_pet_for_themselves(self):
         breed = BreedFactory()
-        data = {"name": "Bolinha", "breed": breed.id}
+        data = {"name": "Bolinha", "breed_id": breed.id}
         response = self.client.post(self.url, data=data)
         assert response.status_code == status.HTTP_201_CREATED
         pet = Pet.objects.get(id=response.data["id"])
         assert pet.name == "Bolinha"
         assert pet.owner == self.customer
+
+    def test_user_without_customer_profile_cannot_create_pet(self):
+        user_without_customer = UserFactory()
+        client = APIClient()
+        client.force_authenticate(user=user_without_customer)
+        breed = BreedFactory()
+        data = {"name": "Test Pet", "breed_id": breed.id}
+        response = client.post(self.url, data=data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "No customer profile found" in str(response.data)
 
     def test_user_cannot_access_other_users_pet_detail(self):
         other_pet = PetFactory()
