@@ -32,7 +32,7 @@ ALLOWED_HOSTS = config(
 # Prefer environment-driven config so infra changes don't require code deploy.
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
-    default="https://petcare.brunadev.com",
+    default="https://petcare.brunadev.com,http://localhost:3000",
     cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
 )
 
@@ -62,6 +62,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "corsheaders",
     "rest_framework",
     "rest_framework.authtoken",
     "dj_rest_auth",
@@ -88,6 +89,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",

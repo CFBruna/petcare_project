@@ -7,8 +7,8 @@ from drf_spectacular.utils import (
     OpenApiParameter,
     extend_schema,
 )
-from rest_framework import permissions, status, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -50,7 +50,7 @@ logger = structlog.get_logger(__name__)
     description="Calculates and returns a list of available time slots for a given service on a specific date.",
 )
 class AvailableSlotsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         try:
@@ -97,6 +97,7 @@ class ServiceViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Service.objects.all().order_by("name")
     serializer_class = ServiceSerializer
     permission_classes = [IsStaffOrReadOnly]
+    pagination_class = None
 
 
 @extend_schema(
@@ -106,7 +107,7 @@ class ServiceViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 class TimeSlotViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = TimeSlot.objects.all()
     serializer_class = TimeSlotSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAdminUser]
 
 
 @extend_schema(
