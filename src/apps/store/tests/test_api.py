@@ -154,6 +154,6 @@ class TestLotPriceAPI:
 
     def test_get_price_for_nonexistent_lot_fails(self, authenticated_client):
         client, user = authenticated_client
-        invalid_url = "/api/v1/store/lots/9999/price/"
+        invalid_url = "/api/v1/store/lots/99999/price/"
         response = client.get(invalid_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
