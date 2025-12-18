@@ -10,7 +10,12 @@ class BreedSerializer(serializers.ModelSerializer):
 
 
 class PetSerializer(serializers.ModelSerializer):
+    breed = BreedSerializer(read_only=True)
+    breed_id = serializers.PrimaryKeyRelatedField(
+        queryset=Breed.objects.all(), source="breed", write_only=True
+    )
+
     class Meta:
         model = Pet
-        fields = "__all__"
+        fields = ["id", "name", "breed", "breed_id", "birth_date", "owner"]
         read_only_fields = ["owner"]

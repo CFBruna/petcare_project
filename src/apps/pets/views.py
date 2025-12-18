@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 
+from src.apps.accounts.models import Customer
 from src.apps.core.views import AutoSchemaModelNameMixin
 from src.petcare.permissions import IsOwnerOrStaff, IsStaffOrReadOnly
 
@@ -16,6 +17,7 @@ class BreedViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Breed.objects.all()
     serializer_class = BreedSerializer
     permission_classes = [IsStaffOrReadOnly]
+    pagination_class = None
 
 
 @extend_schema(
@@ -25,6 +27,7 @@ class BreedViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 class PetViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     serializer_class = PetSerializer
     permission_classes = [IsOwnerOrStaff]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
@@ -35,5 +38,10 @@ class PetViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        tutor = self.request.user.customer_profile
-        serializer.save(owner=tutor)
+        try:
+            customer = Customer.objects.get(user=self.request.user)
+            serializer.save(owner=customer)
+        except Customer.DoesNotExist:
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError("No customer profile found for this user") from None
