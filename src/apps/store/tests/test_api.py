@@ -17,11 +17,19 @@ from .factories import (
 @pytest.mark.django_db
 class TestCategoryAPI:
     def setup_method(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.url = "/api/v1/store/categories/"
         self.category = CategoryFactory()
 
-    def test_unauthenticated_user_cannot_access(self, api_client):
+    def test_unauthenticated_user_can_list_categories(self, api_client):
         response = api_client.get(self.url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_unauthenticated_user_cannot_create_category(self, api_client):
+        data = {"name": "Hacker Category", "description": "Should fail"}
+        response = api_client.post(self.url, data=data)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_list_categories(self, authenticated_client):
@@ -48,6 +56,9 @@ class TestCategoryAPI:
 @pytest.mark.django_db
 class TestBrandAPI:
     def setup_method(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.url = "/api/v1/store/brands/"
         self.brand = BrandFactory()
 
@@ -75,6 +86,9 @@ class TestBrandAPI:
 @pytest.mark.django_db
 class TestProductAPI:
     def setup_method(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.url = "/api/v1/store/products/"
         self.product = ProductFactory()
         ProductLotFactory(product=self.product, quantity=10)
