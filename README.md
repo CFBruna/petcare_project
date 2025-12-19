@@ -4,11 +4,11 @@
 [![Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen)]()
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![Django 5.2](https://img.shields.io/badge/django-5.2-green.svg)](https://docs.djangoproject.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
 > Production-grade pet shop management system (Django + DRF + Celery) with a real cloud migration case study (AWS → Azure), HTTPS automation, DNS cutover, and managed PostgreSQL.
 
-**🚀 Live Demo:** [https://petcare.brunadev.com](https://petcare.brunadev.com) | **� Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard) | **�📚 API Docs:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/)
+**🚀 Live Demo:** [https://petcare.brunadev.com](https://petcare.brunadev.com) | **📊 Dashboard:** [https://petcare.brunadev.com/dashboard](https://petcare.brunadev.com/dashboard) | **📚 API Docs:** [Swagger UI](https://petcare.brunadev.com/api/v1/schema/swagger-ui/)
 
 ---
 
@@ -152,95 +152,201 @@ This project includes a **real-world cloud migration**, executed end-to-end in p
 
 ### 🤖 AI Intelligence (Google Gemini Integration)
 
-**Production-ready AI system** powered by Google Gemini 2.5 Flash with multiple intelligent agents:
+**Production-ready AI system** powered by Google Gemini 2.5 Flash with **3 specialized intelligent agents**:
+
+#### 🗓️ AI Scheduling Agent
+**Natural language appointment booking** with Gemini Function Calling:
+
+**Core Capabilities:**
+- **Natural Language Understanding:** Interprets colloquial Portuguese requests ("preciso de banho pro meu golden na sexta de manhã")
+- **Intelligent Pet Search:** Finds pets by breed, species, age, or name
+- **Smart Availability Checking:** Returns free time slots by day/period (morning/afternoon/evening)
+- **Automatic Price Calculation:** Computes service costs with size-based adjustments (small/medium/large)
+- **Conversational Responses:** Professional, friendly tone in Portuguese
+- **Execution Transparency:** Tracks and reports all tool calls made
+
+**Function Calling Architecture:**
+
+The agent uses Gemini's native function calling to execute 3 core tools:
+
+1. **`search_customer_pets`** - Semantic pet search
+   - Supports breed matching ("golden retriever", "siamês")
+   - Age filtering (min/max range)
+   - Species filtering (dog, cat, bird, etc.)
+   - Returns pet details with owner information
+
+2. **`check_availability`** - Time slot lookup
+   - Day-of-week support (PT/EN: "sábado", "saturday")
+   - Period filtering (morning: 8-12h, afternoon: 12-17h, evening: 17-20h)
+   - ISO date support ("2024-12-20")
+   - Returns available slots with dates and times
+
+3. **`calculate_price`** - Service pricing
+   - Dynamic pricing by service type (grooming, consultation, vaccination)
+   - Pet size adjustments (large breeds +20%)
+   - Returns formatted price and estimated duration
+
+**API Integration:**
+
+```bash
+curl -X POST https://petcare.brunadev.com/api/v1/ai/schedule-intent/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_input": "Preciso de banho pro meu Golden de 5 anos, sábado de manhã",
+    "customer_id": 1
+  }'
+```
+
+**Response Structure:**
+
+```json
+{
+  "message": "Encontrei o Thor! 🐕 Temos 3 horários disponíveis sábado de manhã: 09:00, 10:30 e 11:00. Banho e tosa para porte grande custa R$ 120,00 e leva cerca de 90 minutos. Qual horário prefere?",
+  "tools_executed": [
+    {
+      "tool_name": "search_customer_pets",
+      "arguments": {"species": "dog", "breed": "golden retriever", "age_min": 5, "age_max": 5},
+      "result": [{"id": 1, "name": "Thor", "breed": "Golden Retriever", "age": 5}]
+    },
+    {
+      "tool_name": "check_availability",
+      "arguments": {"day": "saturday", "period": "morning"},
+      "result": {"available_slots": [{"time": "09:00", "date": "12/20/2024"}]}
+    },
+    {
+      "tool_name": "calculate_price",
+      "arguments": {"service_name": "grooming", "pet_size": "large"},
+      "result": {"formatted_price": "R$ 120,00", "duration_minutes": 90}
+    }
+  ],
+  "intent_detected": "book_appointment",
+  "confidence_score": 0.95
+}
+```
+
+**Supported Input Patterns:**
+- Breed mentions: "meu golden", "minha siamesa"
+- Date references: "sábado", "amanhã", "próxima terça", "2024-12-25"
+- Time periods: "manhã", "tarde", "noite", "morning", "afternoon"
+- Service keywords: "banho", "consulta", "vacina", "grooming"
+
+---
 
 #### 📝 Product Intelligence Agent
-**AI-powered product description generation** with two specialized modes:
+**AI-powered product description generation** with RAG (Retrieval Augmented Generation):
+
+**Dual Generation Modes:**
 
 - **Technical Mode:**
   - Generates detailed, spec-focused descriptions for informed buyers
-  - Uses RAG (Retrieval Augmented Generation) to find similar products
-  - Leverages ChromaDB vector database for semantic search
-  - Provides product recommendations based on embeddings similarity
+  - Uses **RAG** to find similar products via semantic search
+  - Leverages **ChromaDB vector database** for embeddings similarity
+  - Provides product recommendations based on vector proximity
+  - Example: "15kg premium dog food with omega-3, grain-free, suitable for adult breeds 25-40kg"
 
 - **Creative Mode:**
   - Creates engaging, marketing-focused copy
   - Highlights benefits and emotional appeal
   - Optimized for conversion and customer engagement
+  - Example: "Dê ao seu melhor amigo a nutrição que ele merece! 🐾"
 
 - **SEO Optimization:**
   - Auto-generates meta descriptions and keywords
   - Suggests product categorization
-  - Improves search visibility
+  - Improves search engine visibility
 
 **Features:**
-- Real-time generation from Django admin (AJAX integration)
-- Bulk actions for multiple products
-- Confidence scoring for AI-generated content
-- Automatic embedding indexing with Gemini Embeddings API
-- Custom admin templates with visual feedback
+- **Real-time generation** from Django admin (AJAX integration)
+- **Bulk actions** for multiple products simultaneously
+- **Confidence scoring** for AI-generated content (0-1 scale)
+- **Automatic embedding indexing** with Gemini Embeddings API
+- **Custom admin templates** with visual feedback and loading states
+- **Vector store persistence** for fast retrieval
+
+**RAG Architecture:**
+1. Product data → Gemini Embeddings API → 768-dim vectors
+2. Vectors stored in ChromaDB (persistent local storage)
+3. Query embedding → Similarity search → Top-K similar products
+4. Similar products + context → Gemini LLM → Generated description
+
+---
 
 #### 🩺 Health Analysis Agent
 **Advanced pet health monitoring** with Google Search Grounding:
 
-- **Pattern Detection:**
-  - Analyzes 6-month health history for trends
-  - Identifies potential health issues early
-  - Uses web search to verify medical information
-  - Cites external veterinary sources
+**Pattern Detection:**
+- Analyzes **6-month health history** for trends and anomalies
+- Identifies potential health issues early (seasonality, recurrence)
+- Uses **Google Search Grounding** to verify medical information against web sources
+- Cites external veterinary sources for fact-checking
+- Example: Detects "vaccine overdue by 45 days" or "3 ear infections in 4 months"
 
-- **Smart Alerts:**
-  - Vaccine expiration warnings
-  - Overdue checkup notifications
-  - Medication schedule tracking
+**Smart Alerts:**
+- **Vaccine expiration warnings** (30/15/7 days before due)
+- **Overdue checkup notifications** (annual wellness exams)
+- **Medication schedule tracking** (antibiotic courses, chronic meds)
+- **Weight changes** (sudden gain/loss flags)
 
-- **Health Scoring:**
-  - Calculates 0-100 health score per pet
-  - Factors: recent checkups, vaccines, alerts
-  - Visual dashboard integration
+**Health Scoring Algorithm (0-100):**
+- Recent checkups: +20 points (within 6 months)
+- Vaccines up-to-date: +30 points
+- No active alerts: +20 points
+- Normal weight trend: +15 points
+- No recurring issues: +15 points
+- Visual **dashboard integration** with color coding (green/yellow/red)
 
-- **AI-Powered Recommendations:**
-  - Context-aware veterinary advice
-  - Breed-specific health tips
-  - Grounded in real-time web search results
+**AI-Powered Recommendations:**
+- **Context-aware veterinary advice** based on breed, age, history
+- **Breed-specific health tips** (e.g., hip dysplasia for large breeds)
+- **Grounded in real-time web search** via Gemini Search Grounding
+- **Cited sources** from veterinary websites and medical databases
 
 **Technical Implementation:**
-- REST API integration with Gemini (bypassing SDK limitations)
-- Google Search Grounding for fact-checking
-- Retry logic with exponential backoff (2s, 4s, 8s)
-- Structured JSON parsing from LLM responses
-- Real-time results in Django admin
+- **REST API integration** with Gemini (bypasses SDK limitations for advanced features)
+- **Google Search Grounding** for medical fact-checking
+- **Retry logic** with exponential backoff (2s → 4s → 8s)
+- **Structured JSON parsing** from LLM responses
+- **Real-time results** displayed in Django admin
+- **Admin bulk actions** for analyzing multiple pets
 
-#### 🔧 Technical Architecture
+---
+
+#### 🔧 AI Technical Architecture
 
 **AI Stack:**
-- **LLM:** Google Gemini 2.5 Flash (gemini-2.5-flash)
-- **Embeddings:** Google Gemini Embeddings API (text-embedding-004)
-- **Vector DB:** ChromaDB 1.3+ for similarity search
-- **Orchestration:** LangChain + Custom agents
-- **Function Calling:** Native Gemini tool use (Google Search)
+- **LLM:** Google Gemini 2.5 Flash (`gemini-2.5-flash`)
+- **Embeddings:** Google Gemini Embeddings API (`text-embedding-004`, 768 dimensions)
+- **Vector DB:** ChromaDB 1.3+ (local, persistent, no separate server)
+- **Orchestration:** LangChain 1.1+ (agent framework)
+- **Function Calling:** Native Gemini tool use (for scheduling and search grounding)
 
 **Key Design Patterns:**
-- Service Layer architecture (no logic in admin/views)
-- DTO pattern for clean API contracts
-- Retry mechanisms for API resilience
-- RAG (Retrieval Augmented Generation) for product intelligence
-- Streaming-ready infrastructure (future enhancement)
+- **Service Layer architecture** - No logic in admin/views, all AI logic in `services.py`
+- **DTO pattern** - Clean API contracts with dataclasses (`SchedulingIntentRequest/Response`)
+- **Retry mechanisms** - Exponential backoff for API rate limits and transient errors
+- **RAG (Retrieval Augmented Generation)** - For product intelligence with ChromaDB
+- **Streaming-ready infrastructure** - Designed for future real-time response streaming
 
 **Performance Optimizations:**
-- Embedding caching to reduce API calls
-- Vector store persistence for fast retrieval
-- Batch processing support for admin actions
-- Removed heavy dependencies (sentence-transformers → Gemini API)
-- Docker build time: 9min → 1min (8x faster)
+- **Embedding caching** - Redis cache for frequently requested embeddings
+- **Vector store persistence** - ChromaDB data persists across restarts (`chroma_db/` directory)
+- **Batch processing** - Admin bulk actions process multiple items efficiently
+- **Removed heavy dependencies** - Switched from sentence-transformers (2GB models) → Gemini API (cloud-based)
+- **Docker build time:** 9min → 1min (8x faster) after dependency optimization
 
 **Cost Efficiency:**
-- Free tier: 1,500 requests/day (with billing enabled)
-- Gemini Embeddings: Free tier for production use
-- Zero local model downloads (cloud-based)
-- Automatic quota management
+- **Free tier:** 1,500 requests/day with billing enabled
+- **Gemini Embeddings:** Free tier for production use
+- **Zero local model downloads** - All processing cloud-based
+- **Automatic quota management** - Graceful degradation on quota exceeded
 
-### � Interactive Admin Calendar (React Big Calendar)
+**Observability:**
+- **Structured logging** with `structlog` (JSON format)
+- **Tool execution tracking** - Full trace of function calls and results
+- **Confidence scoring** - Transparency in AI certainty levels
+- **Response time metrics** - Logged for performance monitoring
+
+### 📅 Interactive Admin Calendar (React Big Calendar)
 - **Visual Scheduling:** Drag-and-drop appointment management directly in Django admin
 - **Multiple Views:** Month, week, and day calendar perspectives
 - **Real-Time Sync:** Integrated with Django backend for live updates
@@ -254,7 +360,7 @@ npx vite build --config vite.admin.config.ts
 # Output: src/static/admin_calendar/
 ```
 
-### �🛡️ Technical Highlights
+### 🛡️ Technical Highlights
 - **94% Test Coverage** with pytest + factory-boy
 - **CI/CD Pipeline** with GitHub Actions (lint, type-check, security scan, test)
 - **Service Layer Architecture** for clean separation of concerns
@@ -525,7 +631,7 @@ View workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
 ---
 
-## � Production Deployment
+## 🚀 Production Deployment
 
 ### Blue-Green Deployment Strategy
 
@@ -582,7 +688,7 @@ Production deployment includes automated health checks:
 
 
 
-## �📁 Project Structure
+## 📁 Project Structure
 
 ```
 petcare_project/
@@ -716,7 +822,9 @@ docker compose exec web bandit -r src/
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under a **Proprietary License**. All rights reserved. See the [LICENSE](LICENSE) file for details.
+
+For licensing inquiries or permission requests, please contact [brunaads.ti@gmail.com](mailto:brunaads.ti@gmail.com).
 
 ---
 
@@ -726,12 +834,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - GitHub: [@CFBruna](https://github.com/CFBruna)
 - LinkedIn: [bruna-c-menezes](https://www.linkedin.com/in/bruna-c-menezes/)
 - Email: brunaads.ti@gmail.com
-
----
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/CFBruna/petcare_project/issues).
 
 ---
 
