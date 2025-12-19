@@ -1,14 +1,16 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAdminUser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from src.apps.core.views import AutoSchemaModelNameMixin
-from src.petcare.permissions import IsStaffOrReadOnly
+from src.petcare.permissions import IsAdminOrAnonReadOnly
 
 from .models import Brand, Category, Product, ProductLot
 from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
@@ -21,7 +23,7 @@ from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
 class CategoryViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAdminOrAnonReadOnly]
 
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
@@ -35,7 +37,7 @@ class CategoryViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 class BrandViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAdminOrAnonReadOnly]
 
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
@@ -48,12 +50,25 @@ class BrandViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 )
 class ProductViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = (
-        Product.objects.with_stock()
+        Product.objects.all()
         .select_related("brand", "category")
         .prefetch_related("lots")
     )
     serializer_class = ProductSerializer
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAdminOrAnonReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["category", "brand"]
+    search_fields = ["name", "description", "brand__name", "category__name"]
+    ordering_fields = ["name", "price"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        in_stock = self.request.query_params.get("in_stock")
+
+        if in_stock == "true":
+            return queryset.filter(lots__quantity__gt=0).distinct()
+
+        return queryset
 
 
 @extend_schema(
