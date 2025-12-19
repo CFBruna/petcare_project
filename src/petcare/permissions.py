@@ -18,6 +18,19 @@ class IsStaffOrReadOnly(BasePermission):
         return request.user.is_staff
 
 
+class IsAdminOrAnonReadOnly(BasePermission):
+    """
+    Custom permission to allow read-only access for ANY user (including anonymous),
+    while restricting write access to staff members only.
+    """
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+
+        return request.user and request.user.is_authenticated and request.user.is_staff
+
+
 class IsOwnerOrStaff(BasePermission):
     """
     Custom permission to only allow owners of an object or staff to access it.

@@ -2,12 +2,13 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import IsAdminUser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from src.apps.core.views import AutoSchemaModelNameMixin
+from src.petcare.permissions import IsAdminOrAnonReadOnly
 
 from .models import Brand, Category, Product, ProductLot
 from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
@@ -20,7 +21,7 @@ from .serializers import BrandSerializer, CategorySerializer, ProductSerializer
 class CategoryViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminOrAnonReadOnly]
 
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
@@ -34,7 +35,7 @@ class CategoryViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
 class BrandViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminOrAnonReadOnly]
 
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
@@ -52,7 +53,7 @@ class ProductViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
         .prefetch_related("lots")
     )
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminOrAnonReadOnly]
 
 
 @extend_schema(
