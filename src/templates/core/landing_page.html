@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,41 +8,67 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .fade-in { animation: fadeIn 0.6s ease-out; }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
-        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
     </style>
 </head>
+
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
 
-        <!-- Header/Navbar -->
+    <!-- Header/Navbar -->
     <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 512 512">
-    <path d="M256 224c-79.37 0-191.1 122.7-191.1 200.2C64.02 459.1 90.76 480 135.8 480C184.6 480 216.9 454.9 256 454.9C295.5 454.9 327.9 480 376.2 480c44.1 0 71.74-20.88 71.74-55.75C447.1 346.8 335.4 224 256 224zM108.8 211.4c-10.37-34.62-42.5-57.12-71.62-50.12S-7.104 202 3.27 236.6C13.64 271.3 45.77 293.8 74.89 286.8S119.1 246 108.8 211.4zM193.5 190.6c30.87-8.125 46.37-49.1 34.5-93.37s-46.5-71.1-77.49-63.87c-30.87 8.125-46.37 49.1-34.5 93.37C127.9 170.1 162.5 198.8 193.5 190.6zM474.9 161.3c-29.12-6.1-61.25 15.5-71.62 50.12c-10.37 34.63 4.75 68.37 33.87 75.37c29.12 6.1 61.12-15.5 71.62-50.12C519.1 202 503.1 168.3 474.9 161.3zM318.5 190.6c30.1 8.125 65.62-20.5 77.49-63.87c11.87-43.37-3.625-85.25-34.5-93.37c-30.1-8.125-65.62 20.5-77.49 63.87C272.1 140.6 287.6 182.5 318.5 190.6z"/>
-</svg>
+                        <path
+                            d="M256 224c-79.37 0-191.1 122.7-191.1 200.2C64.02 459.1 90.76 480 135.8 480C184.6 480 216.9 454.9 256 454.9C295.5 454.9 327.9 480 376.2 480c44.1 0 71.74-20.88 71.74-55.75C447.1 346.8 335.4 224 256 224zM108.8 211.4c-10.37-34.62-42.5-57.12-71.62-50.12S-7.104 202 3.27 236.6C13.64 271.3 45.77 293.8 74.89 286.8S119.1 246 108.8 211.4zM193.5 190.6c30.87-8.125 46.37-49.1 34.5-93.37s-46.5-71.1-77.49-63.87c-30.87 8.125-46.37 49.1-34.5 93.37C127.9 170.1 162.5 198.8 193.5 190.6zM474.9 161.3c-29.12-6.1-61.25 15.5-71.62 50.12c-10.37 34.63 4.75 68.37 33.87 75.37c29.12 6.1 61.12-15.5 71.62-50.12C519.1 202 503.1 168.3 474.9 161.3zM318.5 190.6c30.1 8.125 65.62-20.5 77.49-63.87c11.87-43.37-3.625-85.25-34.5-93.37c-30.1-8.125-65.62 20.5-77.49 63.87C272.1 140.6 287.6 182.5 318.5 190.6z" />
+                    </svg>
 
                     <span class="text-2xl font-bold gradient-text">PetCare</span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="hidden sm:inline text-sm text-slate-600">Enterprise Pet Shop System</span>
-                    <a href="https://github.com/CFBruna/petcare_project" target="_blank" class="text-slate-600 hover:text-slate-900 transition">
+                    <a href="https://github.com/CFBruna/petcare_project" target="_blank"
+                        class="text-slate-600 hover:text-slate-900 transition">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            <path
+                                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
                         </svg>
                     </a>
                 </div>
@@ -67,7 +94,10 @@
                 </h1>
 
                 <p class="text-xl text-slate-600 leading-relaxed">
-                    Full-stack Django application with 94% test coverage, deployed on AWS with CI/CD automation. Complete REST API, async tasks, and production-ready infrastructure.
+                    Enterprise Django SaaS with <strong>3 AI agents</strong> (Google Gemini), <strong>Next.js
+                        15</strong> frontend, <strong>94% test coverage</strong>, and <strong>Azure</strong> production
+                    deployment. Features natural language scheduling, RAG-based product intelligence, and automated
+                    health analysis.
                 </p>
 
                 <!-- Stats -->
@@ -77,31 +107,36 @@
                         <div class="text-sm text-slate-600">Test Coverage</div>
                     </div>
                     <div>
-                        <div class="text-3xl font-bold text-indigo-600">15+</div>
-                        <div class="text-sm text-slate-600">API Endpoints</div>
+                        <div class="text-3xl font-bold text-indigo-600">3</div>
+                        <div class="text-sm text-slate-600">AI Agents</div>
                     </div>
                     <div>
-                        <div class="text-3xl font-bold text-indigo-600">AWS</div>
+                        <div class="text-3xl font-bold text-indigo-600">Azure</div>
                         <div class="text-sm text-slate-600">Production</div>
                     </div>
                 </div>
 
                 <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                    <a href="/admin/" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-indigo-600 rounded-xl overflow-hidden transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-500/50 hover:-translate-y-0.5">
+                    <a href="/admin/"
+                        class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-indigo-600 rounded-xl overflow-hidden transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-500/50 hover:-translate-y-0.5">
                         <span class="relative flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                             Admin Panel
                         </span>
                     </a>
 
-                    <a href="/api/v1/schema/swagger-ui/" class="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl transition-all hover:border-indigo-600 hover:text-indigo-600 hover:shadow-lg hover:-translate-y-0.5">
+                    <a href="/api/v1/schema/swagger-ui/"
+                        class="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-slate-700 bg-white border-2 border-slate-300 rounded-xl transition-all hover:border-indigo-600 hover:text-indigo-600 hover:shadow-lg hover:-translate-y-0.5">
                         <span class="flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             API Documentation
                         </span>
@@ -113,7 +148,9 @@
             <div class="fade-in">
                 <div class="relative">
                     <!-- Glow effect -->
-                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-25"></div>
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl blur opacity-25">
+                    </div>
 
                     <!-- Card -->
                     <div class="relative bg-white rounded-2xl shadow-2xl p-8 space-y-6">
@@ -130,7 +167,8 @@
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
                                     Email
                                 </label>
@@ -139,8 +177,10 @@
                                         class="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-4 py-3 font-mono text-sm text-slate-900 focus:outline-none focus:border-indigo-600 transition cursor-text">
                                     <button onclick="copyToClipboard('recrutador@petcare.com', 'email')"
                                         class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 transition">
-                                        <svg id="copy-icon-email" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        <svg id="copy-icon-email" class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                         </svg>
                                     </button>
                                 </div>
@@ -150,7 +190,8 @@
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                     </svg>
                                     Password
                                 </label>
@@ -159,8 +200,10 @@
                                         class="w-full bg-slate-50 border-2 border-slate-200 rounded-lg px-4 py-3 font-mono text-sm text-slate-900 focus:outline-none focus:border-indigo-600 transition cursor-text">
                                     <button onclick="copyToClipboard('avaliar123', 'password')"
                                         class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 transition">
-                                        <svg id="copy-icon-password" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        <svg id="copy-icon-password" class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                         </svg>
                                     </button>
                                 </div>
@@ -170,14 +213,26 @@
                         <div class="pt-4 border-t border-slate-200">
                             <h4 class="text-sm font-semibold text-slate-700 mb-3">Tech Stack</h4>
                             <div class="flex flex-wrap gap-2">
-                                <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Python 3.12</span>
-                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Django 5.2</span>
-                                <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">DRF</span>
-                                <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">PostgreSQL</span>
-                                <span class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">Redis</span>
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Celery</span>
-                                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">Docker</span>
-                                <span class="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full">AWS</span>
+                                <span
+                                    class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Python
+                                    3.12</span>
+                                <span
+                                    class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Django
+                                    5.2</span>
+                                <span
+                                    class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">Next.js
+                                    15</span>
+                                <span
+                                    class="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full">Google
+                                    Gemini</span>
+                                <span
+                                    class="px-3 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full">LangChain</span>
+                                <span
+                                    class="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">PostgreSQL</span>
+                                <span
+                                    class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">Redis</span>
+                                <span
+                                    class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">Azure</span>
                             </div>
                         </div>
                     </div>
@@ -196,36 +251,51 @@
 
             <div class="grid md:grid-cols-3 gap-8">
                 <!-- Feature 1 -->
-                <div class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-indigo-600 transition-all hover:shadow-lg">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition">
-                        <svg class="w-6 h-6 text-indigo-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                <div
+                    class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-indigo-600 transition-all hover:shadow-lg">
+                    <div
+                        class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition">
+                        <svg class="w-6 h-6 text-indigo-600 group-hover:text-white transition" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">94% Test Coverage</h3>
-                    <p class="text-slate-600">Comprehensive test suite with pytest, factory-boy, and automated CI/CD pipeline with GitHub Actions</p>
+                    <p class="text-slate-600">Comprehensive test suite with pytest, factory-boy, and automated CI/CD
+                        pipeline with GitHub Actions</p>
                 </div>
 
-                <!-- Feature 2 -->
-                <div class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-purple-600 transition-all hover:shadow-lg">
-                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition">
-                        <svg class="w-6 h-6 text-purple-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                <!-- Feature 2: AI Intelligence -->
+                <div
+                    class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-purple-600 transition-all hover:shadow-lg">
+                    <div
+                        class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition">
+                        <svg class="w-6 h-6 text-purple-600 group-hover:text-white transition" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">AWS Production</h3>
-                    <p class="text-slate-600">Deployed on EC2 with RDS PostgreSQL, ElastiCache Redis, Route 53 DNS, and Nginx reverse proxy</p>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">3 AI Agents (Google Gemini)</h3>
+                    <p class="text-slate-600">Natural language scheduling assistant, RAG-powered product description
+                        generator, and health pattern analyzer with Google Search Grounding</p>
                 </div>
 
-                <!-- Feature 3 -->
-                <div class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-green-600 transition-all hover:shadow-lg">
-                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-600 transition">
-                        <svg class="w-6 h-6 text-green-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                <!-- Feature 3: Azure Production -->
+                <div
+                    class="group p-8 rounded-2xl border-2 border-slate-200 hover:border-blue-600 transition-all hover:shadow-lg">
+                    <div
+                        class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
+                        <svg class="w-6 h-6 text-blue-600 group-hover:text-white transition" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Clean Architecture</h3>
-                    <p class="text-slate-600">Service Layer Pattern, Repository Pattern, Domain Events, and type-safe code with MyPy strict mode</p>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Azure Production</h3>
+                    <p class="text-slate-600">Deployed on Azure VM with managed PostgreSQL, multi-domain Nginx Gateway,
+                        blue-green deployment with automated backup/rollback</p>
                 </div>
             </div>
         </div>
@@ -234,15 +304,24 @@
     <!-- Footer -->
     <footer class="bg-slate-900 text-white py-12">
         <div class="container mx-auto px-6 text-center space-y-4">
-            <p class="text-slate-400">Built with Django, DRF, PostgreSQL, Redis, Celery, Docker & AWS</p>
+            <p class="text-slate-400">Built with Django, Next.js 15, Google Gemini, LangChain, PostgreSQL, Redis,
+                Celery, Docker & Azure</p>
             <div class="flex justify-center items-center gap-6">
-                <a href="https://github.com/CFBruna/petcare_project" class="text-slate-400 hover:text-white transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <a href="https://github.com/CFBruna/petcare_project"
+                    class="text-slate-400 hover:text-white transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
                     GitHub
                 </a>
                 <span class="text-slate-600">•</span>
-                <a href="https://www.linkedin.com/in/bruna-c-menezes/" class="text-slate-400 hover:text-white transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                <a href="https://www.linkedin.com/in/bruna-c-menezes/"
+                    class="text-slate-400 hover:text-white transition flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
                     LinkedIn
                 </a>
                 <span class="text-slate-600">•</span>
@@ -267,4 +346,5 @@
         }
     </script>
 </body>
+
 </html>
