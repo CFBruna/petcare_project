@@ -59,11 +59,11 @@ Test the live application deployed on **Azure production infrastructure** (migra
 This project runs on a modern, scalable cloud infrastructure:
 
 **Infrastructure Components:**
-- **Compute:** EC2 instance running containerized application (Docker)
-- **Database:** RDS PostgreSQL for reliable, managed data storage
-- **Cache & Queue:** ElastiCache Redis for Celery task queue and caching
+- **Compute:** Azure Linux VM running containerized application (Docker)
+- **Database:** Azure Database for PostgreSQL (managed service)
+- **Cache & Queue:** Redis (containerized) for Celery task queue and caching
 - **Web Server:** Nginx as reverse proxy and static file server
-- **DNS:** Route 53 for domain management
+- **DNS:** HostGator DNS
 - **Containerization:** Docker & Docker Compose for environment consistency
 
 ```mermaid
@@ -414,6 +414,15 @@ npx vite build --config vite.admin.config.ts
 - React Big Calendar 1.19.4
 - date-fns 4.1.0 (date utilities)
 - Separate Vite build configuration
+
+**Frontend (Client - Next.js)**
+- Next.js 15 + React 19
+- TypeScript 5
+- Tailwind CSS
+- Zustand (state management)
+- TanStack Query (data fetching)
+- Framer Motion (animations)
+- Separate repository: [`petcare-web`](https://github.com/CFBruna/petcare-web)
 
 **Deployment & Monitoring**
 - Blue-Green Deployment Strategy
