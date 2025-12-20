@@ -16,3 +16,11 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ["id", "user", "cpf", "phone", "address"]
+
+
+class RegistrationResponseSerializer(serializers.Serializer):
+    """Serializer for registration response."""
+
+    user = UserSerializer()
+    customer = CustomerSerializer()
+    token = serializers.CharField()

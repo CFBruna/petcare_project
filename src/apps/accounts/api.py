@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Customer
-from .serializers import CustomerSerializer
+from .serializers import CustomerSerializer, RegistrationResponseSerializer
 
 
 @extend_schema(
@@ -31,28 +31,7 @@ from .serializers import CustomerSerializer
         }
     },
     responses={
-        201: {
-            "description": "User and customer created successfully",
-            "content": {
-                "application/json": {
-                    "type": "object",
-                    "properties": {
-                        "user": {
-                            "type": "object",
-                            "properties": {
-                                "id": {"type": "integer"},
-                                "username": {"type": "string"},
-                                "email": {"type": "string"},
-                                "first_name": {"type": "string"},
-                                "last_name": {"type": "string"},
-                            },
-                        },
-                        "customer": CustomerSerializer,
-                        "token": {"type": "string"},
-                    },
-                }
-            },
-        },
+        201: RegistrationResponseSerializer,
         400: {"description": "Validation error"},
     },
 )
@@ -65,7 +44,6 @@ def register_customer(request):
     """
     data = request.data
 
-    # Validate required fields
     required_fields = ["username", "email", "password", "cpf", "phone", "address"]
     missing_fields = [field for field in required_fields if not data.get(field)]
     if missing_fields:
@@ -76,28 +54,24 @@ def register_customer(request):
 
     try:
         with transaction.atomic():
-            # Check if username already exists
             if User.objects.filter(username=data["username"]).exists():
                 return Response(
                     {"username": ["Um usuário com este nome de usuário já existe."]},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Check if email already exists
             if User.objects.filter(email=data["email"]).exists():
                 return Response(
                     {"email": ["Um usuário com este email já existe."]},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Check if CPF already exists
             if Customer.objects.filter(cpf=data["cpf"]).exists():
                 return Response(
                     {"cpf": ["Um cliente com este CPF já existe."]},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Create user
             user = User.objects.create_user(
                 username=data["username"],
                 email=data["email"],
@@ -106,7 +80,6 @@ def register_customer(request):
                 last_name=data.get("last_name", ""),
             )
 
-            # Create customer profile
             customer = Customer.objects.create(
                 user=user,
                 cpf=data["cpf"],
@@ -114,10 +87,8 @@ def register_customer(request):
                 address=data["address"],
             )
 
-            # Create authentication token
             token, _ = Token.objects.get_or_create(user=user)
 
-            # Serialize customer data
             customer_serializer = CustomerSerializer(customer)
 
             return Response(
