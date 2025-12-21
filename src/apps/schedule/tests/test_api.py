@@ -118,3 +118,50 @@ class TestAppointmentAPI:
         )
         response = client.delete(detail_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_user_can_cancel_appointment_successfully(self, regular_user_client):
+        client, user = regular_user_client
+        my_pet = PetFactory(owner__user=user)
+        future_time = timezone.now() + timedelta(hours=2)
+        appointment = AppointmentFactory(
+            pet=my_pet, schedule_time=future_time, status=Appointment.Status.CONFIRMED
+        )
+
+        url = reverse("schedule:appointment-cancel", kwargs={"pk": appointment.id})
+        response = client.post(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "CANCELED"
+        appointment.refresh_from_db()
+        assert appointment.status == Appointment.Status.CANCELED
+
+    def test_user_cannot_cancel_appointment_too_late(self, regular_user_client):
+        client, user = regular_user_client
+        my_pet = PetFactory(owner__user=user)
+        near_future_time = timezone.now() + timedelta(minutes=30)
+        appointment = AppointmentFactory(
+            pet=my_pet,
+            schedule_time=near_future_time,
+            status=Appointment.Status.CONFIRMED,
+        )
+
+        url = reverse("schedule:appointment-cancel", kwargs={"pk": appointment.id})
+        response = client.post(url)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Não é possível cancelar" in response.data["error"]
+        assert appointment.status == Appointment.Status.CONFIRMED
+
+    def test_admin_can_cancel_appointment_anytime(self, admin_client):
+        future_or_past = timezone.now() + timedelta(minutes=10)
+        appointment = AppointmentFactory(
+            schedule_time=future_or_past, status=Appointment.Status.CONFIRMED
+        )
+
+        url = reverse("schedule:appointment-cancel", kwargs={"pk": appointment.id})
+        response = admin_client.post(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "CANCELED"
+        appointment.refresh_from_db()
+        assert appointment.status == Appointment.Status.CANCELED

@@ -42,6 +42,17 @@ class AppointmentService:
                 "Um agendamento futuro não pode ser marcado como 'Concluído'."
             )
 
+        existing_appointments = Appointment.objects.filter(
+            pet=pet,
+            schedule_time__date=schedule_time.date(),
+        ).exclude(status=Appointment.Status.CANCELED)
+
+        if not is_new:
+            existing_appointments = existing_appointments.exclude(pk=appointment.pk)
+
+        if existing_appointments.exists():
+            raise ValueError("Este pet já possui um agendamento para esta data.")
+
         appointment.pet = pet
         appointment.service = service
         appointment.schedule_time = schedule_time
@@ -130,3 +141,25 @@ class AppointmentService:
             current_time += slot_increment
 
         return available_slots
+
+    @staticmethod
+    def cancel_appointment(appointment: Appointment, user) -> Appointment:
+        """
+        Cancels an appointment.
+        Staff/Superusers can cancel at any time.
+        Regular users can only cancel if > 1 hour remains.
+        """
+        if appointment.status == Appointment.Status.CANCELED:
+            return appointment
+
+        is_staff_bypass = user.is_staff or user.is_superuser
+        min_notice_time = timezone.now() + timedelta(hours=1)
+
+        if not is_staff_bypass and appointment.schedule_time < min_notice_time:
+            raise ValueError(
+                "Não é possível cancelar o agendamento com menos de 1h de antecedência."
+            )
+
+        appointment.status = Appointment.Status.CANCELED
+        appointment.save()
+        return appointment

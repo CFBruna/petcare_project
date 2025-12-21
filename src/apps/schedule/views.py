@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -168,3 +169,23 @@ class AppointmentViewSet(AutoSchemaModelNameMixin, viewsets.ModelViewSet):
             canceled_by=self.request.user.username,
         )
         instance.delete()
+
+    @extend_schema(
+        summary="Cancel an appointment",
+        description="Cancels an appointment if strictly more than 1 hour remains before the scheduled time.",
+        responses={
+            200: AppointmentSerializer,
+            400: {"description": "Cancellation not allowed (less than 1h notice)."},
+        },
+    )
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        appointment = self.get_object()
+        try:
+            AppointmentService.cancel_appointment(appointment, request.user)
+            return Response(self.get_serializer(appointment).data)
+        except ValueError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
