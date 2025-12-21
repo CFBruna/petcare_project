@@ -114,3 +114,49 @@ class TestAvailableSlotsService:
             notes=appointment.notes,
         )
         assert instance.schedule_time == new_time
+
+    def test_cancel_appointment_success(self):
+        future_time = timezone.now() + timedelta(hours=2)
+        appointment = AppointmentFactory(
+            schedule_time=future_time, status=Appointment.Status.CONFIRMED
+        )
+
+        class MockUser:
+            is_staff = False
+            is_superuser = False
+
+        canceled_appt = AppointmentService.cancel_appointment(
+            appointment, user=MockUser()
+        )
+        assert canceled_appt.status == Appointment.Status.CANCELED
+
+    def test_cancel_appointment_too_late(self):
+        near_future_time = timezone.now() + timedelta(minutes=59)
+        appointment = AppointmentFactory(
+            schedule_time=near_future_time, status=Appointment.Status.CONFIRMED
+        )
+
+        class MockUser:
+            is_staff = False
+            is_superuser = False
+
+        with pytest.raises(
+            ValueError,
+            match="Não é possível cancelar o agendamento com menos de 1h de antecedência.",
+        ):
+            AppointmentService.cancel_appointment(appointment, user=MockUser())
+
+    def test_admin_can_bypass_cancel_restriction(self):
+        near_future_time = timezone.now() + timedelta(minutes=10)
+        appointment = AppointmentFactory(
+            schedule_time=near_future_time, status=Appointment.Status.CONFIRMED
+        )
+
+        class MockAdmin:
+            is_staff = True
+            is_superuser = False
+
+        canceled_appt = AppointmentService.cancel_appointment(
+            appointment, user=MockAdmin()
+        )
+        assert canceled_appt.status == Appointment.Status.CANCELED
