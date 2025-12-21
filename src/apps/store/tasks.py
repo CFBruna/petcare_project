@@ -353,6 +353,9 @@ def simulate_daily_activity(
                 )
                 completed_at_time = min(calculated_completion, close_time)
 
+            if Appointment.objects.filter(schedule_time=schedule_time).exists():
+                continue
+
             AppointmentFactory(
                 pet=pet,
                 service=service,

@@ -42,6 +42,17 @@ class AppointmentService:
                 "Um agendamento futuro não pode ser marcado como 'Concluído'."
             )
 
+        existing_appointments = Appointment.objects.filter(
+            pet=pet,
+            schedule_time__date=schedule_time.date(),
+        ).exclude(status=Appointment.Status.CANCELED)
+
+        if not is_new:
+            existing_appointments = existing_appointments.exclude(pk=appointment.pk)
+
+        if existing_appointments.exists():
+            raise ValueError("Este pet já possui um agendamento para esta data.")
+
         appointment.pet = pet
         appointment.service = service
         appointment.schedule_time = schedule_time

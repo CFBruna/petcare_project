@@ -80,4 +80,20 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("schedule_date")
-        return Appointment.objects.create(**validated_data)
+
+        appointment = Appointment()
+
+        try:
+            appointment = AppointmentService.prepare_appointment_instance(
+                appointment=appointment,
+                pet=validated_data.get("pet"),
+                service=validated_data.get("service"),
+                schedule_time=validated_data.get("schedule_time"),
+                status=validated_data.get("status", Appointment.Status.PENDING),
+                notes=validated_data.get("notes", ""),
+            )
+            appointment.save()
+        except ValueError as e:
+            raise serializers.ValidationError(str(e)) from e
+
+        return appointment
